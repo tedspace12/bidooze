@@ -1,0 +1,2 @@
+export type AuctionStatus = "all" | "live" | "upcoming" | "closing-soon" | "featured" | "top-picks" | "hot" | "closed";
+export type AuctionCardStatus = "live" | "upcoming" | "closing-soon" | "featured" | "top-picks" | "hot" | "closed";

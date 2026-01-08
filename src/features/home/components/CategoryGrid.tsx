@@ -1,0 +1,56 @@
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+
+const categories = [
+    { id: 1, name: "Antiques & Collectibles", image: '/images/category-antiques.jpg', count: 1240 },
+    { id: 2, name: "Art", image: '/images/category-art.jpg', count: 856 },
+    { id: 3, name: "Cars & Vehicles", image: '/images/category-cars.jpg', count: 423 },
+    { id: 4, name: "Jewelry & Watches", image: '/images/category-jewelry.jpg', count: 1567 },
+    { id: 5, name: "Real Estate", image: '/images/category-realestate.jpg', count: 234 },
+    { id: 6, name: "Fashion", image: '/images/category-fashion.jpg', count: 789 },
+];
+
+const CategoryGrid = () => {
+    const router = useRouter();
+
+    return (
+        <div className="container mx-auto px-4 py-12 bg-secondary/20">
+            <div className="flex items-center justify-between mb-8">
+                <div>
+                    <h2 className="text-3xl font-bold text-foreground">Find Auctions by Category</h2>
+                    <p className="text-muted-foreground mt-2">Browse thousands of items across popular categories</p>
+                </div>
+                <Button onClick={() => router.push('/auctions')} variant="outline">View All Categories</Button>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                {categories.map((category) => (
+                    <Card
+                        key={category.id}
+                        className="overflow-hidden group cursor-pointer hover:shadow-lg transition-all"
+                    >
+                        <div onClick={() => router.push('/auctions' + `?category=${encodeURIComponent(category.name)}`)} className="relative aspect-square overflow-hidden">
+                            <Image
+                                src={category.image}
+                                alt={category.name}
+                                width={500}
+                                height={500}
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            />
+                            <div className="absolute inset-0 bg-linear-to-t from-background/90 via-background/20 to-transparent" />
+                            <div className="absolute bottom-0 left-0 right-0 p-4">
+                                <h3 className="font-semibold text-sm text-foreground mb-1">
+                                    {category.name}
+                                </h3>
+                                <p className="text-xs text-muted-foreground">{category.count} auctions</p>
+                            </div>
+                        </div>
+                    </Card>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+export default CategoryGrid;
