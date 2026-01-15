@@ -30,10 +30,10 @@ const LotHeader = ({ title, lotId }: LotHeaderProps) => {
     return (
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div>
-                <p className="text-sm text-muted-foreground font-medium mb-1">
+                <p className="text-xs md:text-sm text-muted-foreground font-medium mb-1">
                     Lot ID: {lotId}
                 </p>
-                <h1 className="text-2xl md:text-3xl font-bold text-foreground leading-tight">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground leading-tight">
                     {title}
                 </h1>
             </div>
@@ -43,16 +43,16 @@ const LotHeader = ({ title, lotId }: LotHeaderProps) => {
                     variant="outline"
                     size="sm"
                     onClick={handleShare}
-                    className="gap-2"
+                    className="gap-2 text-xs sm:text-sm"
                 >
-                    <Share2 className="h-4 w-4" />
+                    <Share2 className="h-3.5 w-3.5 md:h-4 md:w-4" />
                     Share
                 </Button>
                 <Button
                     variant={isWatchlisted ? "default" : "outline"}
                     size="sm"
                     onClick={handleWatchlist}
-                    className="gap-2"
+                    className="gap-2 text-xs sm:text-sm"
                 >
                     <Heart className={`h-4 w-4 ${isWatchlisted ? "fill-current" : ""}`} />
                     {isWatchlisted ? "Watching" : "Watch"}

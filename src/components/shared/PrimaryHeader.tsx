@@ -2,14 +2,6 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,70 +12,65 @@ import { Search, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import MobileMenu from "./MobileMenu";
+import { SearchForm } from "./SearchForm";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 
 const PrimaryHeader = ({ isLoggedIn }: { isLoggedIn: boolean }) => {
   const router = useRouter();
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [zipCode, setZipCode] = useState("");
-  const [distance, setDistance] = useState("50");
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   return (
     <div className="border-b border-border bg-background sticky top-0 z-50">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between gap-6 h-16">
+        <div className="flex items-center justify-between gap-3 h-14 md:h-16">
+          {/* Mobile Menu */}
+          <MobileMenu isLoggedIn={isLoggedIn} />
+
           <Link href={"/"}>
             <Image
               src="/logo/Bidooze.svg"
               alt="Bidooze logo"
               width={500}
               height={500}
-              className="h-10 w-auto"
+              className="h-8 sm:h-10 w-auto shrink-0"
             />
           </Link>
 
-          <div className="flex-1 flex items-center gap-3 max-w-3xl">
-            <Input
-              placeholder="Search auctions..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1"
-            />
-            <Input
-              placeholder="Zip code"
-              value={zipCode}
-              onChange={(e) => setZipCode(e.target.value)}
-              className="w-32"
-            />
-            <Select value={distance} onValueChange={setDistance}>
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="anywhere">Anywhere</SelectItem>
-                <SelectItem value="25">25 miles</SelectItem>
-                <SelectItem value="50">50 miles</SelectItem>
-                <SelectItem value="100">100 miles</SelectItem>
-                <SelectItem value="250">250 miles</SelectItem>
-                <SelectItem value="500">500 miles</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button size="icon">
-              <Search className="h-4 w-4" />
-            </Button>
+          <div className="hidden md:flex flex-1 items-center gap-3 max-w-3xl">
+            <SearchForm />
           </div>
 
-          <div className="flex items-center gap-3">
+          {/* Mobile Search Button */}
+          <Dialog open={mobileSearchOpen} onOpenChange={setMobileSearchOpen}>
+            <DialogTrigger asChild>
+              <Button variant="ghost" size="icon" className="md:hidden">
+                <Search className="h-5 w-5" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Search Auctions</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <SearchForm isMobile />
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Desktop Auth */}
+          <div className="hidden md:flex items-center gap-3">
             {!isLoggedIn ? (
               <>
-                <a href="/auth/login">
+                <Link href="/auth/login">
                   <Button variant="ghost" size="sm">
                     Login
                   </Button>
-                </a>
-                <a href="/auth/signup">
+                </Link>
+                <Link href="/auth/signup">
                   <Button size="sm">Sign up</Button>
-                </a>
+                </Link>
               </>
             ) : (
               <DropdownMenu>

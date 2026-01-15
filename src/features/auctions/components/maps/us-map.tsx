@@ -42,7 +42,7 @@ export const USMap = () => {
 
 
     return (
-        <div className="relative">
+        <div className="relative hidden xl:block">
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 xmlnsXlink="http://www.w3.org/1999/xlink"

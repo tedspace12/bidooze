@@ -57,7 +57,7 @@ const HeroCarousel = () => {
                     {liveAuctions.map((auction) => (
                         <CarouselItem key={auction.id}>
                             <Card className="border-0 overflow-hidden shadow-xl">
-                                <div onClick={() => router.push('/auction/id')} className="relative h-[500px] group cursor-pointer">
+                                <div onClick={() => router.push('/auction/id')} className="relative h-[450px] sm:h-[500px] group cursor-pointer">
                                     <Image
                                         src={auction.image}
                                         alt={auction.title}
@@ -66,14 +66,14 @@ const HeroCarousel = () => {
                                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                     />
                                     <div className="absolute inset-0 bg-linear-to-t from-black/35 via-black/40 to-transparent" />
-                                    <div className="absolute bottom-0 left-0 right-0 p-8 space-y-4">
+                                    <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-8 space-y-3 sm:space-y-4">
                                         <Badge className="bg-primary text-white">
                                             Live Auction
                                         </Badge>
-                                        <h2 className="text-4xl font-bold text-white">
+                                        <h2 className="text-2xl sm:text-4xl font-bold text-white">
                                             {auction.title}
                                         </h2>
-                                        <p className="text-lg text-white/80">
+                                        <p className="text-base sm:text-lg text-white/80">
                                             {auction.auctioneer}
                                         </p>
                                         <div className="flex items-center gap-6 text-sm text-white/80">
@@ -92,8 +92,8 @@ const HeroCarousel = () => {
                         </CarouselItem>
                     ))}
                 </CarouselContent>
-                <CarouselPrevious className="left-4" />
-                <CarouselNext className="right-4" />
+                <CarouselPrevious className="left-2 sm:left-4" />
+                <CarouselNext className="right-2 sm:right-4" />
             </Carousel>
         </div>
     );

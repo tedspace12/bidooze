@@ -9,6 +9,7 @@ import { Mail, Chrome, Apple, Facebook } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import AuthLayout from "@/components/layout/AuthLayout";
+import Link from "next/link";
 
 const Login = () => {
     const router = useRouter();
@@ -31,15 +32,15 @@ const Login = () => {
 
     return (
         <AuthLayout>
-            <div className="text-center space-y-4">
-                <Image src={'/logo/Bidooze.svg'} alt="Bidooze Logo" width={500} height={500} className="h-10 w-auto block mx-auto" />
+            <div className="text-center space-y-3 sm:space-y-4">
+                <Image src={'/logo/Bidooze.svg'} alt="Bidooze Logo" width={500} height={500} className="h-9 sm:h-10 w-auto block mx-auto" />
                 <div>
-                    <h1 className="text-3xl font-bold text-foreground">Welcome back</h1>
-                    <p className="mt-2 text-muted-foreground">Log in to continue bidding</p>
+                    <h1 className="text-[25px] sm:text-3xl font-bold text-foreground">Welcome back</h1>
+                    <p className="mt-2 text-muted-foreground text-sm md:text-base">Log in to continue bidding</p>
                 </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3 sm:not-[]:space-y-4">
                 <div className="space-y-2">
                     <Label htmlFor="email">Email address</Label>
                     <Input
@@ -48,7 +49,7 @@ const Login = () => {
                         placeholder="you@example.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full"
+                        className="w-full text-sm sm:text-base"
                     />
                 </div>
 
@@ -56,12 +57,12 @@ const Login = () => {
                     <div className="space-y-2">
                         <div className="flex justify-between items-center">
                             <Label htmlFor="password">Password</Label>
-                            <a
+                            <Link
                                 href="/auth/reset-password"
-                                className="text-sm text-primary hover:underline"
+                                className="text-xs sm:text-sm text-primary hover:underline"
                             >
                                 Forgot password?
-                            </a>
+                            </Link>
                         </div>
                         <Input
                             id="password"
@@ -69,7 +70,7 @@ const Login = () => {
                             placeholder="Enter your password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full"
+                            className="w-full text-sm sm:text-base"
                         />
                     </div>
                 )}
@@ -121,9 +122,9 @@ const Login = () => {
 
             <p className="text-center text-sm text-muted-foreground">
                 Don&apos;t have an account?{" "}
-                <a href="/auth/signup" className="text-primary hover:underline font-medium">
+                <Link href="/auth/signup" className="text-primary hover:underline font-medium">
                     Sign up
-                </a>
+                </Link>
             </p>
         </AuthLayout>
     );

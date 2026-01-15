@@ -131,7 +131,7 @@ const BidConfirmationModal = ({ open, onOpenChange, lot }: BidConfirmationModalP
                                     type="text"
                                     value={bidAmount}
                                     onChange={(e) => handleBidChange(e.target.value)}
-                                    className="pl-8 text-lg font-medium"
+                                    className="pl-8 text-base md:text-lg font-medium"
                                     placeholder={minBid.toString()}
                                 />
                             </div>
@@ -177,7 +177,7 @@ const BidConfirmationModal = ({ open, onOpenChange, lot }: BidConfirmationModalP
 
                         {/* Confirm Button */}
                         <Button
-                            className="w-full h-12 text-lg"
+                            className="w-full h-12 text-sm md:text-lg"
                             disabled={!isValidBid || !agreeToTerms}
                             onClick={handleConfirmBid}
                         >

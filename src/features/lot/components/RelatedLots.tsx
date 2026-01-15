@@ -5,6 +5,7 @@ import { Clock, ArrowRight, Eye } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import SectionHeader from "@/components/shared/SectionHeader";
 
 const relatedLots = [
     {
@@ -42,46 +43,46 @@ const RelatedLots = () => {
 
     return (
         <section className="mt-12">
-            <div className="flex items-center justify-between mb-6">
-                <div>
-                    <h2 className="text-2xl font-bold text-foreground">Other Lots in This Auction</h2>
-                    <p className="text-muted-foreground">Explore more items from this collection</p>
-                </div>
-                <Button onClick={() => router.push('/auction/1')} variant="outline" className="gap-2">
-                    View Full Catalog
-                    <ArrowRight className="h-4 w-4" />
-                </Button>
-            </div>
+            <SectionHeader
+                title="Other Lots in This Auction"
+                description="Explore more items from this collection"
+                actionElement={
+                    <Button onClick={() => router.push('/auction/1')} variant="outline" className="gap-2">
+                        View Full Catalog
+                        <ArrowRight className="h-4 w-4" />
+                    </Button>
+                }
+            />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {relatedLots.map((lot) => (
                     <Link key={lot.id} href={`/lot/${lot.id}`}>
                         <Card className="group overflow-hidden border-border hover:border-primary/50 transition-all hover:shadow-lg">
-                            <div className="relative aspect-4/3 overflow-hidden">
+                            <div className="relative aspect-6/3 md:aspect-4/3 overflow-hidden">
                                 <Image
                                     src={lot.image}
                                     alt={lot.title}
                                     fill
                                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                                 />
-                                <Badge className="absolute top-3 left-3 bg-background/90 text-foreground">
+                                <Badge className="absolute top-3 left-3 bg-background/90 text-foreground text-[10px] md:text-xs py-px md:py-0.5">
                                     <Clock className="h-3 w-3 mr-1" />
                                     {lot.endTime}
                                 </Badge>
                                 <Button
                                     variant="secondary"
                                     size="icon"
-                                    className="absolute top-3 right-3 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity bg-background/90"
+                                    className="absolute top-3 right-3 h-6 w-6 md:h-8 md:w-8 opacity-0 group-hover:opacity-100 transition-opacity bg-background/90"
                                 >
-                                    <Eye className="h-4 w-4" />
+                                    <Eye className="h-3 w-3 md:h-4 md:w-4" />
                                 </Button>
                             </div>
-                            <CardContent className="p-4">
-                                <h3 className="font-semibold text-foreground line-clamp-2 mb-2 group-hover:text-primary transition-colors">
+                            <CardContent className="p-3 md:p-4">
+                                <h3 className="text-sm md:text-base font-semibold text-foreground line-clamp-2 mb-2 group-hover:text-primary transition-colors">
                                     {lot.title}
                                 </h3>
                                 <p className="text-xs font-medium text-amber-600 mb-2">23 bids</p>
-                                <p className="text-lg font-bold text-primary">
+                                <p className="text-base md:text-lg font-bold text-primary">
                                     ${lot.currentBid.toLocaleString()}
                                 </p>
                             </CardContent>

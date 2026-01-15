@@ -74,8 +74,8 @@ const AuctioneersSearch = () => {
   return (
     <main className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Find Auctioneers</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Find Auctioneers</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">
           {filteredAuctioneers.length} auctioneer{filteredAuctioneers.length !== 1 ? "s" : ""} found
         </p>
       </div>
@@ -91,7 +91,7 @@ const AuctioneersSearch = () => {
               setSearchQuery(e.target.value);
               setCurrentPage(1);
             }}
-            className="pl-9"
+            className="pl-9 text-sm md:text-base"
           />
         </div>
         <Select
@@ -101,7 +101,7 @@ const AuctioneersSearch = () => {
             setCurrentPage(1);
           }}
         >
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-full sm:w-[200px]">
             <SelectValue placeholder="Filter by location" />
           </SelectTrigger>
           <SelectContent>
@@ -134,7 +134,7 @@ const AuctioneersSearch = () => {
       </div>
 
       {/* Auctioneers Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {paginatedAuctioneers.map(auctioneer => (
           <Link key={auctioneer.id} href={`/auctioneer/${auctioneer.id}`}>
             <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer group">

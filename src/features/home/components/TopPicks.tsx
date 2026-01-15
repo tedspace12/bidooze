@@ -6,12 +6,12 @@ import {
     CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Eye } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import SectionHeader from "@/components/shared/SectionHeader";
 
 const topPicks = [
     {
@@ -85,17 +85,17 @@ const TopPicks = () => {
 
     return (
         <div className="container mx-auto px-4 py-12">
-            <div className="flex items-center justify-between mb-8">
-                <div>
-                    <h2 className="text-3xl font-bold text-foreground">Top Picks for You</h2>
-                    <p className="text-muted-foreground mt-2">Personalized recommendations based on your interests</p>
-                </div>
-                <Button onClick={() => router.push('/bids?tab=top-picks')} variant="outline">View All</Button>
-            </div>
+            <SectionHeader
+                title="Top Picks for You"
+                description="Personalized recommendations based on your interests"
+                actionLabel="View All"
+                onAction={() => router.push('/bids?tab=top-picks')}
+            />
+
             <Carousel className="w-full" opts={{ align: "start", loop: false }}>
                 <CarouselContent className="-ml-4">
                     {topPicks.map((item) => (
-                        <CarouselItem key={item.id} className="pl-4 md:basis-1/2 lg:basis-1/4">
+                        <CarouselItem key={item.id} className="pl-4 sm:basis-1/2 lg:basis-1/4">
                             <Link href={`/lot/${item.id}`}>
                                 <Card className="overflow-hidden group cursor-pointer hover:shadow-lg transition-all">
                                     <div className="relative h-48 overflow-hidden">
@@ -110,7 +110,7 @@ const TopPicks = () => {
                                             <Eye className="h-3.5 w-3.5" />
                                         </button>
                                     </div>
-                                    <div className="p-4 space-y-2">
+                                    <div className="p-3 md:p-4 space-y-2">
                                         <h3 className="font-semibold text-sm line-clamp-1">{item.title}</h3>
                                         <p className="text-xs font-medium text-amber-600">{item.bids} Bids</p>
                                         <div className="flex items-center justify-between">

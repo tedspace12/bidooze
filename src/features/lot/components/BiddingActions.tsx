@@ -59,8 +59,8 @@ const BiddingActions = ({
 
   return (
     <>
-      <div className="bg-card border border-border rounded-xl p-6 space-y-5">
-        <h3 className="text-lg font-semibold text-foreground">Place Your Bid</h3>
+      <div className="bg-card border border-border rounded-xl p-4 md:p-6 space-y-3 md:space-y-5">
+        <h3 className="text-sm sm:text-base md:text-lg font-semibold text-foreground">Place Your Bid</h3>
 
         {/* Bid Input */}
         <div className="space-y-3">
@@ -71,10 +71,10 @@ const BiddingActions = ({
               placeholder={`Min: $${minBid.toLocaleString()}`}
               value={bidAmount}
               onChange={(e) => setBidAmount(e.target.value)}
-              className="pl-10 text-lg h-12"
+              className="pl-10 text-sm md:text-lg h-12"
             />
           </div>
-          <Button onClick={() => setBidModalOpen(true)} className="w-full h-12 text-base font-semibold">
+          <Button onClick={() => setBidModalOpen(true)} className="w-full h-12 text-sm md:text-base font-semibold">
             Place Bid
           </Button>
         </div>
@@ -84,7 +84,7 @@ const BiddingActions = ({
           <CollapsibleTrigger asChild>
             <Button
               variant="ghost"
-              className="w-full justify-between text-muted-foreground hover:text-foreground"
+              className="w-full justify-between text-muted-foreground hover:text-foreground text-xs md:text-sm"
             >
               View Bid Increments
               {showIncrements ? (
@@ -99,7 +99,7 @@ const BiddingActions = ({
               {bidIncrements.map((item, index) => (
                 <div
                   key={index}
-                  className="flex justify-between text-sm"
+                  className="flex justify-between text-xs md:text-sm"
                 >
                   <span className="text-muted-foreground">{item.range}</span>
                   <span className="font-medium text-foreground">{item.increment}</span>

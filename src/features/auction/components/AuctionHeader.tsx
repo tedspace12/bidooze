@@ -60,11 +60,11 @@ const AuctionHeader = ({ auction, isRegistered = false }: AuctionHeaderProps) =>
     };
 
     return (
-        <div className="bg-card border border-border rounded-xl p-6">
-            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+        <div className="bg-card border border-border rounded-xl p-4 md:p-6">
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 md:gap-6">
                 <div className="flex-1">
                     {/* Status Badge */}
-                    <Badge className={`mb-3 ${statusConfig[auction.status].className}`}>
+                    <Badge className={`mb-2 md:mb-3 ${statusConfig[auction.status].className} text-[10px] md:text-xs py-px md:px-0.5`}>
                         {statusConfig[auction.status].label}
                     </Badge>
 
@@ -88,13 +88,13 @@ const AuctionHeader = ({ auction, isRegistered = false }: AuctionHeaderProps) =>
                     {/* Date Range */}
                     <div className="flex items-center gap-2 text-muted-foreground mb-4">
                         <Calendar className="h-4 w-4" />
-                        <span>
+                        <span className="text-sm md:text-base">
                             {formatDateWithOrdinal(new Date(auction.startDate))} - {formatDateWithOrdinal(new Date(auction.endDate))}
                         </span>
                     </div>
 
                     {/* Description */}
-                    <p className="text-muted-foreground max-w-2xl">
+                    <p className="text-sm md:text-base text-muted-foreground max-w-2xl">
                         {auction.description}
                     </p>
                 </div>

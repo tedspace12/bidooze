@@ -16,20 +16,20 @@ const ShippingInfo = ({
   shippingNotes = "Professional shipping and white-glove delivery available for this item. Insurance included in shipping quote."
 }: ShippingInfoProps) => {
   return (
-    <div className="bg-card border border-border rounded-xl p-6">
+    <div className="bg-card border border-border rounded-xl p-4 md:p-6">
       <div className="flex items-center gap-2 mb-5">
-        <Truck className="h-5 w-5 text-primary" />
-        <h3 className="text-lg font-semibold text-foreground">Shipping Information</h3>
+        <Truck className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+        <h3 className="text-base md:text-lg font-semibold text-foreground">Shipping Information</h3>
       </div>
 
       <div className="space-y-4">
         <div className="flex items-start gap-3">
-          <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
-            <Package className="h-4 w-4 text-muted-foreground" />
+          <div className="h-8 w-8 md:h-9 md:w-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
+            <Package className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
           </div>
           <div>
             <p className="text-xs text-muted-foreground">Shipping Status</p>
-            <p className="font-medium text-foreground">
+            <p className="text-sm md:text-base font-medium text-foreground">
               {shippingAvailable ? "Shipping Available" : "Local Pickup Only"}
             </p>
           </div>
@@ -38,39 +38,39 @@ const ShippingInfo = ({
         {shippingAvailable && (
           <>
             <div className="flex items-start gap-3">
-              <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <div className="h-8 w-8 md:h-9 md:w-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                <DollarSign className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Shipping Cost</p>
-                <p className="font-medium text-foreground">{shippingCost}</p>
+                <p className="text-sm md:text-base font-medium text-foreground">{shippingCost}</p>
               </div>
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                <Clock className="h-4 w-4 text-muted-foreground" />
+              <div className="h-8 w-8 md:h-9 md:w-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                <Clock className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Estimated Delivery</p>
-                <p className="font-medium text-foreground">{estimatedDelivery}</p>
+                <p className="text-sm md:text-base font-medium text-foreground">{estimatedDelivery}</p>
               </div>
             </div>
           </>
         )}
 
         <div className="flex items-start gap-3">
-          <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
-            <MapPin className="h-4 w-4 text-muted-foreground" />
+          <div className="h-8 w-8 md:h-9 md:w-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
+            <MapPin className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
           </div>
           <div>
             <p className="text-xs text-muted-foreground">Pickup Location</p>
-            <p className="font-medium text-foreground">{pickupLocation}</p>
+            <p className="text-sm md:text-base font-medium text-foreground">{pickupLocation}</p>
           </div>
         </div>
 
         {shippingNotes && (
-          <p className="text-sm text-muted-foreground pt-2 border-t border-border">
+          <p className="text-xs md:text-sm text-muted-foreground pt-2 border-t border-border">
             {shippingNotes}
           </p>
         )}

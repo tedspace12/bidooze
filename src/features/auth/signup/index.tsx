@@ -26,15 +26,15 @@ const SignupEmail = () => {
 
     return (
         <AuthLayout>
-            <div className="text-center space-y-4">
-                <Image src={'/logo/Bidooze.svg'} alt="Bidooze Logo" width={500} height={500} className="h-10 w-auto block mx-auto" />
+            <div className="text-center space-y-3 sm:space-y-4">
+                <Image src={'/logo/Bidooze.svg'} alt="Bidooze Logo" width={500} height={500} className="h-9 sm:h-10 w-auto block mx-auto" />
                 <div>
-                    <h1 className="text-3xl font-bold text-foreground">Join Bidooze</h1>
-                    <p className="mt-2 text-muted-foreground">Start bidding on amazing items</p>
+                    <h1 className="text-[25px] sm:text-3xl font-bold text-foreground">Join Bidooze</h1>
+                    <p className="mt-2 text-muted-foreground text-sm md:text-base">Start bidding on amazing items</p>
                 </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
                 <div className="space-y-2">
                     <Label htmlFor="email">Email address</Label>
                     <Input
@@ -43,7 +43,7 @@ const SignupEmail = () => {
                         placeholder="you@example.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full"
+                        className="w-full text-sm md:text-base"
                     />
                 </div>
 

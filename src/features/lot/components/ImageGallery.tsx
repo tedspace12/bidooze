@@ -76,7 +76,7 @@ const ImageGallery = ({ images, title }: ImageGalleryProps) => {
                 </Dialog>
 
                 {/* Image Counter */}
-                <div className="absolute bottom-3 left-3 bg-background/80 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
+                <div className="absolute bottom-3 left-3 bg-background/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs sm:text-sm font-medium">
                     {selectedIndex + 1} / {images.length}
                 </div>
             </div>

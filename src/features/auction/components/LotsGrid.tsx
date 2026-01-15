@@ -225,7 +225,7 @@ const LotsGrid = ({ lots, isRegistered = false }: LotsGridProps) => {
   return (
     <section>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-foreground">
+        <h2 className="text-lg md:text-xl font-semibold text-foreground">
           All Lots ({filteredLots.length})
         </h2>
       </div>
@@ -240,7 +240,7 @@ const LotsGrid = ({ lots, isRegistered = false }: LotsGridProps) => {
               placeholder="Search by lot name or number..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 text-sm md:text-base"
             />
           </div>
 
@@ -310,7 +310,7 @@ const LotsGrid = ({ lots, isRegistered = false }: LotsGridProps) => {
                 </div>
 
                 {/* Category Filter */}
-                <div>
+                {/* <div>
                   <label className="text-sm font-medium text-foreground mb-3 block">
                     Categories
                   </label>
@@ -370,7 +370,7 @@ const LotsGrid = ({ lots, isRegistered = false }: LotsGridProps) => {
                       </Collapsible>
                     ))}
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
           </CollapsibleContent>

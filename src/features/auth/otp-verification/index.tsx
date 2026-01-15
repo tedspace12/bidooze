@@ -24,11 +24,11 @@ const OTPVerification = () => {
 
     return (
         <AuthLayout>
-            <div className="text-center space-y-4">
-                <Image src={'/logo/Bidooze.svg'} alt="Bidooze Logo" width={500} height={500} className="h-10 w-auto block mx-auto" />
+            <div className="text-center space-y-3 sm:space-y-4">
+                <Image src={'/logo/Bidooze.svg'} alt="Bidooze Logo" width={500} height={500} className="h-9 sm:h-10 w-auto block mx-auto" />
                 <div>
-                    <h1 className="text-3xl font-bold text-foreground">Verify your email</h1>
-                    <p className="mt-2 text-muted-foreground">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Verify your email</h1>
+                    <p className="mt-2 text-muted-foreground text-sm md:text-base">
                         We sent a code to <span className="font-medium">{email}</span>
                     </p>
                 </div>

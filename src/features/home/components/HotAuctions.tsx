@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TrendingUp, Share2, MapPin, Clock, Layers } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import SectionHeader from "@/components/shared/SectionHeader";
 
 const hotAuctions = [
     {
@@ -51,21 +52,23 @@ export const statusConfig: Record<string, { label: string; className: string }> 
 
 const HotAuctions = () => {
     return (
-        <div className="container mx-auto px-4 py-12 bg-secondary/20">
-            <div className="flex items-center justify-between mb-8">
-                <div>
-                    <div className="flex items-center gap-2 mb-2">
-                        <TrendingUp className="h-6 w-6 text-primary" />
-                        <h2 className="text-3xl font-bold text-foreground">Hot Auctions</h2>
+        <div className="container mx-auto px-4 py-8 md:py-12 bg-secondary/20">
+            <SectionHeader
+                title={
+                    <div className="flex items-center gap-2">
+                        <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                        <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Hot Auctions</h2>
                     </div>
-                    <p className="text-muted-foreground mt-2">Trending auctions with the most competitive bidding</p>
-                </div>
-                <Link href="/auctions">
-                    <Button variant="outline">View All</Button>
-                </Link>
-            </div>
+                }
+                description="Trending auctions with the most competitive bidding"
+                actionElement={
+                    <Link href="/auctions">
+                        <Button variant="outline">View All</Button>
+                    </Link>
+                }
+            />
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {hotAuctions.map((auction) => (
                     <Link key={auction.id} href={`/auction/${auction.id}`}>
                         <div className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-xl transition-all group">
@@ -78,14 +81,14 @@ const HotAuctions = () => {
                                     height={500}
                                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                 />
-                                <Badge className={`absolute top-3 left-3 ${statusConfig[auction.status].className}`}>
+                                <Badge className={`absolute top-3 left-3 ${statusConfig[auction.status].className} text-[10px] md:text-xs py-px md:py-0.5`}>
                                     <TrendingUp className="h-3 w-3 mr-1" />
                                     {statusConfig[auction.status].label}
                                 </Badge>
                             </div>
 
                             {/* Content */}
-                            <div className="p-5">
+                            <div className="p-3 md:p-5">
                                 <div className="flex items-start justify-between gap-3 mb-3">
                                     <h3 className="font-semibold text-lg text-foreground line-clamp-1 group-hover:text-primary transition-colors">
                                         {auction.title}

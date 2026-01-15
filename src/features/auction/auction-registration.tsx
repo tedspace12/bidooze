@@ -135,13 +135,13 @@ const AuctionRegistration = () => {
                 </nav>
             </div>
 
-            <main className="container mx-auto px-4 pb-12">
+            <main className="container mx-auto px-4 pb-10 md:pb-12">
                 {/* Page Header */}
-                <div className="mb-8">
+                <div className="mb-6 md:mb-8">
                     <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
                         Register for the Auction
                     </h1>
-                    <p className="text-muted-foreground max-w-2xl">
+                    <p className="text-sm md:text-base text-muted-foreground max-w-2xl">
                         Auctioneers use registrations to approve you to bid, confirm delivery, and record your agreement to their terms.
                     </p>
                 </div>
@@ -149,7 +149,7 @@ const AuctionRegistration = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Left Column - Context Info */}
                     <div className="lg:col-span-1">
-                        <Card className="p-6 sticky top-4">
+                        <Card className="p-4 md:p-6 sticky top-4">
                             {source === "lot" ? (
                                 // Lot Context
                                 <div>

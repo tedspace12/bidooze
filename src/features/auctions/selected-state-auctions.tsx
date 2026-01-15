@@ -119,7 +119,7 @@ const SelectedStateAuctions = () => {
     const { state } = params;
 
     return (
-        <main className="container mx-auto py-8">
+        <main className="container mx-auto py-6 md:py-8">
             {/* Breadcrumb */}
             <Breadcrumb className="mb-6 px-4">
                 <BreadcrumbList>
@@ -137,12 +137,12 @@ const SelectedStateAuctions = () => {
                 </BreadcrumbList>
             </Breadcrumb>
 
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2 px-4">Live & Online Auctions in {state || 'State'}</h1>
-            <div className="px-4 mt-10">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 px-4">Live & Online Auctions in {state || 'State'}</h1>
+            <div className="px-4 mt-6 md:mt-10">
                 <Carousel className="w-full" opts={{ align: "start", loop: false }}>
                     <CarouselContent className="-ml-4">
                         {liveAuctions.map((auction) => (
-                            <CarouselItem key={auction.id} className="pl-4 md:basis-1/2 lg:basis-1/4">
+                            <CarouselItem key={auction.id} className="pl-4 sm:basis-1/2 lg:basis-1/4">
                                 <Link key={auction.id} href={`/auction/${auction.id}`}>
                                     <div className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-xl transition-all group">
                                         {/* Cover Image */}
@@ -161,7 +161,7 @@ const SelectedStateAuctions = () => {
                                         </div>
 
                                         {/* Content */}
-                                        <div className="p-5">
+                                        <div className="p-3 md:p-5">
                                             <div className="flex items-start justify-between gap-3 mb-3">
                                                 <h3 className="font-semibold text-lg text-foreground line-clamp-1 group-hover:text-primary transition-colors">
                                                     {auction.title}

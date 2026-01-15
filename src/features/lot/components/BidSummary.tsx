@@ -50,20 +50,20 @@ const BidSummary = ({
   }, [endTime]);
 
   return (
-    <div className="bg-card border border-border rounded-xl p-6 space-y-5">
+    <div className="bg-card border border-border rounded-xl p-4 md:p-6 space-y-5">
       {/* Time Remaining */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-muted-foreground">
-          <Clock className="h-5 w-5" />
-          <span className="text-sm font-medium">Time Remaining</span>
+          <Clock className="h-4 w-4 md:h-5 md:w-5" />
+          <span className="text-xs md:text-sm font-medium">Time Remaining</span>
         </div>
-        <span className="text-lg font-bold text-destructive">{timeRemaining}</span>
+        <span className="text-base md:text-lg font-bold text-destructive">{timeRemaining}</span>
       </div>
 
       {/* Current Bid */}
-      <div className="border-t border-border pt-5">
-        <p className="text-sm text-muted-foreground mb-1">Current Bid</p>
-        <p className="text-3xl font-bold text-foreground">
+      <div className="border-t border-border pt-3 md:pt-5">
+        <p className="text-xs md:text-sm text-muted-foreground mb-1">Current Bid</p>
+        <p className="text-2xl md:text-3xl font-bold text-foreground">
           ${currentBid.toLocaleString()}
         </p>
       </div>
@@ -71,17 +71,17 @@ const BidSummary = ({
       {/* Bids Count */}
       <div className="flex items-center gap-2 text-muted-foreground">
         <Gavel className="h-4 w-4" />
-        <span className="text-sm">{bidsCount} bids placed</span>
+        <span className="text-xs md:text-sm">{bidsCount} bids placed</span>
       </div>
 
       {/* Indicators */}
-      <div className="flex flex-wrap gap-2 pt-2">
-        <Badge variant="secondary" className="gap-1.5">
+      <div className="flex flex-wrap gap-2 pt-0 sm:pt-2">
+        <Badge variant="secondary" className="gap-1.5 text-[10px] sm:text-xs py-px sm:py-0.5">
           <AlertCircle className="h-3.5 w-3.5" />
           {closeType}
         </Badge>
         {shippingAvailable && (
-          <Badge variant="outline" className="gap-1.5">
+          <Badge variant="outline" className="gap-1.5 text-[10px] sm:text-xs py-px sm:py-0.5">
             <Truck className="h-3.5 w-3.5" />
             Shipping Available
           </Badge>

@@ -33,19 +33,19 @@ const CategorySelection = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-foreground">What do you like to shop for?</h2>
-        <p className="text-sm text-muted-foreground mt-1">Select all that apply</p>
+        <h2 className="text-lg sm:text-xl font-semibold text-foreground">What do you like to shop for?</h2>
+        <p className="text-xs sm:text-sm text-muted-foreground mt-1">Select all that apply</p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-1.5 sm:gap-2">
         {categories.map((category) => (
           <Button
             key={category}
             variant={selectedCategories.includes(category) ? "default" : "outline"}
             onClick={() => toggleCategory(category)}
-            className="h-auto py-2.5 text-sm text-left justify-start transition-all hover:scale-[1.02]"
+            className="h-auto py-2 sm:py-2.5 px-2 sm:px-3 text-xs sm:text-sm text-left justify-start transition-all hover:scale-[1.02] whitespace-normal leading-tight"
           >
             {category}
           </Button>

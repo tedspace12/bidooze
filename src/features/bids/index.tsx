@@ -18,6 +18,7 @@ import AuctionCard from "../auctions/components/AuctionCard";
 import AuctionGroupHeader from "./components/AuctionGroupHeader";
 import BidsFilters from "./components/BidsFilters";
 import BidsSummary from "./components/BidsSummary";
+import FilterDrawer from "@/components/shared/FilterDrawer";
 
 // Mock data
 const mockBidStats = {
@@ -190,24 +191,59 @@ const Bids = () => {
 
     const uniqueAuctioneers = [...new Set(mockAuctions.map(a => a.auctioneer.name))];
 
+    const activeFiltersCount =
+        (auctionFilter !== "all" ? 1 : 0) +
+        (statusFilter !== "all" ? 1 : 0) +
+        (hideClosedLots ? 1 : 0);
+
+    const clearFilters = () => {
+        setAuctionFilter("all");
+        setStatusFilter("all");
+        setGroupByAuction(true);
+        setHideClosedLots(false);
+        setPastBidsFilter("3");
+    };
+
     return (
-        <main className="container mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold text-foreground mb-6">My Bids & Activity</h1>
+        <main className="container mx-auto px-4 py-6 md:py-8">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-4 md:mb-6">My Bids & Activity</h1>
 
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="mb-6">
-                    <TabsTrigger value="my-bids">My Bids</TabsTrigger>
-                    <TabsTrigger value="top-picks">Top Picks</TabsTrigger>
-                    <TabsTrigger value="my-auctions">My Auctions</TabsTrigger>
+                <TabsList className="mb-4 md:mb-6 w-full sm:w-auto overflow-x-auto">
+                    <TabsTrigger value="my-bids" className="text-xs sm:text-sm">My Bids</TabsTrigger>
+                    <TabsTrigger value="top-picks" className="text-xs sm:text-sm">Top Picks</TabsTrigger>
+                    <TabsTrigger value="my-auctions" className="text-xs sm:text-sm">My Auctions</TabsTrigger>
                 </TabsList>
 
                 {/* MY BIDS TAB */}
                 <TabsContent value="my-bids">
                     <BidsSummary stats={mockBidStats} onRefresh={handleRefresh} />
 
-                    <div className="flex gap-6">
-                        {/* Sidebar Filters */}
-                        <aside className="w-64 shrink-0 hidden lg:block">
+                    <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+                        {/* Mobile Filter Button */}
+                        <div className="lg:hidden">
+                            <FilterDrawer
+                                title="Filter Bids"
+                                activeFiltersCount={activeFiltersCount}
+                                onClear={clearFilters}
+                            >
+                                <BidsFilters
+                                    auctionFilter={auctionFilter}
+                                    statusFilter={statusFilter}
+                                    groupByAuction={groupByAuction}
+                                    hideClosedLots={hideClosedLots}
+                                    pastBidsFilter={pastBidsFilter}
+                                    onAuctionFilterChange={setAuctionFilter}
+                                    onStatusFilterChange={setStatusFilter}
+                                    onGroupByAuctionChange={setGroupByAuction}
+                                    onHideClosedLotsChange={setHideClosedLots}
+                                    onPastBidsFilterChange={setPastBidsFilter}
+                                />
+                            </FilterDrawer>
+                        </div>
+
+                        {/* Desktop Sidebar Filters */}
+                        <aside className="hidden w-64 shrink-0 lg:block">
                             <div className="bg-card border border-border rounded-lg p-4">
                                 <h3 className="font-semibold mb-4">Filters</h3>
                                 <BidsFilters
@@ -228,10 +264,10 @@ const Bids = () => {
                         {/* Main Content */}
                         <div className="flex-1">
                             {/* Sorting & View Controls */}
-                            <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
-                                <div className="flex items-center gap-3">
+                            <div className="flex items-center justify-between mb-4 md:mb-6 flex-wrap gap-3">
+                                <div className="flex items-center gap-2 sm:gap-3">
                                     <Select value={sortBy} onValueChange={setSortBy}>
-                                        <SelectTrigger className="w-[180px]">
+                                        <SelectTrigger className="w-[140px] sm:w-[180px] text-xs sm:text-sm">
                                             <SelectValue placeholder="Sort by" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -245,29 +281,30 @@ const Bids = () => {
                                         variant="outline"
                                         size="icon"
                                         onClick={() => setSortDirection(sortDirection === "asc" ? "desc" : "asc")}
+                                        className="shrink-0"
                                     >
                                         <ArrowUpDown className={`h-4 w-4 ${sortDirection === "desc" ? "rotate-180" : ""}`} />
                                     </Button>
                                 </div>
 
-                                <div className="flex items-center gap-3">
-                                    <span className="text-sm text-muted-foreground">{mockLots.length} lots</span>
+                                <div className="flex items-center gap-2 sm:gap-3">
+                                    <span className="text-xs sm:text-sm text-muted-foreground hidden sm:inline">{mockLots.length} lots</span>
                                     <div className="flex border border-border rounded-lg overflow-hidden">
                                         <Button
                                             variant={viewMode === "grid" ? "secondary" : "ghost"}
                                             size="icon"
                                             onClick={() => setViewMode("grid")}
-                                            className="rounded-none"
+                                            className="rounded-none h-8 w-8 sm:h-9 sm:w-9"
                                         >
-                                            <Grid3x3 className="h-4 w-4" />
+                                            <Grid3x3 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                                         </Button>
                                         <Button
                                             variant={viewMode === "list" ? "secondary" : "ghost"}
                                             size="icon"
                                             onClick={() => setViewMode("list")}
-                                            className="rounded-none"
+                                            className="rounded-none h-8 w-8 sm:h-9 sm:w-9"
                                         >
-                                            <List className="h-4 w-4" />
+                                            <List className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                                         </Button>
                                     </div>
                                 </div>
@@ -275,13 +312,13 @@ const Bids = () => {
 
                             {/* Lots Display */}
                             {groupByAuction ? (
-                                <div className="space-y-8">
+                                <div className="space-y-6 md:space-y-8">
                                     {mockAuctionGroups.map((group) => (
                                         <div key={group.id}>
                                             <AuctionGroupHeader auction={group} />
                                             <div className={viewMode === "grid"
-                                                ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-                                                : "space-y-4"
+                                                ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6"
+                                                : "space-y-3 md:space-y-4"
                                             }>
                                                 {group.lots.map((lot) => (
                                                     <LotCard
@@ -299,8 +336,8 @@ const Bids = () => {
                                 </div>
                             ) : (
                                 <div className={viewMode === "grid"
-                                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-                                    : "space-y-4"
+                                    ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6"
+                                    : "space-y-3 md:space-y-4"
                                 }>
                                     {mockLots.map((lot) => (
                                         <LotCard
@@ -321,31 +358,31 @@ const Bids = () => {
 
                 {/* TOP PICKS TAB */}
                 <TabsContent value="top-picks">
-                    <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center justify-between mb-4 md:mb-6 flex-wrap gap-3">
                         <span className="text-sm text-muted-foreground">{mockLots.length} recommended lots</span>
                         <div className="flex border border-border rounded-lg overflow-hidden">
                             <Button
                                 variant={viewMode === "grid" ? "secondary" : "ghost"}
                                 size="icon"
                                 onClick={() => setViewMode("grid")}
-                                className="rounded-none"
+                                className="rounded-none h-8 w-8 sm:h-9 sm:w-9"
                             >
-                                <Grid3x3 className="h-4 w-4" />
+                                <Grid3x3 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                             </Button>
                             <Button
                                 variant={viewMode === "list" ? "secondary" : "ghost"}
                                 size="icon"
                                 onClick={() => setViewMode("list")}
-                                className="rounded-none"
+                                className="rounded-none h-8 w-8 sm:h-9 sm:w-9"
                             >
-                                <List className="h-4 w-4" />
+                                <List className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                             </Button>
                         </div>
                     </div>
 
                     <div className={viewMode === "grid"
-                        ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-                        : "space-y-4"
+                        ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6"
+                        : "space-y-3 md:space-y-4"
                     }>
                         {mockLots.map((lot) => (
                             <LotCard
@@ -361,21 +398,21 @@ const Bids = () => {
 
                 {/* MY AUCTIONS TAB */}
                 <TabsContent value="my-auctions">
-                    <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between mb-4 md:mb-6 gap-3">
                         <span className="text-sm text-muted-foreground">{filteredAuctions.length} auctions</span>
 
-                        <div className="flex items-center gap-3 flex-1">
-                            <div className="relative flex-1 max-w-md">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
+                            <div className="relative flex-1 sm:max-w-md">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input
                                     placeholder="Search auctions..."
                                     value={auctionSearch}
                                     onChange={(e) => setAuctionSearch(e.target.value)}
-                                    className="pl-10"
+                                    className="pl-10 text-sm md:text-base"
                                 />
                             </div>
                             <Select value={auctioneerFilter} onValueChange={setAuctioneerFilter}>
-                                <SelectTrigger className="w-[200px]">
+                                <SelectTrigger className="w-full sm:w-[200px]">
                                     <SelectValue placeholder="Filter by auctioneer" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -388,31 +425,31 @@ const Bids = () => {
                         </div>
 
                         {/* View Toggle */}
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="hidden md:flex items-center justify-end gap-2">
                             <span className="text-sm text-muted-foreground">View:</span>
                             <Button
                                 variant={auctionViewMode === "grid" ? "default" : "outline"}
                                 size="icon"
                                 onClick={() => setAuctionViewMode("grid")}
-                                className="h-9 w-9"
+                                className="h-8 w-8 sm:h-9 sm:w-9"
                             >
-                                <Grid3X3 className="h-4 w-4" />
+                                <Grid3X3 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                             </Button>
                             <Button
                                 variant={auctionViewMode === "list" ? "default" : "outline"}
                                 size="icon"
                                 onClick={() => setAuctionViewMode("list")}
-                                className="h-9 w-9"
+                                className="h-8 w-8 sm:h-9 sm:w-9"
                             >
-                                <List className="h-4 w-4" />
+                                <List className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                             </Button>
                         </div>
                     </div>
 
                     <div className={
                         auctionViewMode === "grid"
-                            ? "grid grid-cols-1 md:grid-cols-3 gap-6"
-                            : "space-y-6"
+                            ? "grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6"
+                            : "space-y-4 md:space-y-6"
                     }>
                         {filteredAuctions.map((auction) => (
                             <AuctionCard key={auction.id} auction={auction} isRegistered={true} viewMode={auctionViewMode} />

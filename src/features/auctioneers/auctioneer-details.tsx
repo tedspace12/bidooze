@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { 
-  MapPin, 
-  Phone, 
-  Mail, 
-  Star, 
-  Grid3X3, 
+import {
+  MapPin,
+  Phone,
+  Mail,
+  Star,
+  Grid3X3,
   List,
   Facebook,
   Twitter,
@@ -16,6 +16,9 @@ import {
   Linkedin
 } from "lucide-react";
 import AuctionCard from "../auctions/components/AuctionCard";
+import Link from "next/link";
+import { useIsMobile } from "@/hooks/use-mobile";
+import FilterDrawer from "@/components/shared/FilterDrawer";
 
 const mockAuctioneer = {
   id: "1",
@@ -118,139 +121,153 @@ const statusOptions = [
 ];
 
 const AuctioneerDetails = () => {
-//   const { id } = useParams();
+  //   const { id } = useParams();
   const [isFavorite, setIsFavorite] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [statusFilter, setStatusFilter] = useState("all");
+  const isMobile = useIsMobile();
 
-  const filteredAuctions = mockAuctions.filter(auction => 
+  const filteredAuctions = mockAuctions.filter(auction =>
     statusFilter === "all" || auction.status === statusFilter
   );
 
-  return (
-      <main className="container mx-auto px-4 py-8">
-        {/* Auctioneer Header */}
-        <div className="bg-card border border-border rounded-xl p-8 mb-8">
-          <div className="flex flex-col md:flex-row gap-8">
-            <Avatar className="h-32 w-32 shrink-0">
-              <AvatarImage src={mockAuctioneer.logo} />
-              <AvatarFallback className="text-4xl">{mockAuctioneer.name[0]}</AvatarFallback>
-            </Avatar>
-            
-            <div className="flex-1">
-              <div className="flex items-start justify-between gap-4 mb-4">
-                <h1 className="text-3xl font-bold text-foreground">{mockAuctioneer.name}</h1>
-                <Button
-                  variant={isFavorite ? "default" : "outline"}
-                  onClick={() => setIsFavorite(!isFavorite)}
-                >
-                  <Star className={`h-4 w-4 mr-2 ${isFavorite ? "fill-current" : ""}`} />
-                  {isFavorite ? "Favorited" : "Add to Favorites"}
-                </Button>
-              </div>
-              
-              <p className="text-muted-foreground mb-6">{mockAuctioneer.description}</p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div className="flex items-start gap-3">
-                  <MapPin className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-                  <span className="text-foreground">{mockAuctioneer.address}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Phone className="h-5 w-5 text-muted-foreground" />
-                  <a href={`tel:${mockAuctioneer.phone}`} className="text-foreground hover:text-primary">
-                    {mockAuctioneer.phone}
-                  </a>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Mail className="h-5 w-5 text-muted-foreground" />
-                  <a href={`mailto:${mockAuctioneer.email}`} className="text-foreground hover:text-primary">
-                    {mockAuctioneer.email}
-                  </a>
-                </div>
-              </div>
+  const activeFilterCount = statusFilter !== "all" ? 1 : 0;
 
-              {/* Social Links */}
-              <div className="flex gap-3">
-                <a href={mockAuctioneer.socialLinks.facebook} target="_blank" rel="noopener noreferrer" 
-                   className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors">
-                  <Facebook className="h-5 w-5 text-foreground" />
-                </a>
-                <a href={mockAuctioneer.socialLinks.twitter} target="_blank" rel="noopener noreferrer"
-                   className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors">
-                  <Twitter className="h-5 w-5 text-foreground" />
-                </a>
-                <a href={mockAuctioneer.socialLinks.instagram} target="_blank" rel="noopener noreferrer"
-                   className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors">
-                  <Instagram className="h-5 w-5 text-foreground" />
-                </a>
-                <a href={mockAuctioneer.socialLinks.linkedin} target="_blank" rel="noopener noreferrer"
-                   className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors">
-                  <Linkedin className="h-5 w-5 text-foreground" />
-                </a>
+  const FilterContent = (
+    <div className="space-y-4">
+      <h4 className="text-sm font-medium text-foreground mb-3">Auction Status</h4>
+      <div className="flex flex-col gap-2">
+        {statusOptions.map(option => (
+          <Button key={option.value} variant={statusFilter === option.value ? "default" : "outline"} size="sm" onClick={() => setStatusFilter(option.value)} className="justify-start">
+            {option.label}
+          </Button>
+        ))}
+      </div>
+    </div>
+  );
+
+  return (
+    <main className="container mx-auto px-4 py-6 md:py-8">
+      {/* Auctioneer Header */}
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-6 md:p-8 mb-6 md:mb-8">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+          <Avatar className="h-20 w-20 sm:h-24 sm:w-24 md:h-32 md:w-32 shrink-0">
+            <AvatarImage src={mockAuctioneer.logo} />
+            <AvatarFallback className="text-2xl md:text-4xl">{mockAuctioneer.name[0]}</AvatarFallback>
+          </Avatar>
+
+          <div className="flex-1 text-center sm:text-left">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">{mockAuctioneer.name}</h1>
+              <Button variant={isFavorite ? "default" : "outline"} onClick={() => setIsFavorite(!isFavorite)} size="sm" className="w-full sm:w-auto shrink-0">
+                <Star className={`h-4 w-4 mr-2 ${isFavorite ? "fill-current" : ""}`} />
+                {isFavorite ? "Favorited" : "Add to Favorites"}
+              </Button>
+            </div>
+
+            <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6">{mockAuctioneer.description}</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-4 sm:mb-6">
+              <div className="flex items-start gap-2 sm:gap-3 justify-center sm:justify-start">
+                <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0 mt-0.5" />
+                <span className="text-foreground text-sm">{mockAuctioneer.address}</span>
               </div>
+              <div className="flex items-center gap-3">
+                <Phone className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                <Link href={`tel:${mockAuctioneer.phone}`} className="text-foreground hover:text-primary text-sm">
+                  {mockAuctioneer.phone}
+                </Link>
+              </div>
+              <div className="flex items-center gap-3">
+                <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                <Link href={`mailto:${mockAuctioneer.email}`} className="text-foreground hover:text-primary text-sm">
+                  {mockAuctioneer.email}
+                </Link>
+              </div>
+            </div>
+
+            {/* Social Links */}
+            <div className="flex gap-2 sm:gap-3 justify-center sm:justify-start">
+              <Link href={mockAuctioneer.socialLinks.facebook} target="_blank" rel="noopener noreferrer"
+                className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors">
+                <Facebook className="h-4 w-4 sm:h-5 sm:not-first:w-5 text-foreground" />
+              </Link>
+              <Link href={mockAuctioneer.socialLinks.twitter} target="_blank" rel="noopener noreferrer"
+                className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors">
+                <Twitter className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+              </Link>
+              <Link href={mockAuctioneer.socialLinks.instagram} target="_blank" rel="noopener noreferrer"
+                className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors">
+                <Instagram className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+              </Link>
+              <Link href={mockAuctioneer.socialLinks.linkedin} target="_blank" rel="noopener noreferrer"
+                className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors">
+                <Linkedin className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+              </Link>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Auctions Section */}
-        <div>
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-            <h2 className="text-2xl font-bold text-foreground">
-              Auctions by {mockAuctioneer.name}
-            </h2>
-            
-            <div className="flex items-center gap-4">
-              {/* Status Filter */}
+      {/* Auctions Section */}
+      <div>
+        <div className="flex flex-col gap-4 mb-6">
+          <h2 className="text-xl md:text-2xl font-bold text-foreground">
+            Auctions by {mockAuctioneer.name}
+          </h2>
+
+          <div className="flex items-center justify-between gap-3">
+            {/* Status Filter */}
+            {isMobile ? (
+              <FilterDrawer title="Filter Auctions" activeFiltersCount={activeFilterCount} onClear={() => setStatusFilter("all")}>
+                {FilterContent}
+              </FilterDrawer>
+            ) : (
               <div className="flex gap-2 flex-wrap">
                 {statusOptions.map(option => (
-                  <Button
-                    key={option.value}
-                    variant={statusFilter === option.value ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setStatusFilter(option.value)}
-                  >
+                  <Button key={option.value} variant={statusFilter === option.value ? "default" : "outline"} size="sm" onClick={() => setStatusFilter(option.value)}>
                     {option.label}
                   </Button>
                 ))}
               </div>
-              
-              {/* View Toggle */}
-              <div className="flex border border-border rounded-lg overflow-hidden">
-                <button
-                  onClick={() => setViewMode("grid")}
-                  className={`p-2 ${viewMode === "grid" ? "bg-primary text-primary-foreground" : "bg-background hover:bg-muted"}`}
-                >
-                  <Grid3X3 className="h-4 w-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={`p-2 ${viewMode === "list" ? "bg-primary text-primary-foreground" : "bg-background hover:bg-muted"}`}
-                >
-                  <List className="h-4 w-4" />
-                </button>
-              </div>
+            )}
+
+            {/* View Toggle */}
+            <div className="hidden md:flex border border-border rounded-lg overflow-hidden shrink-0">
+              <button
+                onClick={() => setViewMode("grid")}
+                className={`p-2 ${viewMode === "grid" ? "bg-primary text-primary-foreground" : "bg-background hover:bg-muted"}`}
+              >
+                <Grid3X3 className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setViewMode("list")}
+                className={`p-2 ${viewMode === "list" ? "bg-primary text-primary-foreground" : "bg-background hover:bg-muted"}`}
+              >
+                <List className="h-4 w-4" />
+              </button>
             </div>
           </div>
-
-          {/* Auctions */}
-          {filteredAuctions.length > 0 ? (
-            <div className={
-              viewMode === "grid" 
-              ? "grid grid-cols-1 md:grid-cols-2 gap-6" 
-              : "space-y-6"
-            }>
-              {filteredAuctions.map(auction => (
-                <AuctionCard key={auction.id} auction={auction} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12 bg-card border border-border rounded-xl">
-              <p className="text-muted-foreground">No auctions found with the selected status.</p>
-            </div>
-          )}
         </div>
-      </main>
+
+        {/* Auctions */}
+        {filteredAuctions.length > 0 ? (
+          <div className={
+            viewMode === "grid"
+              ? "grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6"
+              : "space-y-4 md:space-y-6"
+          }>
+            {filteredAuctions.map(auction => (
+              <AuctionCard key={auction.id} auction={auction}viewMode={viewMode} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 bg-card border border-border rounded-xl">
+            <p className="text-muted-foreground">No auctions found with the selected status.</p>
+          </div>
+        )}
+      </div>
+    </main>
   );
 };
 

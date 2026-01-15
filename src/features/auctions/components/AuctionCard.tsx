@@ -45,6 +45,7 @@ interface AuctionCardProps {
     auction: Auction;
     isRegistered?: boolean;
     viewMode?: 'list' | 'grid';
+    page?: 'auctions' | 'regular';
 }
 
 const statusConfig = {
@@ -57,7 +58,7 @@ const statusConfig = {
     closed: { label: "Closed", className: "bg-muted text-muted-foreground" },
 };
 
-const AuctionCard = ({ auction, isRegistered = false, viewMode = 'list' }: AuctionCardProps) => {
+const AuctionCard = ({ auction, isRegistered = false, viewMode = 'list', page = 'regular' }: AuctionCardProps) => {
     const [countdown, setCountdown] = useState("");
     const router = useRouter();
 
@@ -101,21 +102,27 @@ const AuctionCard = ({ auction, isRegistered = false, viewMode = 'list' }: Aucti
 
     return (
         <div className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-shadow">
-            <div className={cn("flex flex-col md:flex-row",
-                viewMode === 'grid' && 'md:flex-col'
+            <div className={cn("flex flex-col xl:flex-row",
+                // viewMode === 'grid' && 'md:flex-col',
+                viewMode === 'list' && 'md:flex-row',
+                page === 'auctions' && viewMode === 'grid' && 'xl:flex-col'
             )}>
                 {/* Cover Image */}
                 <div className={cn(
-                    "relative shrink-0",
-                    viewMode === "list"
-                        ? "md:w-72 lg:w-80"
-                        : "w-full"
+                    "relative xl:w-80 shrink-0",
+                    viewMode === "list" && "md:w-72 lg:w-80",
+                    page === 'auctions' && viewMode === 'grid' && "xl:w-full",
+                    // viewMode === "list"
+                    //     ? "md:w-72 lg:w-80"
+                    //     : "w-full"
                 )}>
                     <div className={cn(
-                        "overflow-hidden",
-                        viewMode === "list"
-                            ? "aspect-4/3 md:aspect-auto md:h-full"
-                            : "aspect-6/3"
+                        "overflow-hidden aspect-6/3 md:aspect-4/3 lg:aspect-6/3 xl:aspect-auto lg:h-full",
+                        viewMode === "list" && "md:aspect-auto lg:aspect-auto md:h-full",
+                        page === 'auctions' && viewMode === 'grid' && "xl:aspect-6/3 xl:h-auto"
+                        // viewMode === "list"
+                        //     ? "aspect-6/3 md:aspect-auto md:h-full"
+                        //     : "aspect-6/3"
                     )}>
                         <Image
                             src={auction.coverImage}
@@ -124,12 +131,12 @@ const AuctionCard = ({ auction, isRegistered = false, viewMode = 'list' }: Aucti
                             height={500}
                             className="w-full h-full object-cover"
                         />
-                        <Badge className={`absolute top-3 left-3 ${statusConfig[auction.status].className}`}>
+                        <Badge className={`absolute top-3 left-3 ${statusConfig[auction.status].className} text-[10px] md:text-xs py-px md:py-0.5`}>
                             {statusConfig[auction.status].label}
                         </Badge>
                         {auction.status === "closing-soon" && countdown && (
                             <div className="absolute bottom-3 left-3 bg-background/90 backdrop-blur-sm px-3 py-1.5 rounded-lg">
-                                <div className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                                <div className="flex items-center gap-1.5 text-xs md:text-sm font-medium text-foreground">
                                     <Clock className="h-3.5 w-3.5 text-amber-500" />
                                     {countdown}
                                 </div>
@@ -139,10 +146,10 @@ const AuctionCard = ({ auction, isRegistered = false, viewMode = 'list' }: Aucti
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 p-5 flex flex-col">
+                <div className="flex-1 p-3 md:p-5 flex flex-col">
                     <div className="flex items-start justify-between gap-4 mb-3">
                         <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-foreground mb-1 line-clamp-1">
+                            <h3 className="text-base md:text-lg font-semibold text-foreground mb-1 line-clamp-1">
                                 {auction.title}
                             </h3>
                             <div className="flex items-center gap-2">
@@ -150,7 +157,7 @@ const AuctionCard = ({ auction, isRegistered = false, viewMode = 'list' }: Aucti
                                     <AvatarImage src={auction.auctioneer.avatar} />
                                     <AvatarFallback>{auction.auctioneer.name[0]}</AvatarFallback>
                                 </Avatar>
-                                <span className="text-sm text-muted-foreground">{auction.auctioneer.name}</span>
+                                <span className="text-xs md:text-sm text-muted-foreground">{auction.auctioneer.name}</span>
                             </div>
                         </div>
                         <Button variant="ghost" size="icon" onClick={handleShare} className="shrink-0">
@@ -158,15 +165,15 @@ const AuctionCard = ({ auction, isRegistered = false, viewMode = 'list' }: Aucti
                         </Button>
                     </div>
 
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{auction.description}</p>
+                    <p className="text-xs md:text-sm text-muted-foreground line-clamp-2 mb-4">{auction.description}</p>
 
                     {/* Date Range */}
-                    <div className="text-sm text-muted-foreground mb-3">
+                    <div className="text-xs md:text-sm text-muted-foreground mb-3">
                         {formatDateWithOrdinal(new Date(auction.startDate))} - {formatDateWithOrdinal(new Date(auction.endDate))}
                     </div>
 
                     {/* Meta Info */}
-                    <div className="flex flex-wrap gap-4 mb-4 text-sm">
+                    <div className="flex flex-wrap gap-4 mb-4 text-xs md:text-sm">
                         <div className="flex items-center gap-1.5 text-muted-foreground">
                             <Layers className="h-3.5 w-3.5" />
                             <span>{auction.totalLots} Lots</span>
@@ -218,17 +225,17 @@ const AuctionCard = ({ auction, isRegistered = false, viewMode = 'list' }: Aucti
                     {/* Actions */}
                     <div className="flex items-center gap-3 mt-auto pt-4 border-t border-border">
                         <Link href={`/auction/${auction.id}`} className="flex-1">
-                            <Button variant="outline" className="w-full">
+                            <Button variant="outline" className="w-full text-xs md:text-sm">
                                 View Catalog
                             </Button>
                         </Link>
                         {isRegistered ? (
-                            <Button className="flex-1 gap-2" variant="outline" disabled>
+                            <Button className="flex-1 gap-2 text-xs md:text-sm" variant="outline" disabled>
                                 <CheckCircle className="h-4 w-4 text-emerald-500" />
                                 Registered
                             </Button>
                         ) : (
-                            <Button className="flex-1 bg-primary hover:bg-primary/90" onClick={handleRegisterClick}>
+                            <Button className="flex-1 bg-primary hover:bg-primary/90 text-xs md:text-sm" onClick={handleRegisterClick}>
                                 Register to Bid
                             </Button>
                         )}

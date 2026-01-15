@@ -3,6 +3,8 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, Eye } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import SectionHeader from "@/components/shared/SectionHeader";
+import { useRouter } from "next/navigation";
 
 const featuredAuctions = [
     {
@@ -56,20 +58,22 @@ const featuredAuctions = [
 ];
 
 const FeaturedAuctions = () => {
+    const router = useRouter();
+
     return (
-        <div className="container mx-auto px-4 py-12">
-            <div className="flex items-center justify-between mb-8">
-                <div>
-                    <h2 className="text-3xl font-bold text-foreground">Featured Auctions Items</h2>
-                    <p className="text-muted-foreground mt-2">Handpicked premium auctions ending soon</p>
-                </div>
-                {/* <Button variant="outline">View All</Button> */}
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="container mx-auto px-4 py-8 sm:py-12">
+            <SectionHeader
+                title="Featured Auction Items"
+                description="Handpicked premium items ending soon"
+                actionLabel="View All"
+                onAction={() => router.push('/auctions')}
+            />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {featuredAuctions.map((auction) => (
                     <Link key={auction.id} href={`/lot/${auction.id}`}>
                         <Card key={auction.id} className="overflow-hidden group cursor-pointer hover:shadow-xl transition-all">
-                            <div className="relative h-64 overflow-hidden">
+                            <div className="relative h-52 md:h-64 overflow-hidden">
                                 <Image
                                     src={auction.image}
                                     alt={auction.title}
@@ -78,18 +82,18 @@ const FeaturedAuctions = () => {
                                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                 />
                                 <button className="absolute top-4 right-4 p-2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors">
-                                    <Eye className="h-4 w-4" />
+                                    <Eye className="h-3.5 w-3.5 md:h-4 md:w-4" />
                                 </button>
                             </div>
-                            <div className="p-5 space-y-3">
-                                <h3 className="font-semibold text-lg line-clamp-1">{auction.title}</h3>
+                            <div className="p-3 md:p-5 space-y-2 md:space-y-3">
+                                <h3 className="font-semibold text-base md:text-lg line-clamp-1">{auction.title}</h3>
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm text-muted-foreground">Current Bid</p>
-                                        <p className="text-xl font-bold text-primary">{auction.currentBid}</p>
+                                        <p className="text-xs md:text-sm text-muted-foreground">Current Bid</p>
+                                        <p className="text-lg md:text-xl font-bold text-primary">{auction.currentBid}</p>
                                     </div>
                                     <div className="text-right">
-                                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                        <div className="flex items-center gap-1 text-xs md:text-sm text-muted-foreground">
                                             <Clock className="h-3.5 w-3.5" />
                                             {auction.endTime}
                                         </div>

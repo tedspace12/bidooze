@@ -4,8 +4,8 @@ import Image from "next/image";
 
 const Footer = () => {
   return (
-    <footer className="bg-primary/20 border-t border-primary/30 mt-16">
-      <div className="container mx-auto px-4 py-12">
+    <footer className="bg-primary/20 border-t border-primary/30 mt-12 md:mt-16">
+      <div className="container mx-auto px-4 py-10 md:py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-8">
           {/* Logo and Social */}
           <div className="lg:col-span-1">
@@ -14,7 +14,7 @@ const Footer = () => {
               alt="Bidooze Logo"
               width={500}
               height={500}
-              className="h-10 w-auto mb-6"
+              className="h-8 sm:h-10 w-auto mb-6"
             />
             <div className="flex items-center gap-4">
               <Link

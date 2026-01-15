@@ -5,8 +5,8 @@ const StateList = ({ states }: { states: { id: string; name: string; d: string }
   const router = useRouter();
 
   return (
-    <section className="mt-10">
-      <h2 className="text-lg font-semibold mb-4">Browse by State</h2>
+    <section className="mt-2 xl:mt-10">
+      <h2 className="text-base md:text-lg font-semibold mb-4">Browse by State</h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-3">
         {states.map((state) => (

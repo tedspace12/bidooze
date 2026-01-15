@@ -40,7 +40,7 @@ const FeaturedLotsSlider = ({ lots }: FeaturedLotsSliderProps) => {
 
     return (
         <section className="mb-10">
-            <h2 className="text-xl font-semibold text-foreground mb-4">Featured Lots</h2>
+            <h2 className="text-lg md:text-xl font-semibold text-foreground mb-4">Featured Lots</h2>
 
             <Carousel
                 opts={{

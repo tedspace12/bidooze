@@ -41,7 +41,7 @@ export const CanadaMap = () => {
     }
 
     return (
-        <div className="relative w-full max-w-5xl h-[1250px] mx-auto aspect-video -mt-44">
+        <div className="relative hidden xl:block w-full max-w-5xl h-[1250px] mx-auto aspect-video -mt-44">
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 xmlnsXlink="http://www.w3.org/1999/xlink"

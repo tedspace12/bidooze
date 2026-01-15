@@ -10,6 +10,7 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import { Button } from "@/components/ui/button";
 import { Grid3X3, List } from "lucide-react";
 import Link from "next/link";
+import FilterDrawer from "@/components/shared/FilterDrawer";
 
 const mockLots = [
     {
@@ -189,6 +190,19 @@ const Lots = () => {
         });
     }, [filters]);
 
+    const activeFiltersCount = useMemo(() => {
+        let count = 0;
+        if (filters.search) count++;
+        if (filters.zipCode) count++;
+        if (filters.distance !== "50") count++;
+        if (filters.status.length > 0 && !filters.status.includes("live")) count++;
+        if (filters.shipping.length > 0) count++;
+        if (filters.dateRange) count++;
+        if (filters.categories.length > 0) count += filters.categories.length;
+        if (filters.lotType.length > 0) count++;
+        return count;
+    }, [filters]);
+
     const totalPages = Math.ceil(filteredLots.length / itemsPerPage);
     const paginatedLots = filteredLots.slice(
         (currentPage - 1) * itemsPerPage,
@@ -196,9 +210,9 @@ const Lots = () => {
     );
 
     return (
-        <main className="container mx-auto px-4 py-8">
+        <main className="container mx-auto px-4 py-6 md:py-8">
             {/* Breadcrumb */}
-            <Breadcrumb className="mb-6">
+            <Breadcrumb className="mb-4 md:mb-6">
                 <BreadcrumbList>
                     <BreadcrumbItem>
                         <BreadcrumbLink href="/">Home</BreadcrumbLink>
@@ -210,11 +224,11 @@ const Lots = () => {
                 </BreadcrumbList>
             </Breadcrumb>
 
-            <div className="flex justify-between">
+            <div className="flex flex-col sm:flex-row sm:justify-between gap-4 mb-6 md:mb-8">
                 {/* Page Header */}
-                <div className="mb-8">
-                    <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">Lots</h1>
-                    <p className="text-muted-foreground">
+                <div>
+                    <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-1 md:mb-2">Lots</h1>
+                    <p className="text-sm md:text-base text-muted-foreground">
                         {filteredLots.length} lot{filteredLots.length !== 1 ? "s" : ""} found
                     </p>
 
@@ -234,8 +248,8 @@ const Lots = () => {
                 </div>
 
 
-                {/* View Toggle */}
-                <div className="flex items-center justify-end gap-2 mb-4">
+                {/* View Toggle - only visible on medium screens */}
+                <div className="hidden md:flex items-center justify-end gap-2 mb-4">
                     <span className="text-sm text-muted-foreground">View:</span>
                     <Button
                         variant={viewMode === "grid" ? "default" : "outline"}
@@ -254,11 +268,19 @@ const Lots = () => {
                         <List className="h-4 w-4" />
                     </Button>
                 </div>
+
+                {/* Mobile Filter Button */}
+                <FilterDrawer
+                    activeFiltersCount={activeFiltersCount}
+                // onClear={clearFilters}
+                >
+                    <AuctionFilters filters={filters} onFiltersChange={setFilters} type="lot" />
+                </FilterDrawer>
             </div>
 
-            <div className="flex flex-col lg:flex-row gap-8">
+            <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
                 {/* Filters Sidebar */}
-                <aside className="lg:w-80 shrink-0">
+                <aside className="hidden lg:block lg:w-70 2xl:w-80 shrink-0">
                     <AuctionFilters filters={filters} onFiltersChange={setFilters} type="lot" />
                 </aside>
 
@@ -266,8 +288,8 @@ const Lots = () => {
                 <div className="flex-1">
                     <div className={
                         viewMode === "grid"
-                            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8"
-                            : "flex flex-col gap-4 mb-8"
+                            ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6 md:mb-8"
+                            : "flex flex-col gap-4 mb-6 md:mb-8"
                     }>
                         {paginatedLots.map((lot) => (
                             <LotCard key={lot.id} lot={lot} viewMode={viewMode} isRegistered />
@@ -275,15 +297,15 @@ const Lots = () => {
                     </div>
 
                     {paginatedLots.length === 0 && (
-                        <div className="text-center py-16 bg-card border border-border rounded-xl">
-                            <p className="text-muted-foreground text-lg">No lots match your filters.</p>
+                        <div className="text-center py-12 md:py-16 bg-card border border-border rounded-xl">
+                            <p className="text-muted-foreground text-base md:text-lg">No lots match your filters.</p>
                             <p className="text-sm text-muted-foreground mt-2">Try adjusting your search criteria.</p>
                         </div>
                     )}
 
                     {/* Pagination */}
                     {totalPages > 1 && (
-                        <Pagination className="mt-8">
+                        <Pagination className="mt-6 md:mt-8">
                             <PaginationContent>
                                 <PaginationItem>
                                     <PaginationPrevious

@@ -1,7 +1,5 @@
 'use client';
 
-import { ChevronRight } from "lucide-react";
-import Link from "next/link";
 import LotHeader from "./components/LotHeader";
 import ImageGallery from "./components/ImageGallery";
 import AuctionDetails from "./components/AuctionDetails";
@@ -11,6 +9,7 @@ import AuctioneerInfo from "./components/AuctioneerInfo";
 import ShippingInfo from "./components/ShippingInfo";
 import BiddingNotice from "./components/BiddingNotice";
 import RelatedLots from "./components/RelatedLots";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 
 // Mock data for the lot
 const lotData = {
@@ -71,32 +70,42 @@ const LotDetail = () => {
         <>
             {/* Breadcrumb */}
             <div className="container mx-auto px-4 py-4">
-                <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Link href="/" className="hover:text-primary transition-colors">Home</Link>
-                    <ChevronRight className="h-4 w-4" />
-                    <Link href="/auctions" className="hover:text-primary transition-colors">Auctions</Link>
-                    <ChevronRight className="h-4 w-4" />
-                    <Link href="/auction/1" className="hover:text-primary transition-colors">Classic Cars</Link>
-                    <ChevronRight className="h-4 w-4" />
-                    <span className="text-foreground font-medium truncate max-w-[200px]">{lotData.title}</span>
-                </nav>
+                <Breadcrumb>
+                    <BreadcrumbList>
+                        <BreadcrumbItem>
+                            <BreadcrumbLink href="/">Home</BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator />
+                        <BreadcrumbItem>
+                            <BreadcrumbLink href="/auctions">Auctions</BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator />
+                        <BreadcrumbItem>
+                            <BreadcrumbLink href="/auction/1">Classic Cars</BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator />
+                        <BreadcrumbItem>
+                            <BreadcrumbPage className="truncate max-w-[200px]">{lotData.title}</BreadcrumbPage>
+                        </BreadcrumbItem>
+                    </BreadcrumbList>
+                </Breadcrumb>
             </div>
 
             {/* Main Content */}
-            <main className="container mx-auto px-4 pb-12">
+            <main className="container mx-auto px-4 pb-10 md:pb-12">
                 <LotHeader
                     title={lotData.title}
                     lotId={lotData.id}
                 />
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-4 sm:mt-6">
                     {/* Left Column - Images & Details */}
                     <div className="lg:col-span-2 space-y-8">
                         <ImageGallery images={lotData.images} title={lotData.title} />
 
                         <div className="prose prose-lg max-w-none">
-                            <h3 className="text-xl font-semibold text-foreground mb-4">Lot Description</h3>
-                            <p className="text-muted-foreground whitespace-pre-line leading-relaxed">
+                            <h3 className="text-lg md:text-xl font-semibold text-foreground mb-4">Lot Description</h3>
+                            <p className="text-sm md:text-base text-muted-foreground whitespace-pre-line leading-relaxed">
                                 {lotData.description}
                             </p>
                         </div>
@@ -105,7 +114,7 @@ const LotDetail = () => {
                     </div>
 
                     {/* Right Column - Bidding */}
-                    <div className="space-y-6">
+                    <div className="space-y-4 md:space-y-6">
                         <BidSummary
                             currentBid={lotData.currentBid}
                             bidsCount={lotData.bidsCount}
