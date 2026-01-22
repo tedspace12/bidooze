@@ -146,10 +146,10 @@ const AuctionRegistration = () => {
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
                     {/* Left Column - Context Info */}
                     <div className="lg:col-span-1">
-                        <Card className="p-4 md:p-6 sticky top-4">
+                        <Card className="p-4 md:p-6 lg:sticky lg:top-4">
                             {source === "lot" ? (
                                 // Lot Context
                                 <div>
@@ -161,12 +161,12 @@ const AuctionRegistration = () => {
                                             height={500}
                                             className="w-full aspect-4/3 object-cover rounded-lg"
                                         />
-                                        <div className="flex gap-2 mt-2">
+                                        <div className="flex gap-2 mt-2 overflow-x-auto pb-1">
                                             {mockLotData.images.map((img, idx) => (
                                                 <button
                                                     key={idx}
                                                     onClick={() => setSelectedLotImage(idx)}
-                                                    className={`w-16 h-12 rounded-md overflow-hidden border-2 transition-colors ${selectedLotImage === idx
+                                                    className={`w-14 h-10 sm:w-16 sm:h-12 rounded-md overflow-hidden border-2 transition-colors shrink-0 ${selectedLotImage === idx
                                                         ? "border-primary"
                                                         : "border-transparent"
                                                         }`}
@@ -183,27 +183,27 @@ const AuctionRegistration = () => {
                                         </div>
                                     </div>
 
-                                    <h3 className="font-semibold text-foreground mb-2">
+                                    <h3 className="font-semibold text-foreground mb-2 text-sm sm:text-base">
                                         {mockLotData.title}
                                     </h3>
-                                    <p className="text-sm text-muted-foreground mb-4">
+                                    <p className="text-xs sm:text-sm text-muted-foreground mb-4">
                                         Lot ID: {mockLotData.lotId}
                                     </p>
 
-                                    <div className="space-y-3">
+                                    <div className="space-y-2 sm:space-y-3">
                                         <div className="flex items-center justify-between">
-                                            <span className="text-sm text-muted-foreground">Current Bid</span>
-                                            <span className="font-semibold text-foreground">
+                                            <span className="text-xs sm:text-sm text-muted-foreground">Current Bid</span>
+                                            <span className="font-semibold text-foreground text-sm sm:text-base">
                                                 {formatPrice(mockLotData.currentBid)}
                                             </span>
                                         </div>
                                         <div className="flex items-center justify-between">
-                                            <span className="text-sm text-muted-foreground">Total Bids</span>
-                                            <span className="text-foreground">{mockLotData.totalBids}</span>
+                                            <span className="text-xs sm:text-sm text-muted-foreground">Total Bids</span>
+                                            <span className="text-sm sm:text-base text-foreground">{mockLotData.totalBids}</span>
                                         </div>
                                         <div className="flex items-center justify-between">
-                                            <span className="text-sm text-muted-foreground">Time Remaining</span>
-                                            <span className="text-foreground flex items-center gap-1">
+                                            <span className="text-xs sm:text-sm text-muted-foreground">Time Remaining</span>
+                                            <span className="text-foreground flex items-center gap-1 text-sm">
                                                 <Clock className="h-3.5 w-3.5" />
                                                 {mockLotData.timeRemaining}
                                             </span>
@@ -212,7 +212,7 @@ const AuctionRegistration = () => {
 
                                     <Button
                                         variant="link"
-                                        className="mt-4 p-0 h-auto text-primary"
+                                        className="mt-4 px-0 py-0 h-auto text-primary"
                                         onClick={() => setHowToBidOpen(true)}
                                     >
                                         <HelpCircle className="h-4 w-4 mr-1" />
@@ -230,37 +230,37 @@ const AuctionRegistration = () => {
                                         className="w-full aspect-video object-cover rounded-lg mb-4"
                                     />
 
-                                    <h3 className="font-semibold text-foreground mb-2">
+                                    <h3 className="font-semibold text-foreground mb-2 text-sm sm:text-base">
                                         {mockAuctionData.title}
                                     </h3>
-                                    <p className="text-sm text-muted-foreground mb-4">
+                                    <p className="text-xs sm:text-sm text-muted-foreground mb-4">
                                         by {mockAuctionData.auctioneerName}
                                     </p>
 
-                                    <div className="space-y-3 text-sm">
+                                    <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
                                         <div className="flex items-start gap-2">
-                                            <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                                            <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground mt-0.5 shrink-0" />
                                             <span className="text-muted-foreground">{mockAuctionData.address}</span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                                            <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
                                             <span className="text-muted-foreground">
                                                 {format(new Date(mockAuctionData.startDate), "MMM d")} -{" "}
                                                 {format(new Date(mockAuctionData.endDate), "MMM d, yyyy")}
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <Gavel className="h-4 w-4 text-muted-foreground" />
+                                            <Gavel className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
                                             <span className="text-muted-foreground">{mockAuctionData.type}</span>
                                         </div>
-                                        <Badge className="bg-emerald-500 text-white">
+                                        <Badge className="bg-emerald-500 text-white text-xs">
                                             {mockAuctionData.biddingStatus}
                                         </Badge>
                                     </div>
 
                                     <Button
                                         variant="link"
-                                        className="mt-4 p-0 h-auto text-primary"
+                                        className="mt-3 sm:mt-4 px-0 py-0 h-auto text-primary"
                                         onClick={() => setHowToBidOpen(true)}
                                     >
                                         <HelpCircle className="h-4 w-4 mr-1" />
@@ -276,43 +276,43 @@ const AuctionRegistration = () => {
                         {/* Payment Verification */}
                         <Collapsible open={paymentOpen} onOpenChange={setPaymentOpen}>
                             <Card>
-                                <CollapsibleTrigger className="w-full p-6 flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${selectedCard ? "bg-emerald-500/10 text-emerald-500" : "bg-muted text-muted-foreground"
+                                <CollapsibleTrigger className="w-full p-4 sm:p-6 flex items-center justify-between gap-3">
+                                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                                        <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center ${selectedCard ? "bg-emerald-500/10 text-emerald-500" : "bg-muted text-muted-foreground"
                                             }`}>
-                                            {selectedCard ? <CheckCircle2 className="h-5 w-5" /> : <CreditCard className="h-5 w-5" />}
+                                            {selectedCard ? <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5" /> : <CreditCard className="h-4 w-4 sm:h-5 sm:w-5" />}
                                         </div>
-                                        <div className="text-left">
-                                            <h3 className="font-semibold text-foreground">Payment Verification</h3>
-                                            <p className="text-sm text-muted-foreground">Required</p>
+                                        <div className="text-left min-w-0">
+                                            <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">Payment Verification</h3>
+                                            <p className="text-xs sm:text-sm text-muted-foreground">Required</p>
                                         </div>
                                     </div>
-                                    <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform ${paymentOpen ? "rotate-180" : ""}`} />
+                                    <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform shrink-0 ${paymentOpen ? "rotate-180" : ""}`} />
                                 </CollapsibleTrigger>
-                                <CollapsibleContent className="px-6 pb-6">
-                                    <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mb-4">
-                                        <p className="text-sm text-amber-800 dark:text-amber-200">
+                                <CollapsibleContent className="px-4 sm:px-6 pb-4 sm:pb-6">
+                                    <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3 sm:p-4 mb-4">
+                                        <p className="text-xs sm:text-sm text-amber-800 dark:text-amber-200">
                                             You will not be charged until you win. To verify your card, we&apos;ll place a $1 temporary hold. This is not a charge and will be released within 5–7 business days.
                                         </p>
                                     </div>
 
                                     <RadioGroup value={selectedCard} onValueChange={setSelectedCard}>
-                                        <div className="flex items-center justify-between p-4 border border-border rounded-lg">
-                                            <div className="flex items-center gap-3">
+                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border border-border rounded-lg gap-3 sm:gap-0">
+                                            <div className="flex items-center gap-2 sm:gap-3">
                                                 <RadioGroupItem value={mockSavedCard.id} id={mockSavedCard.id} />
-                                                <Label htmlFor={mockSavedCard.id} className="flex items-center gap-3 cursor-pointer">
-                                                    <CreditCard className="h-5 w-5 text-muted-foreground" />
-                                                    <span className="text-foreground">{mockSavedCard.brand} •••• {mockSavedCard.last4}</span>
-                                                    <span className="text-sm text-muted-foreground">Expires {mockSavedCard.expiry}</span>
+                                                <Label htmlFor={mockSavedCard.id} className="flex flex-wrap items-center gap-2 sm:gap-3 cursor-pointer">
+                                                    <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                                                    <span className="text-foreground text-sm sm:text-base">{mockSavedCard.brand} •••• {mockSavedCard.last4}</span>
+                                                    <span className="text-xs sm:text-sm text-muted-foreground">Expires {mockSavedCard.expiry}</span>
                                                 </Label>
                                             </div>
-                                            <Button variant="ghost" size="sm">
+                                            <Button variant="ghost" size="sm" className="self-end sm:self-auto">
                                                 <Pencil className="h-4 w-4" />
                                             </Button>
                                         </div>
                                     </RadioGroup>
 
-                                    <Button variant="outline" className="mt-4 gap-2">
+                                    <Button variant="outline" className="mt-4 gap-2 w-full sm:w-auto">
                                         <Plus className="h-4 w-4" />
                                         Add New Card
                                     </Button>
@@ -323,39 +323,39 @@ const AuctionRegistration = () => {
                         {/* Preferred Delivery Method */}
                         <Collapsible open={deliveryOpen} onOpenChange={setDeliveryOpen}>
                             <Card>
-                                <CollapsibleTrigger className="w-full p-6 flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${deliveryMethod ? "bg-emerald-500/10 text-emerald-500" : "bg-muted text-muted-foreground"
+                                <CollapsibleTrigger className="w-full p-4 sm:p-6 flex items-center justify-between gap-3">
+                                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                                        <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shrink-0 ${deliveryMethod ? "bg-emerald-500/10 text-emerald-500" : "bg-muted text-muted-foreground"
                                             }`}>
-                                            {deliveryMethod ? <CheckCircle2 className="h-5 w-5" /> : <Truck className="h-5 w-5" />}
+                                            {deliveryMethod ? <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5" /> : <Truck className="h-4 w-4 sm:h-5 sm:w-5" />}
                                         </div>
-                                        <div className="text-left">
-                                            <h3 className="font-semibold text-foreground">Preferred Delivery Method</h3>
-                                            <p className="text-sm text-muted-foreground">Required</p>
+                                        <div className="text-left min-w-0">
+                                            <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">Preferred Delivery Method</h3>
+                                            <p className="text-xs sm:text-sm text-muted-foreground">Required</p>
                                         </div>
                                     </div>
-                                    <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform ${deliveryOpen ? "rotate-180" : ""}`} />
+                                    <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform shrink-0 ${deliveryOpen ? "rotate-180" : ""}`} />
                                 </CollapsibleTrigger>
-                                <CollapsibleContent className="px-6 pb-6">
+                                <CollapsibleContent className="px-4 sm:px-6 pb-4 sm:pb-6">
                                     <RadioGroup value={deliveryMethod} onValueChange={(value) => setDeliveryMethod(value as "pickup" | "ship")}>
                                         <div className="space-y-3">
-                                            <div className={`p-4 border rounded-lg transition-colors ${deliveryMethod === "pickup" ? "border-primary bg-primary/5" : "border-border"
+                                            <div className={`p-3 sm:p-4 border rounded-lg transition-colors ${deliveryMethod === "pickup" ? "border-primary bg-primary/5" : "border-border"
                                                 }`}>
-                                                <div className="flex items-start gap-3">
+                                                <div className="flex items-start gap-2 sm:gap-3">
                                                     <RadioGroupItem value="pickup" id="pickup" className="mt-1" />
-                                                    <Label htmlFor="pickup" className="flex-1 cursor-pointer">
+                                                    <Label htmlFor="pickup" className="flex-1 flex flex-col items-start cursor-pointer">
                                                         <div className="flex items-center gap-2 mb-2">
                                                             <MapPin className="h-4 w-4" />
-                                                            <span className="font-medium text-foreground">Pickup</span>
+                                                            <span className="font-medium text-foreground text-sm sm:text-base">Pickup</span>
                                                         </div>
                                                         {deliveryMethod === "pickup" && (
-                                                            <div className="flex gap-4 mt-3">
+                                                            <div className="w-full flex flex-col sm:flex-row gap-3 sm:gap-4 sm:justify-between mt-3">
                                                                 <div className="flex-1">
-                                                                    <p className="text-sm text-muted-foreground">
+                                                                    <p className="text-xs sm:text-sm text-muted-foreground">
                                                                         {mockAuctionData.pickupAddress}
                                                                     </p>
                                                                 </div>
-                                                                <div className="w-32 h-20 bg-muted rounded-lg overflow-hidden">
+                                                                <div className="w-full sm:w-32 h-32 sm:h-20 bg-muted rounded-lg overflow-hidden shrink-0">
                                                                     <Image
                                                                         src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=200"
                                                                         alt="Map preview"
@@ -370,9 +370,9 @@ const AuctionRegistration = () => {
                                                 </div>
                                             </div>
 
-                                            <div className={`p-4 border rounded-lg transition-colors ${deliveryMethod === "ship" ? "border-primary bg-primary/5" : "border-border"
+                                            <div className={`p-3 sm:p-4 border rounded-lg transition-colors ${deliveryMethod === "ship" ? "border-primary bg-primary/5" : "border-border"
                                                 } ${!mockAuctionData.shippingAvailable ? "opacity-50" : ""}`}>
-                                                <div className="flex items-start gap-3">
+                                                <div className="flex items-start gap-2 sm:gap-3">
                                                     <RadioGroupItem
                                                         value="ship"
                                                         id="ship"
@@ -382,7 +382,7 @@ const AuctionRegistration = () => {
                                                     <Label htmlFor="ship" className="flex-1 cursor-pointer">
                                                         <div className="flex items-center gap-2">
                                                             <Truck className="h-4 w-4" />
-                                                            <span className="font-medium text-foreground">Ship to Address</span>
+                                                            <span className="font-medium text-foreground text-sm sm:text-base">Ship to Address</span>
                                                             {!mockAuctionData.shippingAvailable && (
                                                                 <Badge variant="secondary" className="text-xs">
                                                                     Not Available
@@ -401,28 +401,28 @@ const AuctionRegistration = () => {
                         {/* Terms & Conditions */}
                         <Collapsible open={termsOpen} onOpenChange={setTermsOpen}>
                             <Card>
-                                <CollapsibleTrigger className="w-full p-6 flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${agreeToTerms ? "bg-emerald-500/10 text-emerald-500" : "bg-muted text-muted-foreground"
+                                <CollapsibleTrigger className="w-full p-4 sm:p-6 flex items-center justify-between gap-3">
+                                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                                        <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shrink-0 ${agreeToTerms ? "bg-emerald-500/10 text-emerald-500" : "bg-muted text-muted-foreground"
                                             }`}>
-                                            {agreeToTerms ? <CheckCircle2 className="h-5 w-5" /> : <FileText className="h-5 w-5" />}
+                                            {agreeToTerms ? <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5" /> : <FileText className="h-4 w-4 sm:h-5 sm:w-5" />}
                                         </div>
-                                        <div className="text-left">
-                                            <h3 className="font-semibold text-foreground">Auction Terms & Conditions</h3>
-                                            <p className="text-sm text-muted-foreground">Required</p>
+                                        <div className="text-left min-w-0">
+                                            <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">Auction Terms & Conditions</h3>
+                                            <p className="text-xs sm:text-sm text-muted-foreground">Required</p>
                                         </div>
                                     </div>
-                                    <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform ${termsOpen ? "rotate-180" : ""}`} />
+                                    <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform shrink-0 ${termsOpen ? "rotate-180" : ""}`} />
                                 </CollapsibleTrigger>
-                                <CollapsibleContent className="px-6 pb-6">
-                                    <div className="bg-muted/50 rounded-lg p-4 max-h-48 overflow-y-auto mb-4">
-                                        <pre className="text-sm text-muted-foreground whitespace-pre-wrap font-sans">
+                                <CollapsibleContent className="px-4 sm:px-6 pb-4 sm:pb-6">
+                                    <div className="bg-muted/50 rounded-lg p-3 sm:p-4 max-h-40 sm:max-h-48 overflow-y-auto mb-4">
+                                        <pre className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap font-sans">
                                             {mockAuctionData.terms}
                                         </pre>
                                     </div>
 
                                     <div className="mb-4">
-                                        <Label htmlFor="seller-note" className="text-sm text-muted-foreground mb-2 block">
+                                        <Label htmlFor="seller-note" className="text-xs sm:text-sm text-muted-foreground mb-2 block">
                                             Note to Seller (Optional)
                                         </Label>
                                         <Textarea
@@ -430,18 +430,18 @@ const AuctionRegistration = () => {
                                             placeholder="Add a message for the seller..."
                                             value={sellerNote}
                                             onChange={(e) => setSellerNote(e.target.value)}
-                                            className="resize-none"
+                                            className="resize-none text-sm"
                                             rows={3}
                                         />
                                     </div>
 
-                                    <div className="flex items-start gap-3">
+                                    <div className="flex items-start gap-2 sm:gap-3">
                                         <Checkbox
                                             id="terms"
                                             checked={agreeToTerms}
                                             onCheckedChange={(checked) => setAgreeToTerms(checked === true)}
                                         />
-                                        <Label htmlFor="terms" className="text-sm text-foreground cursor-pointer">
+                                        <Label htmlFor="terms" className="text-xs sm:text-sm text-foreground cursor-pointer">
                                             I agree to the auction&apos;s terms and conditions
                                         </Label>
                                     </div>
@@ -451,7 +451,7 @@ const AuctionRegistration = () => {
 
                         {/* Submit Button */}
                         <Button
-                            className="w-full h-12 text-lg"
+                            className="w-full h-11 sm:h-12 text-base sm:text-lg"
                             disabled={!isFormComplete}
                             onClick={handleRegister}
                         >

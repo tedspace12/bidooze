@@ -75,7 +75,7 @@ const About = () => {
                     <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6">
                         About Bidooze
                     </h1>
-                    <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
+                    <p className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed">
                         Bidooze is a modern auction platform connecting buyers and sellers worldwide.
                         We make bidding simple, transparent, and accessible to everyone.
                     </p>
@@ -104,13 +104,13 @@ const About = () => {
             <section className="container mx-auto px-4 py-16 md:py-24">
                 <div className="grid md:grid-cols-2 gap-12 lg:gap-16">
                     <div className="space-y-4">
-                        <div className="inline-block px-3 py-1 bg-primary/10 text-primary text-sm font-medium rounded-full mb-2">
+                        <div className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs sm:text-sm font-medium rounded-full mb-2">
                             Our Mission
                         </div>
                         <h2 className="text-3xl font-bold text-foreground">
                             Democratizing Access to Auctions
                         </h2>
-                        <p className="text-muted-foreground leading-relaxed text-lg">
+                        <p className="text-muted-foreground leading-relaxed text-base sm:text-lg">
                             To create the most trusted and user-friendly auction marketplace,
                             empowering collectors, enthusiasts, and sellers to discover and trade
                             unique items with confidence. We break down barriers and make the
@@ -118,13 +118,13 @@ const About = () => {
                         </p>
                     </div>
                     <div className="space-y-4">
-                        <div className="inline-block px-3 py-1 bg-primary/10 text-primary text-sm font-medium rounded-full mb-2">
+                        <div className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs sm:text-sm font-medium rounded-full mb-2">
                             Our Vision
                         </div>
                         <h2 className="text-3xl font-bold text-foreground">
                             The Future of Online Auctions
                         </h2>
-                        <p className="text-muted-foreground leading-relaxed text-lg">
+                        <p className="text-muted-foreground leading-relaxed text-base sm:text-lg">
                             A world where everyone has access to exceptional auctions,
                             from rare collectibles to everyday treasures, all in one
                             seamless digital experience. We envision a global marketplace
@@ -141,11 +141,11 @@ const About = () => {
                         <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
                             Our Core Values
                         </h2>
-                        <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+                        <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto">
                             The principles that guide everything we do at Bidooze.
                         </p>
                     </div>
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
                         {values.map((value) => (
                             <div
                                 key={value.title}
@@ -172,15 +172,15 @@ const About = () => {
                     <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
                         Why Choose Bidooze?
                     </h2>
-                    <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+                    <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto">
                         We&apos;re building the best auction experience, one feature at a time.
                     </p>
                 </div>
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {features.map((feature) => (
                         <div
                             key={feature.title}
-                            className="text-center p-6 rounded-xl hover:bg-muted/50 transition-colors"
+                            className="text-center p-4 sm:p-6 rounded-xl hover:bg-muted/50 transition-colors"
                         >
                             <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <feature.icon className="h-7 w-7 text-primary" />
@@ -203,7 +203,7 @@ const About = () => {
                         <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
                             Our Story
                         </h2>
-                        <div className="space-y-4 text-muted-foreground text-lg leading-relaxed">
+                        <div className="space-y-4 text-muted-foreground text-sm sm:text-lg leading-relaxed">
                             <p>
                                 Bidooze was founded with a simple belief: auctions should be accessible,
                                 exciting, and fair for everyone. What started as a passion project has
@@ -227,11 +227,11 @@ const About = () => {
 
             {/* CTA Section */}
             <section className="container mx-auto px-4 py-16 md:py-24">
-                <div className="text-center bg-linear-to-br from-primary/10 to-primary/5 rounded-3xl p-8 md:p-16 border border-primary/20">
+                <div className="text-center bg-linear-to-br from-primary/10 to-primary/5 rounded-xl sm:rounded-3xl p-8 md:p-16 border border-primary/20">
                     <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
                         Ready to Start Bidding?
                     </h2>
-                    <p className="text-muted-foreground text-lg mb-8 max-w-xl mx-auto">
+                    <p className="text-muted-foreground text-base sm:text-lg mb-8 max-w-xl mx-auto">
                         Join thousands of bidders and discover unique items today.
                         Your next treasure is just a bid away.
                     </p>

@@ -25,7 +25,7 @@ const BlogCard = ({ post }: BlogCardProps) => {
                     />
                 </div>
             </Link>
-            <CardContent className="p-5">
+            <CardContent className="p-3 md:p-5">
                 <Badge variant="secondary" className="mb-3">
                     {post.category}
                 </Badge>

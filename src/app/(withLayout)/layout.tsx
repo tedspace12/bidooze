@@ -9,7 +9,7 @@ export default function Layout({
 }>) {
     return (
         <div className="min-h-screen bg-background">
-            <PrimaryHeader isLoggedIn={false} />
+            <PrimaryHeader isLoggedIn={true} />
             <SecondaryHeader />
             {children}
             <Footer />

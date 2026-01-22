@@ -22,7 +22,7 @@ const NotificationSection = ({
   onToggle,
 }: NotificationSectionProps) => {
   return (
-    <div className="bg-card border border-border rounded-lg p-6">
+    <div className="bg-card border border-border rounded-lg p-4 sm:p-6">
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2 bg-primary/10 rounded-lg text-primary">
           {icon}

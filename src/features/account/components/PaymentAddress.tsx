@@ -118,18 +118,18 @@ const PaymentAddress = () => {
               className="flex items-center justify-between p-4 border border-border rounded-lg"
             >
               <div className="flex items-center gap-4">
-                <div className="h-10 w-14 bg-secondary rounded flex items-center justify-center">
-                  <CreditCard className="h-6 w-6 text-muted-foreground" />
+                <div className="h-8 sm:h-10 w-12 sm:w-14 bg-secondary rounded flex items-center justify-center">
+                  <CreditCard className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground" />
                 </div>
                 <div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 text-sm sm:text-base">
                     <span className="font-medium">{getCardIcon(method.type)}</span>
                     <span className="text-muted-foreground">•••• {method.lastFour}</span>
                     {method.isDefault && (
                       <Badge variant="secondary" className="text-xs">Default</Badge>
                     )}
                   </div>
-                  <span className="text-sm text-muted-foreground">Expires {method.expiry}</span>
+                  <span className="text-xs sm:text-sm text-muted-foreground">Expires {method.expiry}</span>
                 </div>
               </div>
               <Button 
@@ -193,7 +193,7 @@ const PaymentAddress = () => {
                   />
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <Button onClick={handleAddCard}>Add Card</Button>
                 <Button variant="outline" onClick={() => setShowAddCard(false)}>Cancel</Button>
               </div>
@@ -221,7 +221,7 @@ const PaymentAddress = () => {
               value={billingAddress.country} 
               onValueChange={(value) => handleBillingChange("country", value)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select country" />
               </SelectTrigger>
               <SelectContent className="bg-background">
@@ -256,7 +256,7 @@ const PaymentAddress = () => {
                 value={billingAddress.state} 
                 onValueChange={(value) => handleBillingChange("state", value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select state" />
                 </SelectTrigger>
                 <SelectContent className="bg-background max-h-60">
@@ -285,7 +285,7 @@ const PaymentAddress = () => {
             />
           </div>
 
-          <Button onClick={handleSaveBilling}>Save Billing Address</Button>
+          <Button onClick={handleSaveBilling} className="w-full sm:w-auto">Save Billing Address</Button>
         </div>
       </div>
     </div>

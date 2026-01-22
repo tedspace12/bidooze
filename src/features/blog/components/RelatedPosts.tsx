@@ -13,11 +13,11 @@ const RelatedPosts = ({ posts }: RelatedPostsProps) => {
     if (posts.length === 0) return null;
 
     return (
-        <section className="mt-16 pt-12 border-t border-border">
+        <section className="mt-10 sm:mt-16 pt-6 sm:pt-12 border-t border-border">
             <h2 className="text-2xl font-bold text-foreground mb-8">
                 Recommended Articles
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                 {posts.map((post) => (
                     <Card key={post.id} className="overflow-hidden group hover:shadow-md transition-shadow">
                         <Link href={`/blog/${post.slug}`}>
