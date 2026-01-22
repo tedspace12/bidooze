@@ -159,7 +159,7 @@ const Settings = () => {
             </Breadcrumb>
 
             {/* Page Header with Save Button */}
-            <div className="flex items-start justify-between mb-8">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-0 items-start justify-between mb-8">
                 <div>
                     <h1 className="text-3xl font-bold text-foreground mb-2">Settings</h1>
                     <p className="text-muted-foreground">
@@ -172,6 +172,7 @@ const Settings = () => {
                             description: "Your notification preferences have been saved successfully.",
                         });
                     }}
+                    className="w-full sm:w-fit"
                 >
                     Save Changes
                 </Button>

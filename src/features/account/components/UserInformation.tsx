@@ -132,7 +132,7 @@ const UserInformation = () => {
           <div className="space-y-2">
             <Label htmlFor="timezone">Time Zone</Label>
             <Select value={formData.timezone} onValueChange={(value) => handleChange("timezone", value)}>
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select timezone" />
               </SelectTrigger>
               <SelectContent className="bg-background max-h-60">
@@ -170,32 +170,32 @@ const UserInformation = () => {
       </div>
 
       {/* Verification Status */}
-      <div className="border border-border rounded-lg p-6 space-y-4">
+      <div className="border border-border rounded-lg p-4 sm:p-6 space-y-4">
         <h3 className="text-lg font-semibold">Verification Status</h3>
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Email Verification</span>
+            <span className="text-muted-foreground text-sm sm:text-base">Email Verification</span>
             {emailVerified ? (
-              <Badge variant="default" className="bg-green-600 hover:bg-green-700">
+              <Badge variant="default" className="bg-green-600 hover:bg-green-700 text-[10px] sm:text-xs">
                 <CheckCircle className="h-3.5 w-3.5 mr-1" />
                 Verified
               </Badge>
             ) : (
-              <Badge variant="destructive">
+              <Badge variant="destructive" className="text-[10px] sm:text-xs">
                 <XCircle className="h-3.5 w-3.5 mr-1" />
                 Not Verified
               </Badge>
             )}
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Credit Card Verification</span>
+            <span className="text-muted-foreground text-sm sm:text-base">Credit Card Verification</span>
             {cardVerified ? (
-              <Badge variant="default" className="bg-green-600 hover:bg-green-700">
+              <Badge variant="default" className="bg-green-600 hover:bg-green-700 text-[10px] sm:text-xs">
                 <CheckCircle className="h-3.5 w-3.5 mr-1" />
                 Verified
               </Badge>
             ) : (
-              <Badge variant="destructive">
+              <Badge variant="destructive" className="text-[10px] sm:text-xs">
                 <XCircle className="h-3.5 w-3.5 mr-1" />
                 Not Verified
               </Badge>
@@ -205,7 +205,7 @@ const UserInformation = () => {
       </div>
 
       {/* Security Section */}
-      <div className="border border-border rounded-lg p-6 space-y-4">
+      <div className="border border-border rounded-lg p-4 sm:p-6 space-y-4">
         <h3 className="text-lg font-semibold">Security</h3>
         <Dialog open={resetPasswordOpen} onOpenChange={setResetPasswordOpen}>
           <DialogTrigger asChild>

@@ -63,7 +63,7 @@ const BlogPost = () => {
             if (trimmedLine.startsWith("## ")) {
                 flushList();
                 elements.push(
-                    <h2 key={index} className="text-2xl font-bold text-foreground mt-8 mb-4">
+                    <h2 key={index} className="text-2xl font-bold text-foreground mt-5 sm:mt-8 mb-4">
                         {trimmedLine.replace("## ", "")}
                     </h2>
                 );
@@ -153,7 +153,7 @@ const BlogPost = () => {
 
             <article className="max-w-4xl mx-auto">
                 {/* Hero Image */}
-                <div className="relative aspect-21/9 rounded-xl overflow-hidden mb-8">
+                <div className="relative aspect-6/3 sm:aspect-21/9 rounded-xl overflow-hidden mb-6 sm:mb-8">
                     <Image
                         src={post.featuredImage}
                         alt={post.title}
@@ -167,22 +167,22 @@ const BlogPost = () => {
                     <Badge variant="secondary" className="mb-4">
                         {post.category}
                     </Badge>
-                    <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-5 sm:mb-6">
                         {post.title}
                     </h1>
 
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-border">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 sm:pb-6 border-b border-border">
                         <div className="flex items-center gap-3">
-                            <Avatar className="h-12 w-12">
+                            <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
                                 <AvatarImage src={post.author.avatar} alt={post.author.name} />
                                 <AvatarFallback>{post.author.name.charAt(0)}</AvatarFallback>
                             </Avatar>
                             <div>
-                                <p className="font-medium text-foreground">{post.author.name}</p>
-                                <p className="text-sm text-muted-foreground">{post.author.role}</p>
+                                <p className="text-sm sm:text-base font-medium text-foreground">{post.author.name}</p>
+                                <p className="text-xs sm:text-sm text-muted-foreground">{post.author.role}</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-4 text-xs sm:text-sm text-muted-foreground">
                             <span className="flex items-center gap-1.5">
                                 <Calendar className="h-4 w-4" />
                                 {format(new Date(post.publishDate), "MMMM d, yyyy")}

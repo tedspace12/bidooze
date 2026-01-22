@@ -47,17 +47,17 @@ const Blog = () => {
 
         {/* Page Header */}
         <header className="mb-12 text-center max-w-3xl mx-auto">
-          <h1 className="text-4xl font-bold text-foreground mb-4">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
             Auction Articles & News
           </h1>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-base sm:text-lg text-muted-foreground">
             Stay informed with the latest auction news, expert guides, market trends, 
             and collecting tips from Bidooze&apos;s team of specialists.
           </p>
         </header>
 
         {/* Blog Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {paginatedPosts.map((post) => (
             <BlogCard key={post.id} post={post} />
           ))}

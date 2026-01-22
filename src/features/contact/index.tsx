@@ -112,8 +112,8 @@ const Contact = () => {
 
             {/* Page Header */}
             <div className="text-center mb-12">
-                <h1 className="text-4xl font-bold text-foreground mb-4">Contact Us</h1>
-                <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+                <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">Contact Us</h1>
+                <p className="text-muted-foreground max-w-2xl mx-auto text-base sm:text-lg">
                     Have questions, feedback, or partnership inquiries? We&apos;re here to help.
                     Reach out to our team and we&apos;ll get back to you as soon as possible.
                 </p>
@@ -123,14 +123,14 @@ const Contact = () => {
             <div className="grid md:grid-cols-2 gap-6 mb-12 max-w-4xl mx-auto">
                 {/* Start Bidding CTA */}
                 <Card className="bg-linear-to-br from-primary/10 to-primary/5 border-primary/20 overflow-hidden">
-                    <CardContent className="p-8">
+                    <CardContent className="p-6 sm:p-8">
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="p-3 rounded-full bg-primary/20">
-                                <Gavel className="h-6 w-6 text-primary" />
+                            <div className="p-2 sm:p-3 rounded-full bg-primary/20">
+                                <Gavel className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                             </div>
-                            <h2 className="text-2xl font-bold text-foreground">Start Bidding</h2>
+                            <h2 className="text-xl sm:text-2xl font-bold text-foreground">Start Bidding</h2>
                         </div>
-                        <p className="text-muted-foreground mb-6">
+                        <p className="text-muted-foreground mb-6 text-sm sm:text-base">
                             Join thousands of bidders discovering unique items every day.
                             Create your free account and start placing bids on auctions you love.
                         </p>
@@ -146,14 +146,14 @@ const Contact = () => {
 
                 {/* Sell With Bidooze CTA */}
                 <Card className="bg-linear-to-br from-accent/20 to-accent/5 border-accent/30 overflow-hidden">
-                    <CardContent className="p-8">
+                    <CardContent className="p-6 sm:p-8">
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="p-3 rounded-full bg-accent/30">
-                                <Store className="h-6 w-6 text-foreground" />
+                            <div className="p-2 sm:p-3 rounded-full bg-accent/30">
+                                <Store className="h-5 w-5 sm:h-6 sm:w-6 text-foreground" />
                             </div>
-                            <h2 className="text-2xl font-bold text-foreground">Sell With Bidooze</h2>
+                            <h2 className="text-xl sm:text-2xl font-bold text-foreground">Sell With Bidooze</h2>
                         </div>
-                        <p className="text-muted-foreground mb-6">
+                        <p className="text-muted-foreground mb-6 text-sm sm:text-base">
                             Are you an auctioneer? List your auctions on Bidooze and reach
                             millions of potential buyers. Create auctions and add lots easily.
                         </p>
@@ -171,7 +171,7 @@ const Contact = () => {
 
             {/* Contact Form */}
             <Card className="max-w-2xl mx-auto">
-                <CardContent className="p-8">
+                <CardContent className="p-6 sm:p-8">
                     <div className="flex items-center gap-3 mb-6">
                         <div className="p-2 rounded-full bg-primary/10">
                             <Send className="h-5 w-5 text-primary" />
@@ -227,7 +227,7 @@ const Contact = () => {
                         <div className="space-y-2">
                             <Label htmlFor="reason">Reason for Contact *</Label>
                             <Select value={formData.reason} onValueChange={(value) => handleInputChange("reason", value)}>
-                                <SelectTrigger>
+                                <SelectTrigger className="w-full">
                                     <SelectValue placeholder="Select a reason" />
                                 </SelectTrigger>
                                 <SelectContent>
