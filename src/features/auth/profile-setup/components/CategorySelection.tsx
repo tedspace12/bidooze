@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "@bprogress/next/app";
 
 const categories = [
   "Antiques & Collectibles",
@@ -22,6 +23,8 @@ const categories = [
 ];
 
 const CategorySelection = () => {
+  const router = useRouter();
+
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   const toggleCategory = (category: string) => {
@@ -50,6 +53,15 @@ const CategorySelection = () => {
             {category}
           </Button>
         ))}
+      </div>
+
+      <div className="flex justify-between pt-4 sm:pt-6 gap-3">
+        <Button type="button" variant="outline" onClick={() => router.push('/')} className="flex-1 sm:flex-none">
+          Skip
+        </Button>
+        <Button type="submit" onClick={() => router.push('/')} className="flex-1 sm:flex-none">
+          Finish
+        </Button>
       </div>
     </div>
   );

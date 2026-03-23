@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import AuthLayout from "@/components/layout/AuthLayout";
 import CategorySelection from "./components/CategorySelection";
 import PersonalDetails from "./components/PersonalDetails";
@@ -11,25 +11,12 @@ import Image from "next/image";
 
 const ProfileSetup = () => {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const email = searchParams.get("email") ?? "";
+
     const [step, setStep] = useState(1);
     const totalSteps = 2;
     const progress = (step / totalSteps) * 100;
-
-    const handleNext = () => {
-        if (step < totalSteps) {
-            setStep(step + 1);
-        } else {
-            router.push("/");
-        }
-    };
-
-    const handleSkip = () => {
-        if (step < totalSteps) {
-            setStep(step + 1);
-        } else {
-            router.push("/");
-        }
-    };
 
     return (
         <AuthLayout maxWidth="xl">
@@ -48,17 +35,8 @@ const ProfileSetup = () => {
                 <Progress value={progress} className="h-2" />
             </div>
 
-            {step === 1 && <CategorySelection />}
-            {step === 2 && <PersonalDetails />}
-
-            <div className="flex justify-between pt-4 sm:pt-6 gap-3">
-                <Button variant="outline" onClick={handleSkip} className="flex-1 sm:flex-none">
-                    Skip
-                </Button>
-                <Button onClick={handleNext} className="flex-1 sm:flex-none">
-                    {step < totalSteps ? "Next" : "Finish"}
-                </Button>
-            </div>
+            {step === 1 && <PersonalDetails step={step} setStep={setStep} email={email} />}
+            {step === 2 && <CategorySelection />}
         </AuthLayout>
     );
 };

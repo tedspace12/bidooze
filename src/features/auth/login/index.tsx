@@ -5,17 +5,37 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Mail, Chrome, Apple, Facebook } from "lucide-react";
+import { Mail, Chrome, Apple, Facebook, EyeOff, Eye } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import AuthLayout from "@/components/layout/AuthLayout";
 import Link from "next/link";
 
+import { z } from 'zod';
+import { Controller, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { toast } from "sonner";
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { AppleIcon, ColoredGoogleIcon, FacebookIcon, MailIcon } from "@/components/shared/icons";
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
+
+const loginSchema = z.object({
+    email: z
+        .email("Enter a valid email"),
+    password: z.string('Enter your password')
+});
+
+type LoginSchema = z.infer<typeof loginSchema>;
+
 const Login = () => {
     const router = useRouter();
-    const [email, setEmail] = useState("");
     const [showPassword, setShowPassword] = useState(false);
-    const [password, setPassword] = useState("");
+
+    const form = useForm<LoginSchema>({
+        resolver: zodResolver(loginSchema),
+        defaultValues: { email: "", password: "" },
+        mode: 'onChange',
+    });
 
     const handleEmailContinue = () => {
         if (email && !showPassword) {
@@ -24,6 +44,10 @@ const Login = () => {
             router.push("/");
         }
     };
+
+    async function onSubmit(data) {
+
+    }
 
     const handleSocialLogin = (provider: string) => {
         console.log(`Login with ${provider}`);
@@ -40,18 +64,68 @@ const Login = () => {
                 </div>
             </div>
 
-            <div className="space-y-3 sm:not-[]:space-y-4">
-                <div className="space-y-2">
-                    <Label htmlFor="email">Email address</Label>
-                    <Input
-                        id="email"
-                        type="email"
-                        placeholder="you@example.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full text-sm sm:text-base"
+            <form className="space-y-3 sm:space-y-4">
+                <FieldGroup>
+                    {/* Email */}
+                    <Controller
+                        name="email"
+                        control={form.control}
+                        render={({ field, fieldState }) => (
+                            <Field data-invalid={fieldState.invalid}>
+                                <FieldLabel htmlFor="login-email">
+                                    Email address
+                                </FieldLabel>
+                                <Input
+                                    {...field}
+                                    id="login-email"
+                                    aria-invalid={fieldState.invalid}
+                                    placeholder="you@example.com"
+                                    className="w-full h-11 text-sm md:text-base"
+                                />
+                                {fieldState.invalid && (
+                                    <FieldError errors={[fieldState.error]} />
+                                )}
+                            </Field>
+                        )}
                     />
-                </div>
+
+                    {/* Password */}
+                    <Controller
+                        name="password"
+                        control={form.control}
+                        render={({ field, fieldState }) => (
+                            <Field data-invalid={fieldState.invalid}>
+                                <FieldLabel htmlFor="login-password">Password</FieldLabel>
+                                <InputGroup>
+                                    <InputGroupInput
+                                        {...field}
+                                        id="login-password"
+                                        type={showPassword ? "text" : "password"}
+                                        aria-invalid={fieldState.invalid}
+                                        placeholder="Enter your password"
+                                    />
+                                    <InputGroupAddon align="inline-end">
+                                        <InputGroupButton
+                                            aria-label={showPassword ? "Hide password" : "Show password"}
+                                            type="button"
+                                            title={showPassword ? "Hide password" : "Show password"}
+                                            size="icon-xs"
+                                            onClick={() => setShowPassword((prev) => !prev)}
+                                        >
+                                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        </InputGroupButton>
+                                    </InputGroupAddon>
+                                </InputGroup>
+                                {fieldState.invalid && (
+                                    <FieldError errors={[fieldState.error]} />
+                                )}
+                            </Field>
+                        )}
+                    />
+                </FieldGroup>
+            </form>
+
+            <div className="space-y-3 sm:not-[]:space-y-4">
 
                 {showPassword && (
                     <div className="space-y-2">
