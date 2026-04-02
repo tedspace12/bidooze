@@ -5,14 +5,14 @@ import { Share2, Bell, Calendar, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-
-type AuctionStatus = "live" | "upcoming" | "closing-soon" | "closed";
+import type { AuctionLifecycle } from "@/lib/auctionLifecycle";
+import { BUYER_AUCTION_LIFECYCLE_BADGES } from "@/lib/auctionLifecycle";
 
 interface AuctionHeaderProps {
     auction: {
         id?: string;
         title: string;
-        status: AuctionStatus;
+        status: AuctionLifecycle;
         auctioneer: {
             name: string;
             avatar: string;
@@ -24,12 +24,7 @@ interface AuctionHeaderProps {
     isRegistered?: boolean;
 }
 
-const statusConfig: Record<AuctionStatus, { label: string; className: string }> = {
-    live: { label: "Bidding Open", className: "bg-emerald-500 text-white" },
-    upcoming: { label: "Upcoming", className: "bg-blue-500 text-white" },
-    "closing-soon": { label: "Closing Soon", className: "bg-amber-500 text-white" },
-    closed: { label: "Closed", className: "bg-muted text-muted-foreground" },
-};
+const statusConfig = BUYER_AUCTION_LIFECYCLE_BADGES;
 
 const formatDateWithOrdinal = (date: Date) => {
     const day = date.getDate();
@@ -101,16 +96,17 @@ const AuctionHeader = ({ auction, isRegistered = false }: AuctionHeaderProps) =>
 
                 {/* Actions */}
                 <div className="flex flex-col sm:flex-row lg:flex-col gap-3 shrink-0">
-                    {isRegistered ? (
-                        <Button className="gap-2" variant="outline" disabled>
-                            <CheckCircle className="h-4 w-4 text-emerald-500" />
-                            Registered
-                        </Button>
-                    ) : (
-                        <Button className="gap-2" onClick={handleRegisterClick}>
-                            Register to Bid
-                        </Button>
-                    )}
+                    {auction.status !== "closed" &&
+                        (isRegistered ? (
+                            <Button className="gap-2" variant="outline" disabled>
+                                <CheckCircle className="h-4 w-4 text-emerald-500" />
+                                Registered
+                            </Button>
+                        ) : (
+                            <Button className="gap-2" onClick={handleRegisterClick}>
+                                Register to Bid
+                            </Button>
+                        ))}
                     <Button variant="outline" className="gap-2" onClick={handleSetReminder}>
                         <Bell className="h-4 w-4" />
                         Set Reminder

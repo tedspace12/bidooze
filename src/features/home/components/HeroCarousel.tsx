@@ -7,43 +7,50 @@ import {
 } from "@/components/ui/carousel";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Calendar, Package } from "lucide-react";
 import Autoplay from "embla-carousel-autoplay";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useHome } from "../hooks/useHome";
 
-const liveAuctions = [
-    {
-        id: 1,
-        image: '/images/hero-auction-1.jpg',
-        title: "Luxury Antique Furniture Collection",
-        auctioneer: "Heritage Auctions",
-        endDate: "Dec 28, 2025 - 3:00 PM",
-        lotCount: 124,
-    },
-    {
-        id: 2,
-        image: '/images/hero-auction-2.jpg',
-        title: "Classic & Vintage Automobiles",
-        auctioneer: "Barrett-Jackson",
-        endDate: "Dec 30, 2025 - 5:00 PM",
-        lotCount: 87,
-    },
-    {
-        id: 3,
-        image: '/images/hero-auction-3.jpg',
-        title: "Contemporary Art Masterpieces",
-        auctioneer: "Sotheby's",
-        endDate: "Jan 2, 2026 - 2:00 PM",
-        lotCount: 56,
-    },
-];
+const formatHeroEndDate = (iso: string) => {
+    const dt = new Date(iso);
+    if (Number.isNaN(dt.getTime())) return "—";
+    return dt.toLocaleString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+    });
+};
 
 const HeroCarousel = () => {
     const router = useRouter();
+    const { useFeaturedHero } = useHome();
+    const heroQuery = useFeaturedHero();
+
+    const items = heroQuery.data?.data ?? [];
 
     return (
         <div className="container mx-auto px-4 py-8">
+            {heroQuery.isLoading ? (
+                <div className="h-[450px] sm:h-[500px] rounded-xl bg-muted animate-pulse" />
+            ) : heroQuery.isError ? (
+                <div className="h-[450px] sm:h-[500px] rounded-xl border border-border flex items-center justify-center">
+                    <div className="text-center space-y-3 px-6">
+                        <p className="text-sm text-muted-foreground">Couldn’t load featured auctions.</p>
+                        <Button variant="outline" onClick={() => heroQuery.refetch()}>
+                            Retry
+                        </Button>
+                    </div>
+                </div>
+            ) : items.length === 0 ? (
+                <div className="h-[450px] sm:h-[500px] rounded-xl border border-border flex items-center justify-center">
+                    <p className="text-sm text-muted-foreground">No live hero auctions right now.</p>
+                </div>
+            ) : (
             <Carousel
                 className="w-full"
                 opts={{ loop: true }}
@@ -54,12 +61,15 @@ const HeroCarousel = () => {
                 ]}
             >
                 <CarouselContent>
-                    {liveAuctions.map((auction) => (
-                        <CarouselItem key={auction.id}>
+                    {items.map((auction) => (
+                        <CarouselItem key={auction.auction_id}>
                             <Card className="border-0 overflow-hidden shadow-xl">
-                                <div onClick={() => router.push('/auction/id')} className="relative h-[450px] sm:h-[500px] group cursor-pointer">
+                                <div
+                                    onClick={() => router.push(`/auction/${auction.auction_id}`)}
+                                    className="relative h-[450px] sm:h-[500px] group cursor-pointer"
+                                >
                                     <Image
-                                        src={auction.image}
+                                        src={auction.image_url}
                                         alt={auction.title}
                                         width={500}
                                         height={500}
@@ -74,16 +84,16 @@ const HeroCarousel = () => {
                                             {auction.title}
                                         </h2>
                                         <p className="text-base sm:text-lg text-white/80">
-                                            {auction.auctioneer}
+                                            {auction.auctioneer_company_name}
                                         </p>
                                         <div className="flex items-center gap-6 text-sm text-white/80">
                                             <div className="flex items-center gap-2">
                                                 <Calendar className="h-4 w-4" />
-                                                {auction.endDate}
+                                                Ends {formatHeroEndDate(auction.end_datetime)}
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <Package className="h-4 w-4" />
-                                                {auction.lotCount} Lots
+                                                {auction.lot_count} Lots
                                             </div>
                                         </div>
                                     </div>
@@ -95,6 +105,7 @@ const HeroCarousel = () => {
                 <CarouselPrevious className="left-2 sm:left-4" />
                 <CarouselNext className="right-2 sm:right-4" />
             </Carousel>
+            )}
         </div>
     );
 };

@@ -9,7 +9,8 @@ import {
     Clock,
     Layers,
     AlertCircle,
-    CheckCircle
+    CheckCircle,
+    Building2
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
@@ -18,6 +19,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AuctionCardStatus } from "../types";
 import { cn } from "@/lib/utils";
+import { isClosingSoon } from "@/lib/auctionLifecycle";
 
 const formatDateWithOrdinal = (date: Date) => {
     const day = date.getDate();
@@ -29,7 +31,7 @@ interface Auction {
     id: string;
     title: string;
     coverImage: string;
-    auctioneer: { name: string; avatar: string };
+    auctioneer: { name: string; avatar?: string | null };
     totalLots: number;
     startDate: string;
     endDate: string;
@@ -48,22 +50,23 @@ interface AuctionCardProps {
     page?: 'auctions' | 'regular';
 }
 
-const statusConfig = {
+const statusConfig: Record<
+    AuctionCardStatus,
+    { label: string; className: string }
+> = {
+    scheduled: { label: "Upcoming", className: "bg-blue-500 text-white" },
     live: { label: "Bidding Open", className: "bg-emerald-500 text-white" },
-    upcoming: { label: "Upcoming", className: "bg-blue-500 text-white" },
-    "closing-soon": { label: "Closing Soon", className: "bg-amber-500 text-white" },
-    featured: { label: "Featured", className: "bg-primary text-primary-foreground" },
-    "top-picks": { label: "Top Pick", className: "bg-purple-500 text-white" },
-    hot: { label: "Hot", className: "bg-red-500 text-white" },
+    paused: { label: "Paused", className: "bg-amber-500 text-white" },
     closed: { label: "Closed", className: "bg-muted text-muted-foreground" },
 };
 
 const AuctionCard = ({ auction, isRegistered = false, viewMode = 'list', page = 'regular' }: AuctionCardProps) => {
     const [countdown, setCountdown] = useState("");
     const router = useRouter();
+    const showClosingSoon = isClosingSoon(auction.status, auction.endDate);
 
     useEffect(() => {
-        if (auction.status !== "closing-soon") return;
+        if (!showClosingSoon) return;
 
         const updateCountdown = () => {
             const endTime = new Date(auction.endDate).getTime();
@@ -84,7 +87,7 @@ const AuctionCard = ({ auction, isRegistered = false, viewMode = 'list', page = 
         updateCountdown();
         const interval = setInterval(updateCountdown, 1000);
         return () => clearInterval(interval);
-    }, [auction.status, auction.endDate]);
+    }, [showClosingSoon, auction.endDate]);
 
     const handleShare = () => {
         navigator.share?.({
@@ -131,10 +134,15 @@ const AuctionCard = ({ auction, isRegistered = false, viewMode = 'list', page = 
                             height={500}
                             className="w-full h-full object-cover"
                         />
-                        <Badge className={`absolute top-3 left-3 ${statusConfig[auction.status].className} text-[10px] md:text-xs py-px md:py-0.5`}>
-                            {statusConfig[auction.status].label}
-                        </Badge>
-                        {auction.status === "closing-soon" && countdown && (
+                        {(() => {
+                            const statusInfo = statusConfig[auction.status];
+                            return (
+                                <Badge className={`absolute top-3 left-3 ${statusInfo.className} text-[10px] md:text-xs py-px md:py-0.5`}>
+                                    {statusInfo.label}
+                                </Badge>
+                            );
+                        })()}
+                        {showClosingSoon && countdown && (
                             <div className="absolute bottom-3 left-3 bg-background/90 backdrop-blur-sm px-3 py-1.5 rounded-lg">
                                 <div className="flex items-center gap-1.5 text-xs md:text-sm font-medium text-foreground">
                                     <Clock className="h-3.5 w-3.5 text-amber-500" />
@@ -154,8 +162,12 @@ const AuctionCard = ({ auction, isRegistered = false, viewMode = 'list', page = 
                             </h3>
                             <div className="flex items-center gap-2">
                                 <Avatar className="h-5 w-5">
-                                    <AvatarImage src={auction.auctioneer.avatar} />
-                                    <AvatarFallback>{auction.auctioneer.name[0]}</AvatarFallback>
+                                    {auction.auctioneer.avatar ? (
+                                        <AvatarImage src={auction.auctioneer.avatar} />
+                                    ) : null}
+                                    <AvatarFallback>
+                                        <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                                    </AvatarFallback>
                                 </Avatar>
                                 <span className="text-xs md:text-sm text-muted-foreground">{auction.auctioneer.name}</span>
                             </div>
@@ -224,20 +236,32 @@ const AuctionCard = ({ auction, isRegistered = false, viewMode = 'list', page = 
 
                     {/* Actions */}
                     <div className="flex items-center gap-3 mt-auto pt-4 border-t border-border">
-                        <Link href={`/auction/${auction.id}`} className="flex-1">
-                            <Button variant="outline" className="w-full text-xs md:text-sm">
+                        <Link href={`/auction/${auction.id}`} className={cn("flex-1")}>
+                            <Button
+                                variant="outline"
+                                className="w-full text-xs md:text-sm"
+                            >
                                 View Catalog
                             </Button>
                         </Link>
-                        {isRegistered ? (
-                            <Button className="flex-1 gap-2 text-xs md:text-sm" variant="outline" disabled>
-                                <CheckCircle className="h-4 w-4 text-emerald-500" />
-                                Registered
-                            </Button>
-                        ) : (
-                            <Button className="flex-1 bg-primary hover:bg-primary/90 text-xs md:text-sm" onClick={handleRegisterClick}>
-                                Register to Bid
-                            </Button>
+                        {auction.status !== "closed" && (
+                            isRegistered ? (
+                                <Button
+                                    className="flex-1 gap-2 text-xs md:text-sm"
+                                    variant="outline"
+                                    disabled
+                                >
+                                    <CheckCircle className="h-4 w-4 text-emerald-500" />
+                                    Registered
+                                </Button>
+                            ) : (
+                                <Button
+                                    className="flex-1 bg-primary hover:bg-primary/90 text-xs md:text-sm"
+                                    onClick={handleRegisterClick}
+                                >
+                                    Register to Bid
+                                </Button>
+                            )
                         )}
                     </div>
                 </div>

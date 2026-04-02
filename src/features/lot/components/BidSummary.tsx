@@ -3,7 +3,7 @@ import { Clock, Gavel, Truck, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface BidSummaryProps {
-  currentBid: number;
+  currentBid: number | null;
   bidsCount: number;
   endTime: string;
   closeType: string;
@@ -23,6 +23,10 @@ const BidSummary = ({
     const calculateTimeRemaining = () => {
       const end = new Date(endTime).getTime();
       const now = new Date().getTime();
+      if (Number.isNaN(end)) {
+        setTimeRemaining("—");
+        return;
+      }
       const diff = end - now;
 
       if (diff <= 0) {
@@ -64,7 +68,7 @@ const BidSummary = ({
       <div className="border-t border-border pt-3 md:pt-5">
         <p className="text-xs md:text-sm text-muted-foreground mb-1">Current Bid</p>
         <p className="text-2xl md:text-3xl font-bold text-foreground">
-          ${currentBid.toLocaleString()}
+          {currentBid == null ? "—" : `$${currentBid.toLocaleString()}`}
         </p>
       </div>
 

@@ -128,7 +128,7 @@ const mockAuctions = [
             "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100",
             "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=100",
         ],
-        status: "closing-soon" as const,
+        status: "live" as const,
         shippingAvailable: true,
         location: "London, UK",
     },

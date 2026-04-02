@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
     Table,
     TableBody,
@@ -8,7 +9,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MapPin, Phone, Mail, Facebook, Twitter, Instagram } from "lucide-react";
+import { MapPin, Phone, Mail, Facebook, Twitter, Instagram, Building2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -72,13 +73,21 @@ const AuctionInfo = ({ auction }: AuctionInfoProps) => {
                 <h2 className="text-lg md:text-xl font-semibold text-foreground mb-4">Auctioneer</h2>
                 <div className="flex flex-col md:flex-row gap-6">
                     <div className="flex items-start gap-4">
-                        <Image
-                            src={auction.auctioneer.avatar}
-                            alt={auction.auctioneer.name}
-                            width={500}
-                            height={500}
-                            className="w-14 h-14 md:w-16 md:h-16 rounded-full object-cover"
-                        />
+                        {auction.auctioneer.avatar ? (
+                            <Image
+                                src={auction.auctioneer.avatar}
+                                alt={auction.auctioneer.name}
+                                width={500}
+                                height={500}
+                                className="w-14 h-14 md:w-16 md:h-16 rounded-full object-cover"
+                            />
+                        ) : (
+                            <Avatar className="w-14 h-14 md:w-16 md:h-16">
+                                <AvatarFallback>
+                                    <Building2 className="h-5 w-5 text-muted-foreground" />
+                                </AvatarFallback>
+                            </Avatar>
+                        )}
                         <div>
                             <h3 className="font-semibold text-foreground text-base md:text-lg">{auction.auctioneer.name}</h3>
                             <div className="space-y-2 mt-3 text-xs md:text-sm text-muted-foreground">
@@ -130,7 +139,7 @@ const AuctionInfo = ({ auction }: AuctionInfoProps) => {
             </Card>
 
             {/* Buyer's Premium */}
-            <Card className="p-4 md:p-6">
+            {/* <Card className="p-4 md:p-6">
                 <h2 className="text-lg md:text-xl font-semibold text-foreground mb-4">Buyer&apos;s Premium</h2>
                 <Table>
                     <TableHeader>
@@ -150,7 +159,7 @@ const AuctionInfo = ({ auction }: AuctionInfoProps) => {
                         ))}
                     </TableBody>
                 </Table>
-            </Card>
+            </Card> */}
 
             {/* Bid Increments */}
             <Card className="p-4 md:p-6">

@@ -28,20 +28,50 @@ import {
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { useUser } from "@/features/auth/context/UserContext";
+import { authService } from "@/features/auth/services/authService";
+import Cookies from "js-cookie";
+import { useHome } from "@/features/home/hooks/useHome";
+import {
+    buildAuctionCategoryHref,
+    fallbackAuctionCategories,
+} from "@/lib/publicAuctionCategories";
 
 interface MobileMenuProps {
-    isLoggedIn: boolean;
+    isLoggedIn?: boolean;
 }
 
-const MobileMenu = ({ isLoggedIn }: MobileMenuProps) => {
+const MobileMenu = ({ isLoggedIn: defaultIsLoggedIn }: MobileMenuProps) => {
     const router = useRouter();
+    const { isLoggedIn: userIsLoggedIn, setUser } = useUser();
+    const { useCategories } = useHome();
+    const categoriesQuery = useCategories();
+    const categories =
+        categoriesQuery.data?.data?.length ? categoriesQuery.data.data : fallbackAuctionCategories;
+    const navCategories = categories.slice(0, 12);
     const [open, setOpen] = useState(false);
     const [categoriesOpen, setCategoriesOpen] = useState(false);
     const [auctionsOpen, setAuctionsOpen] = useState(false);
 
+    // Use context's isLoggedIn if available, otherwise fall back to prop
+    const loggedIn = userIsLoggedIn || defaultIsLoggedIn || false;
+
     const handleNavigate = (path: string) => {
         router.push(path);
         setOpen(false);
+    };
+
+    const handleLogout = async () => {
+        try {
+            await authService.logout();
+        } catch (error) {
+            console.error("Logout error:", error);
+        } finally {
+            Cookies.remove("bidooze_token");
+            setUser(null);
+            router.push("/");
+            setOpen(false);
+        }
     };
 
     return (
@@ -52,7 +82,7 @@ const MobileMenu = ({ isLoggedIn }: MobileMenuProps) => {
                     <span className="sr-only">Open menu</span>
                 </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[300px] sm:w-[350px] p-0">
+            <SheetContent side="left" className="w-75 sm:w-87.5 p-0">
                 <SheetHeader className="p-4 border-b border-border">
                     <SheetTitle className="text-left">
                         <Link href={"/"}>
@@ -80,21 +110,15 @@ const MobileMenu = ({ isLoggedIn }: MobileMenuProps) => {
                                     <ChevronDown className={`h-4 w-4 transition-transform ${categoriesOpen ? "rotate-180" : ""}`} />
                                 </CollapsibleTrigger>
                                 <CollapsibleContent className="pl-10 pr-3 py-2 space-y-1">
-                                    <button onClick={() => handleNavigate("/auctions")} className="block w-full text-left text-sm py-1.5 text-muted-foreground hover:text-foreground">
-                                        Antiques & Collectibles
-                                    </button>
-                                    <button onClick={() => handleNavigate("/auctions")} className="block w-full text-left text-sm py-1.5 text-muted-foreground hover:text-foreground">
-                                        Art
-                                    </button>
-                                    <button onClick={() => handleNavigate("/auctions")} className="block w-full text-left text-sm py-1.5 text-muted-foreground hover:text-foreground">
-                                        Cars & Vehicles
-                                    </button>
-                                    <button onClick={() => handleNavigate("/auctions")} className="block w-full text-left text-sm py-1.5 text-muted-foreground hover:text-foreground">
-                                        Jewelry & Watches
-                                    </button>
-                                    <button onClick={() => handleNavigate("/auctions")} className="block w-full text-left text-sm py-1.5 text-muted-foreground hover:text-foreground">
-                                        Real Estate
-                                    </button>
+                                    {navCategories.map((category) => (
+                                        <button
+                                            key={category.slug}
+                                            onClick={() => handleNavigate(buildAuctionCategoryHref(category.slug))}
+                                            className="block w-full text-left text-sm py-1.5 text-muted-foreground hover:text-foreground"
+                                        >
+                                            {category.name}
+                                        </button>
+                                    ))}
                                 </CollapsibleContent>
                             </Collapsible>
 
@@ -129,10 +153,10 @@ const MobileMenu = ({ isLoggedIn }: MobileMenuProps) => {
                                     <button onClick={() => handleNavigate("/auctions")} className="block w-full text-left text-sm py-1.5 text-muted-foreground hover:text-foreground">
                                         Browse All Auctions
                                     </button>
-                                    <button onClick={() => handleNavigate("/auctions?status=upcoming")} className="block w-full text-left text-sm py-1.5 text-muted-foreground hover:text-foreground">
+                                    <button onClick={() => handleNavigate("/auctions?auction_status=upcoming")} className="block w-full text-left text-sm py-1.5 text-muted-foreground hover:text-foreground">
                                         Upcoming Auctions
                                     </button>
-                                    <button onClick={() => handleNavigate("/auctions?status=live")} className="block w-full text-left text-sm py-1.5 text-muted-foreground hover:text-foreground">
+                                    <button onClick={() => handleNavigate("/auctions?auction_status=live")} className="block w-full text-left text-sm py-1.5 text-muted-foreground hover:text-foreground">
                                         Live Auctions
                                     </button>
                                     <button onClick={() => router.push("/auctions/state")} className="block w-full text-left text-sm py-1.5 text-muted-foreground hover:text-foreground">
@@ -183,7 +207,7 @@ const MobileMenu = ({ isLoggedIn }: MobileMenuProps) => {
 
                     {/* Auth Section */}
                     <div className="border-t border-border p-4 space-y-2">
-                        {isLoggedIn ? (
+                        {loggedIn ? (
                             <>
                                 <Button
                                     variant="outline"
@@ -196,6 +220,7 @@ const MobileMenu = ({ isLoggedIn }: MobileMenuProps) => {
                                 <Button
                                     variant="ghost"
                                     className="w-full justify-start gap-2"
+                                    onClick={handleLogout}
                                 >
                                     Log out
                                 </Button>

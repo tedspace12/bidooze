@@ -10,30 +10,43 @@ import {
 import BidConfirmationModal from "./modal/BidConfirmationModal";
 
 interface BiddingActionsProps {
-  currentBid: number;
+  currentBid: number | null;
+  /** Minimum next bid from backend: base (current_bid ?? starting_bid) + bid_increment; null if not disclosed */
+  minBid: number | null;
   bidIncrements: { range: string; increment: string }[];
   startTime: string;
   endTime: string;
   id: string;
   title: string;
   images: string[];
+  buyersPremiumLabel?: string;
+  currency?: string;
 }
 
 
 const BiddingActions = ({
   currentBid,
+  minBid,
   bidIncrements,
   startTime,
   endTime,
   id,
   title,
   images,
+  buyersPremiumLabel,
+  currency = "USD",
 }: BiddingActionsProps) => {
   const [bidAmount, setBidAmount] = useState("");
   const [showIncrements, setShowIncrements] = useState(false);
   const [bidModalOpen, setBidModalOpen] = useState(false);
 
-  const minBid = currentBid + 2500; // Based on current increment
+  const formatMoney = (amount: number) =>
+    new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(amount);
 
   // Mock data for bid confirmation modal
   const lotDataForModal = {
@@ -41,13 +54,15 @@ const BiddingActions = ({
     lotId: id,
     title: title,
     images: images,
-    currentBid: currentBid,
-    minBidIncrement: minBid,
-    buyersPremium: "15%",
+    currentBid: currentBid ?? 0,
+    minBidIncrement: minBid ?? 0,
+    buyersPremium: buyersPremiumLabel ?? "—",
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
+    const d = new Date(dateString);
+    if (Number.isNaN(d.getTime())) return "—";
+    return d.toLocaleDateString("en-US", {
       weekday: "short",
       month: "short",
       day: "numeric",
@@ -56,6 +71,9 @@ const BiddingActions = ({
       minute: "2-digit",
     });
   };
+
+  const minBidDisplay =
+    minBid != null && Number.isFinite(minBid) ? formatMoney(minBid) : "—";
 
   return (
     <>
@@ -68,7 +86,7 @@ const BiddingActions = ({
             <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
               type="number"
-              placeholder={`Min: $${minBid.toLocaleString()}`}
+              placeholder={`Min: ${minBidDisplay}`}
               value={bidAmount}
               onChange={(e) => setBidAmount(e.target.value)}
               className="pl-10 text-sm md:text-lg h-12"

@@ -24,6 +24,7 @@ interface Lot {
 
 interface FeaturedLotsSliderProps {
     lots: Lot[];
+    auctionId?: string;
 }
 
 const formatPrice = (price: number) => {
@@ -35,7 +36,7 @@ const formatPrice = (price: number) => {
     }).format(price);
 };
 
-const FeaturedLotsSlider = ({ lots }: FeaturedLotsSliderProps) => {
+const FeaturedLotsSlider = ({ lots, auctionId }: FeaturedLotsSliderProps) => {
     if (lots.length === 0) return null;
 
     return (
@@ -52,7 +53,7 @@ const FeaturedLotsSlider = ({ lots }: FeaturedLotsSliderProps) => {
                 <CarouselContent className="-ml-4">
                     {lots.map((lot) => (
                         <CarouselItem key={lot.id} className="pl-4 basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
-                            <Link href={`/lot/${lot.id}`}>
+                            <Link href={auctionId ? `/lot/${lot.id}?auctionId=${encodeURIComponent(auctionId)}` : `/lot/${lot.id}`}>
                                 <Card className="overflow-hidden hover:shadow-lg transition-shadow">
                                     <div className="relative aspect-4/3">
                                         <Image

@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { format } from "date-fns";
+import { Search, MapPin, ChevronDown, ChevronUp, CalendarIcon, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -21,86 +23,82 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Search, MapPin, ChevronDown, ChevronUp, CalendarIcon, X } from "lucide-react";
-import { format } from "date-fns";
+import { countries, getSubdivisionsByCountry } from "@/lib/locationData";
+import { fallbackAuctionCategories } from "@/lib/publicAuctionCategories";
+import {
+  auctionPresetOptions,
+  auctionStatusOptions,
+  categoryModeOptions,
+  lotTypeOptions,
+  shippingOptions,
+} from "@/lib/publicAuctionFilters";
+import {
+  countActiveListingFilters,
+  getDefaultListingFilters,
+  type ListingFiltersState,
+} from "@/lib/listingQueryParams";
 import { cn } from "@/lib/utils";
-import { AuctionStatus } from "../types";
+import { useHome } from "@/features/home/hooks/useHome";
+import type { Category } from "@/features/home/types";
 
-type FilterSection = "status" | "shipping" | "date" | "categories" | "lotType";
+type FilterSection =
+  | "location"
+  | "status"
+  | "shipping"
+  | "date"
+  | "categories"
+  | "lotType"
+  | "advanced";
 
-interface Filters {
-  search: string;
-  zipCode: string;
-  distance: string;
-  status: AuctionStatus[];
-  shipping: string[];
-  dateRange: { from: Date; to: Date } | null;
-  categories: string[];
-  lotType: string[];
-  state: string;
-}
+export type Filters = ListingFiltersState;
 
 interface AuctionFiltersProps {
   filters: Filters;
   onFiltersChange: (filters: Filters) => void;
-  type: 'auction' | 'lot'
+  type: "auction" | "lot";
 }
 
-const statusOptions: { value: AuctionStatus; label: string }[] = [
-  { value: "all", label: "All Auctions" },
-  { value: "live", label: "Live" },
-  { value: "upcoming", label: "Upcoming" },
-  { value: "closing-soon", label: "Closing Soon" },
-  { value: "featured", label: "Featured" },
-  { value: "top-picks", label: "Top Picks" },
-  { value: "hot", label: "Hot" },
-  { value: "closed", label: "Closed" },
-];
+const AuctionFilters = ({
+  filters,
+  onFiltersChange,
+  type,
+}: AuctionFiltersProps) => {
+  const [openSections, setOpenSections] = useState<FilterSection[]>([
+    "status",
+    "categories",
+  ]);
+  const { useCategories } = useHome();
+  const categoriesQuery = useCategories();
+  const categories =
+    categoriesQuery.data?.data?.length ? categoriesQuery.data.data : fallbackAuctionCategories;
 
-const categoryTree = [
-  {
-    name: "Antiques & Collectibles",
-    subcategories: ["Furniture", "Pottery", "Glass", "Toys", "Memorabilia"],
-  },
-  {
-    name: "Art",
-    subcategories: ["Paintings", "Sculptures", "Photography", "Prints", "Digital Art"],
-  },
-  {
-    name: "Cars & Vehicles",
-    subcategories: ["Classic Cars", "Motorcycles", "Trucks", "Boats", "Parts"],
-  },
-  {
-    name: "Jewelry & Watches",
-    subcategories: ["Rings", "Necklaces", "Watches", "Bracelets", "Earrings"],
-  },
-  {
-    name: "Real Estate",
-    subcategories: ["Residential", "Commercial", "Land", "Vacation Homes"],
-  },
-  {
-    name: "Fashion",
-    subcategories: ["Designer Clothing", "Handbags", "Shoes", "Accessories"],
-  },
-];
+  // Flatten categories to include subcategories
+  const allCategories = useMemo(() => {
+    const flattened: Category[] = [];
+    categories.forEach((category) => {
+      flattened.push(category);
+      if (category.subcategories) {
+        flattened.push(...category.subcategories);
+      }
+    });
+    return flattened.sort((a, b) => a.sort_order - b.sort_order);
+  }, [categories]);
 
-const lotTypeOptions = [
-  { value: "all", label: "All lots" },
-  { value: "biddable", label: "Biddable lots" },
-  { value: "live-webcast", label: "Live webcast lots" },
-  { value: "online-only", label: "Online-only lots" },
-  { value: "absentee", label: "Absentee lots" },
-  { value: "listing-only", label: "Listing-only lots" },
-];
+  const subdivisionOptions = useMemo(() => {
+    if (filters.country === "all") return [];
 
-const AuctionFilters = ({ filters, onFiltersChange, type }: AuctionFiltersProps) => {
-  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
-  const [openSections, setOpenSections] = useState<FilterSection[]>(["status"]);
+    return getSubdivisionsByCountry(filters.country).map((subdivision) => ({
+      label: subdivision.name,
+      value: subdivision.code.includes("-")
+        ? subdivision.code
+        : `${filters.country}-${subdivision.code}`,
+    }));
+  }, [filters.country]);
 
   const toggleSection = (section: FilterSection) => {
-    setOpenSections(prev =>
+    setOpenSections((prev) =>
       prev.includes(section)
-        ? prev.filter(s => s !== section)
+        ? prev.filter((value) => value !== section)
         : [...prev, section]
     );
   };
@@ -109,86 +107,68 @@ const AuctionFilters = ({ filters, onFiltersChange, type }: AuctionFiltersProps)
     onFiltersChange({ ...filters, [key]: value });
   };
 
-  const toggleStatus = (status: AuctionStatus) => {
-    if (status === "all") {
-      updateFilter("status", ["all"]);
-      return;
-    }
-
-    let newStatus = filters.status.filter(s => s !== "all");
-    if (newStatus.includes(status)) {
-      newStatus = newStatus.filter(s => s !== status);
-    } else {
-      newStatus = [...newStatus, status];
-    }
-
-    if (newStatus.length === 0) {
-      newStatus = ["live"];
-    }
-
-    updateFilter("status", newStatus as AuctionStatus[]);
+  const toggleStatus = (value: Filters["status"][number]) => {
+    const next = filters.status.includes(value)
+      ? filters.status.filter((item) => item !== value)
+      : [...filters.status, value];
+    updateFilter("status", next);
   };
 
-  const toggleShipping = (value: string) => {
-    const newShipping = filters.shipping.includes(value)
-      ? filters.shipping.filter(s => s !== value)
+  const toggleAuctionPreset = (value: Filters["auctionStatus"][number]) => {
+    const next = filters.auctionStatus.includes(value)
+      ? filters.auctionStatus.filter((item) => item !== value)
+      : [...filters.auctionStatus, value];
+    updateFilter("auctionStatus", next);
+  };
+
+  const toggleShipping = (value: Filters["shipping"][number]) => {
+    const next = filters.shipping.includes(value)
+      ? filters.shipping.filter((item) => item !== value)
       : [...filters.shipping, value];
-    updateFilter("shipping", newShipping);
+    updateFilter("shipping", next);
   };
 
-  const toggleCategory = (category: string) => {
-    const newCategories = filters.categories.includes(category)
-      ? filters.categories.filter(c => c !== category)
-      : [...filters.categories, category];
-    updateFilter("categories", newCategories);
+  const toggleCategory = (value: string) => {
+    const next = filters.categories.includes(value)
+      ? filters.categories.filter((item) => item !== value)
+      : [...filters.categories, value];
+    updateFilter("categories", next);
   };
 
-  const toggleLotType = (type: string) => {
-    if (type === "all") {
-      updateFilter("lotType", ["all"]);
+  const toggleLotType = (value: Filters["lotType"][number]) => {
+    const next = filters.lotType.includes(value)
+      ? filters.lotType.filter((item) => item !== value)
+      : [...filters.lotType, value];
+    updateFilter("lotType", next);
+  };
+
+  const handleCountryChange = (value: string) => {
+    if (value === "all") {
+      onFiltersChange({
+        ...filters,
+        country: "all",
+        state: "all",
+      });
       return;
     }
 
-    let newTypes = filters.lotType.filter(t => t !== "all");
-    if (newTypes.includes(type)) {
-      newTypes = newTypes.filter(t => t !== type);
-    } else {
-      newTypes = [...newTypes, type];
-    }
-
-    if (newTypes.length === 0) {
-      newTypes = ["all"];
-    }
-
-    updateFilter("lotType", newTypes);
-  };
-
-  const clearAllFilters = () => {
+    const nextState = filters.state.startsWith(`${value}-`) ? filters.state : "all";
     onFiltersChange({
-      search: "",
-      zipCode: "",
-      distance: "50",
-      status: ["live"] as AuctionStatus[],
-      shipping: [],
-      dateRange: null,
-      categories: [],
-      lotType: [],
-      state: "",
+      ...filters,
+      country: value,
+      state: nextState,
     });
   };
 
-  const hasActiveFilters =
-    filters.search ||
-    filters.zipCode ||
-    filters.distance !== "50" ||
-    (filters.status.length > 0 && !filters.status.includes("live")) ||
-    filters.shipping.length > 0 ||
-    filters.dateRange ||
-    filters.categories.length > 0 ||
-    filters.lotType.length > 0;
+  const clearAllFilters = () => {
+    onFiltersChange(getDefaultListingFilters());
+  };
+
+  const activeFiltersCount = countActiveListingFilters(filters);
+  const hasActiveFilters = activeFiltersCount > 0;
 
   return (
-    <div className="bg-card border border-border rounded-xl p-5 sticky top-28">
+    <div className="bg-card border border-border rounded-xl p-5 h-fit max-h-[calc(100vh-8rem)] overflow-y-auto scrollbar-hide sticky top-28">
       <div className="flex items-center justify-between mb-5">
         <h2 className="font-semibold text-foreground">Filters</h2>
         {hasActiveFilters && (
@@ -199,13 +179,12 @@ const AuctionFilters = ({ filters, onFiltersChange, type }: AuctionFiltersProps)
       </div>
 
       <div className="space-y-6">
-        {/* Search */}
         <div>
           <Label className="text-sm font-medium mb-2 block">Search</Label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder={type === 'auction' ? "Search auctions..." : "Search lots..."}
+              placeholder={type === "auction" ? "Search auctions..." : "Search lots..."}
               value={filters.search}
               onChange={(e) => updateFilter("search", e.target.value)}
               className="pl-9"
@@ -213,79 +192,136 @@ const AuctionFilters = ({ filters, onFiltersChange, type }: AuctionFiltersProps)
           </div>
         </div>
 
-        {/* Location */}
-        <div>
-          <Label className="text-sm font-medium mb-2 block">Location</Label>
+        <Collapsible
+          open={openSections.includes("location")}
+          onOpenChange={() => toggleSection("location")}
+        >
+          <CollapsibleTrigger className="flex items-center justify-between w-full py-2 border-t border-border">
+            <Label className="text-sm font-medium cursor-pointer">Location</Label>
+            {openSections.includes("location") ? (
+              <ChevronUp className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            )}
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-2 pb-1 space-y-3">
+            <div>
+              <Label className="text-xs text-muted-foreground mb-2 block">Country</Label>
+              <Select value={filters.country} onValueChange={handleCountryChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Country" />
+                </SelectTrigger>
+                <SelectContent className="bg-background max-h-80">
+                  <SelectItem value="all">All countries</SelectItem>
+                  {countries.map((country) => (
+                    <SelectItem key={country.code} value={country.code}>
+                      {country.name} ({country.code})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div className="space-y-3">
-            <Select value={filters.state} onValueChange={(v) => updateFilter("state", v)}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="State" />
-              </SelectTrigger>
-              <SelectContent className="bg-background">
-                <SelectItem value="all">All States</SelectItem>
-                <SelectItem value="alaska">Alaska</SelectItem>
-                <SelectItem value="alabama">Alabama</SelectItem>
-                <SelectItem value="arizona">Arizona</SelectItem>
-                <SelectItem value="california">California</SelectItem>
-                <SelectItem value="colorado">Colorado</SelectItem>
-              </SelectContent>
-            </Select>
+            <div>
+              <Label className="text-xs text-muted-foreground mb-2 block">State / province</Label>
+              <Select
+                value={filters.state}
+                onValueChange={(value) => updateFilter("state", value)}
+                disabled={filters.country === "all"}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue
+                    placeholder={
+                      filters.country === "all"
+                        ? "Select a country first"
+                        : "State / province"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent className="bg-background max-h-80">
+                  <SelectItem value="all">All states</SelectItem>
+                  {subdivisionOptions.map((subdivision) => (
+                    <SelectItem key={subdivision.value} value={subdivision.value}>
+                      {subdivision.label} ({subdivision.value})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="relative">
               <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Zip code"
+                placeholder="City"
+                value={filters.city}
+                onChange={(e) => updateFilter("city", e.target.value)}
+                className="pl-9"
+              />
+            </div>
+
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="ZIP / postal code"
                 value={filters.zipCode}
                 onChange={(e) => updateFilter("zipCode", e.target.value)}
                 className="pl-9"
               />
             </div>
-            <Select value={filters.distance} onValueChange={(v) => updateFilter("distance", v)}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Distance" />
-              </SelectTrigger>
-              <SelectContent className="bg-background">
-                <SelectItem value="anywhere">Anywhere</SelectItem>
-                <SelectItem value="25">Within 25 miles</SelectItem>
-                <SelectItem value="50">Within 50 miles</SelectItem>
-                <SelectItem value="100">Within 100 miles</SelectItem>
-                <SelectItem value="200">Within 200 miles</SelectItem>
-                <SelectItem value="250">Within 250 miles</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+          </CollapsibleContent>
+        </Collapsible>
 
-        {/* Auction Status */}
-        <Collapsible open={openSections.includes("status")} onOpenChange={() => toggleSection("status")}>
+        <Collapsible
+          open={openSections.includes("status")}
+          onOpenChange={() => toggleSection("status")}
+        >
           <CollapsibleTrigger className="flex items-center justify-between w-full py-2 border-t border-border">
-            <Label className="text-sm font-medium cursor-pointer">Auction Status</Label>
+            <Label className="text-sm font-medium cursor-pointer">Status</Label>
             {openSections.includes("status") ? (
               <ChevronUp className="h-4 w-4 text-muted-foreground" />
             ) : (
               <ChevronDown className="h-4 w-4 text-muted-foreground" />
             )}
           </CollapsibleTrigger>
-          <CollapsibleContent className="pt-2 pb-1">
-            <div className="space-y-2">
-              {statusOptions.map((option) => (
-                <div key={option.value} className="flex items-center gap-2">
-                  <Checkbox
-                    id={`status-${option.value}`}
-                    checked={filters.status.includes(option.value)}
-                    onCheckedChange={() => toggleStatus(option.value)}
-                  />
-                  <Label htmlFor={`status-${option.value}`} className="text-sm cursor-pointer">
-                    {option.label}
-                  </Label>
-                </div>
-              ))}
+          <CollapsibleContent className="pt-2 pb-1 space-y-4">
+            <div>
+              <div className="space-y-2">
+                {auctionPresetOptions.map((option) => (
+                  <div key={option.value} className="flex items-center gap-2">
+                    <Checkbox
+                      id={`preset-${option.value}`}
+                      checked={filters.auctionStatus.includes(option.value)}
+                      onCheckedChange={() => toggleAuctionPreset(option.value)}
+                    />
+                    <Label htmlFor={`preset-${option.value}`} className="text-sm cursor-pointer">
+                      {option.label}
+                    </Label>
+                  </div>
+                ))}
+              </div>
             </div>
+
+            {filters.auctionStatus.includes("closing_soon") && (
+              <div>
+                <Label className="text-xs text-muted-foreground mb-2 block">
+                  Closing soon hours
+                </Label>
+                <Input
+                  type="number"
+                  min="1"
+                  placeholder="48"
+                  value={filters.closingSoonHours}
+                  onChange={(e) => updateFilter("closingSoonHours", e.target.value)}
+                />
+              </div>
+            )}
           </CollapsibleContent>
         </Collapsible>
 
-        {/* Shipping */}
-        <Collapsible open={openSections.includes("shipping")} onOpenChange={() => toggleSection("shipping")}>
+        <Collapsible
+          open={openSections.includes("shipping")}
+          onOpenChange={() => toggleSection("shipping")}
+        >
           <CollapsibleTrigger className="flex items-center justify-between w-full py-2 border-t border-border">
             <Label className="text-sm font-medium cursor-pointer">Shipping</Label>
             {openSections.includes("shipping") ? (
@@ -296,97 +332,114 @@ const AuctionFilters = ({ filters, onFiltersChange, type }: AuctionFiltersProps)
           </CollapsibleTrigger>
           <CollapsibleContent className="pt-2 pb-1">
             <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="shipping-available"
-                  checked={filters.shipping.includes("shipping")}
-                  onCheckedChange={() => toggleShipping("shipping")}
-                />
-                <Label htmlFor="shipping-available" className="text-sm cursor-pointer">
-                  Shipping available
-                </Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="pickup-only"
-                  checked={filters.shipping.includes("pickup")}
-                  onCheckedChange={() => toggleShipping("pickup")}
-                />
-                <Label htmlFor="pickup-only" className="text-sm cursor-pointer">
-                  Local pickup only
-                </Label>
-              </div>
+              {shippingOptions.map((option) => (
+                <div key={option.value} className="flex items-center gap-2">
+                  <Checkbox
+                    id={`shipping-${option.value}`}
+                    checked={filters.shipping.includes(option.value)}
+                    onCheckedChange={() => toggleShipping(option.value)}
+                  />
+                  <Label htmlFor={`shipping-${option.value}`} className="text-sm cursor-pointer">
+                    {option.label}
+                  </Label>
+                </div>
+              ))}
             </div>
           </CollapsibleContent>
         </Collapsible>
 
-        {/* Date Range */}
-        <Collapsible open={openSections.includes("date")} onOpenChange={() => toggleSection("date")}>
+        <Collapsible
+          open={openSections.includes("date")}
+          onOpenChange={() => toggleSection("date")}
+        >
           <CollapsibleTrigger className="flex items-center justify-between w-full py-2 border-t border-border">
-            <Label className="text-sm font-medium cursor-pointer">Auction Date</Label>
+            <Label className="text-sm font-medium cursor-pointer">Dates</Label>
             {openSections.includes("date") ? (
               <ChevronUp className="h-4 w-4 text-muted-foreground" />
             ) : (
               <ChevronDown className="h-4 w-4 text-muted-foreground" />
             )}
           </CollapsibleTrigger>
-          <CollapsibleContent className="pt-2 pb-1">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !filters.dateRange && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {filters.dateRange?.from ? (
-                    filters.dateRange.to ? (
-                      <>
-                        {format(filters.dateRange.from, "LLL dd")} -{" "}
-                        {format(filters.dateRange.to, "LLL dd")}
-                      </>
+          <CollapsibleContent className="pt-2 pb-1 space-y-3">
+            <div>
+              <Label className="text-xs text-muted-foreground mb-2 block">
+                Date range (`date_from`, `date_to`)
+              </Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !filters.dateRange && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {filters.dateRange?.from ? (
+                      filters.dateRange.to ? (
+                        <>
+                          {format(filters.dateRange.from, "LLL dd")} -{" "}
+                          {format(filters.dateRange.to, "LLL dd")}
+                        </>
+                      ) : (
+                        format(filters.dateRange.from, "LLL dd, y")
+                      )
                     ) : (
-                      format(filters.dateRange.from, "LLL dd, y")
-                    )
-                  ) : (
-                    "Select date range"
-                  )}
+                      "Select date range"
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-background" align="start">
+                  <Calendar
+                    initialFocus
+                    mode="range"
+                    selected={filters.dateRange ?? undefined}
+                    onSelect={(range) => updateFilter("dateRange", range ?? null)}
+                    numberOfMonths={2}
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+              {filters.dateRange && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="mt-2 h-auto p-0 text-xs text-muted-foreground"
+                  onClick={() => updateFilter("dateRange", null)}
+                >
+                  <X className="h-3 w-3 mr-1" /> Clear date range
                 </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 bg-background" align="start">
-                <Calendar
-                  initialFocus
-                  mode="range"
-                  selected={filters.dateRange ? { from: filters.dateRange.from, to: filters.dateRange.to } : undefined}
-                  onSelect={(range) => {
-                    if (range?.from && range?.to) {
-                      updateFilter("dateRange", { from: range.from, to: range.to });
-                    } else {
-                      updateFilter("dateRange", null);
-                    }
-                  }}
-                  numberOfMonths={2}
-                  className="pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
-            {filters.dateRange && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="mt-2 h-auto p-0 text-xs text-muted-foreground"
-                onClick={() => updateFilter("dateRange", null)}
-              >
-                <X className="h-3 w-3 mr-1" /> Clear date
-              </Button>
-            )}
+              )}
+            </div>
+
+            <div>
+              <Label className="text-xs text-muted-foreground mb-2 block">
+                Starts after
+              </Label>
+              <Input
+                type="datetime-local"
+                value={filters.startsAfter}
+                onChange={(e) => updateFilter("startsAfter", e.target.value)}
+              />
+            </div>
+
+            <div>
+              <Label className="text-xs text-muted-foreground mb-2 block">
+                Ends before
+              </Label>
+              <Input
+                type="datetime-local"
+                value={filters.endsBefore}
+                onChange={(e) => updateFilter("endsBefore", e.target.value)}
+              />
+            </div>
           </CollapsibleContent>
         </Collapsible>
 
-        {/* Categories */}
-        <Collapsible open={openSections.includes("categories")} onOpenChange={() => toggleSection("categories")}>
+        <Collapsible
+          open={openSections.includes("categories")}
+          onOpenChange={() => toggleSection("categories")}
+        >
           <CollapsibleTrigger className="flex items-center justify-between w-full py-2 border-t border-border">
             <Label className="text-sm font-medium cursor-pointer">Categories</Label>
             {openSections.includes("categories") ? (
@@ -395,57 +448,51 @@ const AuctionFilters = ({ filters, onFiltersChange, type }: AuctionFiltersProps)
               <ChevronDown className="h-4 w-4 text-muted-foreground" />
             )}
           </CollapsibleTrigger>
-          <CollapsibleContent className="pt-2 pb-1">
-            <div className="space-y-1">
-              {categoryTree.map((category) => (
-                <Collapsible
-                  key={category.name}
-                  open={expandedCategories.includes(category.name)}
-                  onOpenChange={(open) => {
-                    setExpandedCategories(open
-                      ? [...expandedCategories, category.name]
-                      : expandedCategories.filter(c => c !== category.name)
-                    );
-                  }}
-                >
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id={`cat-${category.name}`}
-                      checked={filters.categories.includes(category.name)}
-                      onCheckedChange={() => toggleCategory(category.name)}
-                    />
-                    <CollapsibleTrigger className="flex items-center gap-1 flex-1 py-1.5">
-                      <Label htmlFor={`cat-${category.name}`} className="text-sm cursor-pointer flex-1 text-left">
-                        {category.name}
-                      </Label>
-                      <ChevronDown className={cn(
-                        "h-3.5 w-3.5 text-muted-foreground transition-transform",
-                        expandedCategories.includes(category.name) && "rotate-180"
-                      )} />
-                    </CollapsibleTrigger>
-                  </div>
-                  <CollapsibleContent className="pl-6 space-y-1 mt-1">
-                    {category.subcategories.map((sub) => (
-                      <div key={sub} className="flex items-center gap-2">
-                        <Checkbox
-                          id={`subcat-${sub}`}
-                          checked={filters.categories.includes(sub)}
-                          onCheckedChange={() => toggleCategory(sub)}
-                        />
-                        <Label htmlFor={`subcat-${sub}`} className="text-sm cursor-pointer text-muted-foreground">
-                          {sub}
-                        </Label>
-                      </div>
-                    ))}
-                  </CollapsibleContent>
-                </Collapsible>
+          <CollapsibleContent className="pt-2 pb-1 space-y-3">
+            <div className="space-y-2 pr-1">
+              {allCategories.map((category) => (
+                <div key={category.slug} className="flex items-center gap-2">
+                  <Checkbox
+                    id={`category-${category.slug}`}
+                    checked={filters.categories.includes(category.slug)}
+                    onCheckedChange={() => toggleCategory(category.slug)}
+                  />
+                  <Label htmlFor={`category-${category.slug}`} className="text-sm cursor-pointer">
+                    {category.parent_id ? `  ${category.name}` : category.name}
+                  </Label>
+                </div>
               ))}
             </div>
+
+            {filters.categories.length > 1 && (
+              <div>
+                <Label className="text-xs text-muted-foreground mb-2 block">
+                  Category mode (`category_mode`)
+                </Label>
+                <Select
+                  value={filters.categoryMode}
+                  onValueChange={(value) => updateFilter("categoryMode", value as Filters["categoryMode"])}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background">
+                    {categoryModeOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </CollapsibleContent>
         </Collapsible>
 
-        {/* Lot Type */}
-        <Collapsible open={openSections.includes("lotType")} onOpenChange={() => toggleSection("lotType")}>
+        <Collapsible
+          open={openSections.includes("lotType")}
+          onOpenChange={() => toggleSection("lotType")}
+        >
           <CollapsibleTrigger className="flex items-center justify-between w-full py-2 border-t border-border">
             <Label className="text-sm font-medium cursor-pointer">Lot Type</Label>
             {openSections.includes("lotType") ? (
@@ -459,15 +506,54 @@ const AuctionFilters = ({ filters, onFiltersChange, type }: AuctionFiltersProps)
               {lotTypeOptions.map((option) => (
                 <div key={option.value} className="flex items-center gap-2">
                   <Checkbox
-                    id={`lot-${option.value}`}
+                    id={`lot-type-${option.value}`}
                     checked={filters.lotType.includes(option.value)}
                     onCheckedChange={() => toggleLotType(option.value)}
                   />
-                  <Label htmlFor={`lot-${option.value}`} className="text-sm cursor-pointer">
+                  <Label htmlFor={`lot-type-${option.value}`} className="text-sm cursor-pointer">
                     {option.label}
                   </Label>
                 </div>
               ))}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+
+        <Collapsible
+          open={openSections.includes("advanced")}
+          onOpenChange={() => toggleSection("advanced")}
+        >
+          <CollapsibleTrigger className="flex items-center justify-between w-full py-2 border-t border-border">
+            <Label className="text-sm font-medium cursor-pointer">Advanced</Label>
+            {openSections.includes("advanced") ? (
+              <ChevronUp className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            )}
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-2 pb-1 space-y-3">
+            <div>
+              <Label className="text-xs text-muted-foreground mb-2 block">
+                Currency
+              </Label>
+              <Input
+                placeholder="USD"
+                value={filters.currency}
+                onChange={(e) => updateFilter("currency", e.target.value.toUpperCase())}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="active-only"
+                  checked={filters.activeOnly}
+                  onCheckedChange={(checked) => updateFilter("activeOnly", checked === true)}
+                />
+                <Label htmlFor="active-only" className="text-sm cursor-pointer">
+                  Active only
+                </Label>
+              </div>
             </div>
           </CollapsibleContent>
         </Collapsible>

@@ -5,108 +5,107 @@ import Image from "next/image";
 import Link from "next/link";
 import SectionHeader from "@/components/shared/SectionHeader";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { useHome } from "../hooks/useHome";
 
-const featuredAuctions = [
-    {
-        id: 1,
-        image: '/images/hero-auction-1.jpg',
-        title: "Victorian Era Writing Desk",
-        currentBid: "$2,450",
-        endTime: "2h 15m",
-        bids: 23,
-    },
-    {
-        id: 2,
-        image: '/images/hero-auction-2.jpg',
-        title: "1965 Ferrari 275 GTB",
-        currentBid: "$1,850,000",
-        endTime: "1d 8h",
-        bids: 47,
-    },
-    {
-        id: 3,
-        image: '/images/hero-auction-3.jpg',
-        title: "Abstract Expressionist Oil Painting",
-        currentBid: "$18,500",
-        endTime: "5h 42m",
-        bids: 31,
-    },
-    {
-        id: 4,
-        image: '/images/hero-auction-1.jpg',
-        title: "Antique Crystal Chandelier",
-        currentBid: "$5,200",
-        endTime: "4h 30m",
-        bids: 18,
-    },
-    {
-        id: 5,
-        image: '/images/hero-auction-2.jpg',
-        title: "1970 Chevrolet Chevelle SS",
-        currentBid: "$68,000",
-        endTime: "3d 2h",
-        bids: 52,
-    },
-    {
-        id: 6,
-        image: '/images/hero-auction-3.jpg',
-        title: "Contemporary Sculpture Collection",
-        currentBid: "$12,800",
-        endTime: "6h 15m",
-        bids: 29,
-    },
-];
+const formatTimeLeft = (iso: string) => {
+    const end = new Date(iso).getTime();
+    if (Number.isNaN(end)) return "—";
+    const diff = end - Date.now();
+    if (diff <= 0) return "Ended";
+    const mins = Math.floor(diff / 60000);
+    const days = Math.floor(mins / (60 * 24));
+    const hours = Math.floor((mins % (60 * 24)) / 60);
+    const minutes = mins % 60;
+    if (days > 0) return `${days}d ${hours}h`;
+    if (hours > 0) return `${hours}h ${minutes}m`;
+    return `${minutes}m`;
+};
 
 const FeaturedAuctions = () => {
     const router = useRouter();
+    const { useFeaturedAuctions } = useHome();
+    const featuredQuery = useFeaturedAuctions();
+    const slots = featuredQuery.data?.data ?? [];
 
     return (
         <div className="container mx-auto px-4 py-8 sm:py-12">
             <SectionHeader
-                title="Featured Auction Items"
-                description="Handpicked premium items ending soon"
+                title="Featured Auctions"
+                description="Featured auctions to explore right now"
                 actionLabel="View All"
                 onAction={() => router.push('/auctions')}
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {featuredAuctions.map((auction) => (
-                    <Link key={auction.id} href={`/lot/${auction.id}`}>
-                        <Card key={auction.id} className="overflow-hidden group cursor-pointer hover:shadow-xl transition-all">
-                            <div className="relative h-52 md:h-64 overflow-hidden">
-                                <Image
-                                    src={auction.image}
-                                    alt={auction.title}
-                                    width={500}
-                                    height={500}
-                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                />
-                                <button className="absolute top-4 right-4 p-2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors">
-                                    <Eye className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                                </button>
-                            </div>
-                            <div className="p-3 md:p-5 space-y-2 md:space-y-3">
-                                <h3 className="font-semibold text-base md:text-lg line-clamp-1">{auction.title}</h3>
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-xs md:text-sm text-muted-foreground">Current Bid</p>
-                                        <p className="text-lg md:text-xl font-bold text-primary">{auction.currentBid}</p>
+                {featuredQuery.isLoading ? (
+                    Array.from({ length: 6 }).map((_, idx) => (
+                        <div key={idx} className="h-[320px] rounded-xl bg-muted animate-pulse" />
+                    ))
+                ) : featuredQuery.isError ? (
+                    <div className="col-span-full rounded-xl border border-border p-6 flex items-center justify-between gap-4">
+                        <p className="text-sm text-muted-foreground">Couldn’t load featured auctions.</p>
+                        <Button variant="outline" onClick={() => featuredQuery.refetch()}>
+                            Retry
+                        </Button>
+                    </div>
+                ) : slots.length === 0 ? (
+                    <div className="col-span-full rounded-xl border border-border p-6">
+                        <p className="text-sm text-muted-foreground">No featured auctions available.</p>
+                    </div>
+                ) : (
+                    slots.map((slot) => {
+                        const auction = slot.auction;
+                        const bidCount = auction.stats?.bid_count ?? 0;
+                        const currentBid = auction.stats?.current_bid;
+                        return (
+                            <Link key={slot.slot_id} href={`/auction/${auction.auction_id}`}>
+                                <Card className="overflow-hidden group cursor-pointer hover:shadow-xl transition-all">
+                                    <div className="relative h-52 md:h-64 overflow-hidden">
+                                        <Image
+                                            src={auction.image_url}
+                                            alt={auction.title}
+                                            width={500}
+                                            height={500}
+                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                        />
+                                        <button
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                router.push(`/auction/${auction.auction_id}`);
+                                            }}
+                                            className="absolute top-4 right-4 p-2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors"
+                                        >
+                                            <Eye className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                                        </button>
                                     </div>
-                                    <div className="text-right">
-                                        <div className="flex items-center gap-1 text-xs md:text-sm text-muted-foreground">
-                                            <Clock className="h-3.5 w-3.5" />
-                                            {auction.endTime}
+                                    <div className="p-3 md:p-5 space-y-2 md:space-y-3">
+                                        <h3 className="font-semibold text-base md:text-lg line-clamp-1">
+                                            {auction.title}
+                                        </h3>
+                                        <div className="flex items-center justify-between gap-3">
+                                            <div>
+                                                <p className="text-xs md:text-sm text-muted-foreground">Current Bid</p>
+                                                <p className="text-lg md:text-xl font-bold text-primary">
+                                                    {currentBid == null ? "—" : `${auction.currency} ${currentBid}`}
+                                                </p>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="flex items-center justify-end gap-1 text-xs md:text-sm text-muted-foreground">
+                                                    <Clock className="h-3.5 w-3.5" />
+                                                    {formatTimeLeft(auction.end_datetime)}
+                                                </div>
+                                                <Badge variant="secondary" className="mt-1">
+                                                    {bidCount} bids
+                                                </Badge>
+                                            </div>
                                         </div>
-                                        <Badge variant="secondary" className="mt-1">
-                                            {auction.bids} bids
-                                        </Badge>
                                     </div>
-                                </div>
-                                {/* <Button className="w-full">Place Bid</Button> */}
-                            </div>
-                        </Card>
-                    </Link>
-                ))}
+                                </Card>
+                            </Link>
+                        );
+                    })
+                )}
             </div>
         </div>
     );

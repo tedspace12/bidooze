@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -10,196 +11,166 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { useParams } from "next/navigation";
 import AuctionHeader from "./components/AuctionHeader";
 import FeaturedLotsSlider from "./components/FeaturedLotsSlider";
 import LotsGrid from "./components/LotsGrid";
 import AuctionInfo from "./components/AuctionInfo";
+import { useAuction } from "./hooks/useAuction";
+import type { AuctionDetailsResponse, AuctionLotsResponse } from "./types";
+import { normalizeBuyerAuctionStatus } from "@/lib/auctionLifecycle";
 
-// Mock auction data
-const mockAuction = {
-  id: "1",
-  title: "Classic & Vintage Automobiles Auction",
-  status: "live" as const,
-  auctioneer: {
-    name: "Heritage Auctions",
-    avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop",
-    address: "2801 W Airport Freeway, Dallas, TX 75261",
-    phone: "+1 (214) 528-3500",
-    email: "info@heritageauctions.com",
-    socialLinks: {
-      facebook: "https://facebook.com/heritageauctions",
-      twitter: "https://twitter.com/heritageauction",
-      instagram: "https://instagram.com/heritageauctions",
+const toHeaderAuction = (details: AuctionDetailsResponse) => {
+  const location = details.auctioneer.location;
+  const address = [
+    location?.address_line_1,
+    location?.city,
+    location?.state,
+    location?.country,
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  const socialLinks: {
+    facebook?: string;
+    twitter?: string;
+    instagram?: string;
+  } = {};
+  (details.auctioneer.socials ?? []).forEach((social) => {
+    if (!social.platform || !social.url) return;
+    if (social.platform === "facebook") socialLinks.facebook = social.url;
+    if (social.platform === "twitter") socialLinks.twitter = social.url;
+    if (social.platform === "instagram") socialLinks.instagram = social.url;
+  });
+
+  return {
+    id: String(details.id),
+    title: details.name,
+    status: normalizeBuyerAuctionStatus(details.status),
+    auctioneer: {
+      name: details.auctioneer.company_name,
+      avatar: details.auctioneer.avatar ?? "",
+      address: address || "—",
+      phone: details.auctioneer.number || "—",
+      email: details.auctioneer.email || "—",
+      socialLinks,
     },
-  },
-  startDate: "2024-12-25",
-  endDate: "2025-01-02",
-  description: "Discover a curated collection of classic and vintage automobiles from prestigious collections worldwide. This auction features rare finds from the golden age of motoring.",
-  fullDescription: `Welcome to our premier Classic & Vintage Automobiles Auction, featuring an exceptional selection of rare and collectible vehicles from around the world.
-
-This auction showcases over 150 lots of classic cars, vintage motorcycles, and automotive memorabilia. From pre-war classics to muscle cars of the 1960s and 70s, there's something for every collector.
-
-Highlights include a 1967 Ferrari 275 GTB/4, a 1955 Mercedes-Benz 300SL Gullwing, and a matching-numbers 1970 Plymouth Hemi 'Cuda. Each vehicle has been carefully vetted by our team of experts.
-
-All vehicles come with detailed condition reports and provenance documentation where available.`,
-  buyersPremium: [
-    { startRange: 0, endRange: 100000, percentage: 25 },
-    { startRange: 100001, endRange: 1000000, percentage: 20 },
-    { startRange: 1000001, endRange: null, percentage: 12 },
-  ],
-  bidIncrements: [
-    { startRange: 0, endRange: 99, increment: 5 },
-    { startRange: 100, endRange: 499, increment: 10 },
-    { startRange: 500, endRange: 999, increment: 25 },
-    { startRange: 1000, endRange: 4999, increment: 50 },
-    { startRange: 5000, endRange: 24999, increment: 100 },
-    { startRange: 25000, endRange: 99999, increment: 500 },
-    { startRange: 100000, endRange: null, increment: 1000 },
-  ],
-  shippingInfo: "Shipping available for all vehicles. Buyer is responsible for arranging and paying for shipping. We can recommend trusted automotive transport companies.",
-  termsAndConditions: `1. All sales are final. No returns or refunds.
-2. Buyer's premium applies to all purchases.
-3. Payment must be made within 7 days of auction close.
-4. Vehicles must be picked up or shipped within 14 days.
-5. All vehicles sold as-is, where-is.
-6. Title transfer is the responsibility of the buyer.
-7. We reserve the right to cancel any bid or sale.`,
+    startDate: details.start_date,
+    endDate: details.end_date,
+    description: details.description || "",
+    fullDescription: details.description || "",
+    buyersPremium: [],
+    bidIncrements: (details.bid_increments ?? []).map((item) => ({
+      startRange: item.minimum ?? 0,
+      endRange: item.maximum ?? null,
+      increment: item.increment ?? 0,
+    })),
+    shippingInfo: details.shipping_info || "No shipping information available.",
+    termsAndConditions:
+      details.terms_and_condition || "No terms and conditions available.",
+  };
 };
 
-const mockLots = [
-  {
-    id: "1",
-    lotNumber: 1,
-    title: "1967 Ferrari 275 GTB/4",
-    image: "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=600&h=400&fit=crop",
-    currentBid: 2850000,
-    estimateLow: 2500000,
-    estimateHigh: 3500000,
-    bids: 24,
-    status: "open" as const,
-    featured: true,
-    isRegistered: false,
-    timeRemaining: "2h 45m",
-    shippingAvailable: true,
-  },
-  {
-    id: "2",
-    lotNumber: 2,
-    title: "1955 Mercedes-Benz 300SL Gullwing",
-    image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&h=400&fit=crop",
-    currentBid: 1450000,
-    estimateLow: 1200000,
-    estimateHigh: 1800000,
-    bids: 18,
-    status: "open" as const,
-    featured: true,
-    isRegistered: false,
-    timeRemaining: "1h 45m",
-    shippingAvailable: false,
-  },
-  {
-    id: "3",
-    lotNumber: 3,
-    title: "1970 Plymouth Hemi 'Cuda",
-    image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=600&h=400&fit=crop",
-    currentBid: 425000,
-    estimateLow: 350000,
-    estimateHigh: 500000,
-    bids: 31,
-    status: "open" as const,
-    featured: true,
-    isRegistered: false,
-    timeRemaining: "4h 25m",
-    shippingAvailable: true,
-  },
-  {
-    id: "4",
-    lotNumber: 4,
-    title: "1963 Chevrolet Corvette Stingray",
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=400&fit=crop",
-    currentBid: 185000,
-    estimateLow: 150000,
-    estimateHigh: 220000,
-    bids: 12,
-    status: "open" as const,
-    featured: false,
-    isRegistered: true,
-    timeRemaining: "1d 45m",
-    shippingAvailable: true,
-  },
-  {
-    id: "5",
-    lotNumber: 5,
-    title: "1969 Ford Mustang Boss 429",
-    image: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=600&h=400&fit=crop",
-    currentBid: 0,
-    realizedPrice: 320000,
-    estimateLow: 280000,
-    estimateHigh: 380000,
-    bids: 22,
-    status: "closed" as const,
-    featured: false,
-    isRegistered: false,
-    timeRemaining: "2h 45m",
-    shippingAvailable: false,
-  },
-  {
-    id: "6",
-    lotNumber: 6,
-    title: "1957 Porsche 356A Speedster",
-    image: "https://images.unsplash.com/photo-1580274455191-1c62238fa333?w=600&h=400&fit=crop",
-    currentBid: 485000,
-    estimateLow: 400000,
-    estimateHigh: 550000,
-    bids: 15,
-    status: "open" as const,
-    featured: true,
-    isRegistered: true,
-    timeRemaining: "2h 45m",
-    shippingAvailable: true,
-  },
-  {
-    id: "7",
-    lotNumber: 7,
-    title: "1971 Lamborghini Miura SV",
-    image: "https://images.unsplash.com/photo-1525609004556-c46c7d6cf023?w=600&h=400&fit=crop",
-    currentBid: 1875000,
-    estimateLow: 1600000,
-    estimateHigh: 2200000,
-    bids: 9,
-    status: "open" as const,
-    featured: false,
-    isRegistered: false,
-    timeRemaining: "2h 45m",
-    shippingAvailable: true,
-  },
-  {
-    id: "8",
-    lotNumber: 8,
-    title: "1965 Aston Martin DB5",
-    image: "https://images.unsplash.com/photo-1618486613525-c694bf152b2c?w=600&h=400&fit=crop",
-    currentBid: 0,
-    realizedPrice: 875000,
-    estimateLow: 750000,
-    estimateHigh: 950000,
-    bids: 28,
-    status: "closed" as const,
-    featured: false,
-    isRegistered: false,
-    timeRemaining: "2h 45m",
-    shippingAvailable: true,
-  },
-];
+const toLots = (
+  lotsResponse: AuctionLotsResponse | undefined,
+  details: AuctionDetailsResponse | undefined
+) => {
+  const normalizedAuctionStatus = normalizeBuyerAuctionStatus(
+    lotsResponse?.meta?.auction_status ?? details?.status ?? ""
+  );
+  return (lotsResponse?.data ?? []).map((lot) => {
+    const isClosed =
+      lot.status === "closed" ||
+      lot.status === "sold" ||
+      normalizedAuctionStatus === "closed";
+
+    const estimateLow = Number(lot.estimate_low ?? 0);
+    const estimateHigh = Number(lot.estimate_high ?? 0);
+
+    return {
+      id: String(lot.id),
+      lotNumber: Number(lot.lot_number) || lot.id,
+      title: lot.title,
+      image: lot.image_url,
+      currentBid: Number(lot.current_bid ?? 0),
+      estimateLow,
+      estimateHigh,
+      bids: lot.total_bids_count ?? 0,
+      status: (isClosed ? "closed" : "open") as "open" | "closed",
+      realizedPrice: lot.final_price ?? undefined,
+      featured: false,
+      shippingAvailable: lot.shipping_availability === "available",
+    };
+  });
+};
 
 const AuctionDetails = () => {
-  //   const { id } = useParams();
+  const params = useParams<{ id: string }>();
+  const identifier = params?.id;
   const [activeTab, setActiveTab] = useState("catalog");
+  const { useAuctionDetails, useAuctionLots } = useAuction(identifier);
+  const detailsQuery = useAuctionDetails();
+  const lotsQuery = useAuctionLots();
 
-  const featuredLots = mockLots.filter((lot) => lot.featured);
+  const mappedAuction = detailsQuery.data ? toHeaderAuction(detailsQuery.data) : null;
+  const mappedLots = toLots(lotsQuery.data, detailsQuery.data);
+  const fallbackFeaturedLots = mappedLots.filter((lot) => lot.status === "open").slice(0, 4);
+  const featuredLots =
+    (detailsQuery.data?.featured_lots ?? []).map((lot) => ({
+      id: String(lot.id),
+      lotNumber: Number(lot.lot_number) || lot.id,
+      title: lot.title,
+      image: lot.image_url,
+      currentBid: Number(lot.current_bid ?? 0),
+      estimateLow: 0,
+      estimateHigh: 0,
+      status: "open" as const,
+      realizedPrice: undefined,
+    }));
+  const featuredLotsForUi = featuredLots.length > 0 ? featuredLots : fallbackFeaturedLots;
+
+  const isRegistered =
+    detailsQuery.data?.registration_status != null ||
+    lotsQuery.data?.meta?.registration_status != null;
+
+  const isLoading = detailsQuery.isLoading || lotsQuery.isLoading;
+  const isError = detailsQuery.isError || lotsQuery.isError;
 
   return (
     <main>
       <div className="container mx-auto px-4 py-4 md:py-6">
+        {!identifier ? (
+          <div className="text-center py-12 md:py-16 bg-card border border-border rounded-xl">
+            <p className="text-base md:text-lg text-muted-foreground">
+              Missing auction identifier.
+            </p>
+          </div>
+        ) : isLoading ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="h-24 bg-muted rounded-lg animate-pulse" />
+            <div className="h-64 bg-muted rounded-lg animate-pulse" />
+          </div>
+        ) : isError || !mappedAuction ? (
+          <div className="text-center py-12 md:py-16 bg-card border border-border rounded-xl">
+            <p className="text-red-500 font-medium text-base md:text-lg">
+              Error loading auction
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Failed to fetch auction details. Please try again.
+            </p>
+            <Button
+              variant="outline"
+              className="mt-4"
+              onClick={() => {
+                detailsQuery.refetch();
+                lotsQuery.refetch();
+              }}
+            >
+              Retry
+            </Button>
+          </div>
+        ) : (
+          <>
         {/* Breadcrumb */}
         <Breadcrumb className="mb-4 md:mb-6">
           <BreadcrumbList>
@@ -212,13 +183,13 @@ const AuctionDetails = () => {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>{mockAuction.title}</BreadcrumbPage>
+              <BreadcrumbPage>{mappedAuction.title}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
 
         {/* Auction Header */}
-        <AuctionHeader auction={mockAuction} isRegistered />
+        <AuctionHeader auction={mappedAuction} isRegistered={isRegistered} />
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-8">
@@ -239,16 +210,18 @@ const AuctionDetails = () => {
 
           <TabsContent value="catalog" className="mt-6">
             {/* Featured Lots */}
-            <FeaturedLotsSlider lots={featuredLots} />
+            <FeaturedLotsSlider lots={featuredLotsForUi} auctionId={mappedAuction.id} />
 
             {/* Lots Grid */}
-            <LotsGrid lots={mockLots} isRegistered />
+            <LotsGrid lots={mappedLots} isRegistered={isRegistered} />
           </TabsContent>
 
           <TabsContent value="info" className="mt-6">
-            <AuctionInfo auction={mockAuction} />
+            <AuctionInfo auction={mappedAuction} />
           </TabsContent>
         </Tabs>
+          </>
+        )}
       </div>
     </main>
   );

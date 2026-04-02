@@ -8,9 +8,19 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Heart, Gavel, Search, BookOpen, ShoppingBag, Globe, ChevronDown, Grid3x3, Calendar, Store, HelpCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useHome } from "@/features/home/hooks/useHome";
+import {
+  buildAuctionCategoryHref,
+  fallbackAuctionCategories,
+} from "@/lib/publicAuctionCategories";
 
 const SecondaryHeader = () => {
   const router = useRouter();
+  const { useCategories } = useHome();
+  const categoriesQuery = useCategories();
+  const categories =
+    categoriesQuery.data?.data?.length ? categoriesQuery.data.data : fallbackAuctionCategories;
+  const navCategories = categories.slice(0, 6);
 
   return (
     <div className="border-b border-border bg-background/90 backdrop-blur-sm sticky top-14 md:top-16 z-40 hidden md:block">
@@ -24,38 +34,36 @@ const SecondaryHeader = () => {
                 <ChevronDown className="h-3.5 w-3.5" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="center" className="bg-background w-[280px] md:w-[600px] p-4 md:p-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <h4 className="font-semibold text-sm mb-3 text-foreground">Popular</h4>
-                  <div className="space-y-2">
-                    <DropdownMenuItem>Antiques & Collectibles</DropdownMenuItem>
-                    <DropdownMenuItem>Art</DropdownMenuItem>
-                    <DropdownMenuItem>Cars & Vehicles</DropdownMenuItem>
-                    <DropdownMenuItem>Jewelry & Watches</DropdownMenuItem>
-                    <DropdownMenuItem>Real Estate</DropdownMenuItem>
+            <DropdownMenuContent
+              align="center"
+              className="bg-background w-[280px] md:w-[520px] p-4"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {navCategories.map((category) => (
+                  <div key={category.id}>
+                    {/* Parent Title */}
+                    <h4
+                      onClick={() => router.push(buildAuctionCategoryHref(category.slug))}
+                      className="font-semibold text-xs mb-2 text-foreground cursor-pointer hover:underline"
+                    >
+                      {category.name}
+                    </h4>
+                    {/* Subcategories */}
+                    <div className="space-y-1.5">
+                      {category.subcategories?.slice(0, 5).map((sub) => (
+                        <DropdownMenuItem
+                          key={sub.id}
+                          className="text-sm rounded-md px-2 py-1.5 hover:bg-muted cursor-pointer"
+                          onClick={() =>
+                            router.push(buildAuctionCategoryHref(sub.slug))
+                          }
+                        >
+                          {sub.name}
+                        </DropdownMenuItem>
+                      ))}
+                    </div>
                   </div>
-                </div>
-                <div className="hidden md:block">
-                  <h4 className="font-semibold text-sm mb-3 text-foreground">Lifestyle</h4>
-                  <div className="space-y-2">
-                    <DropdownMenuItem>Fashion</DropdownMenuItem>
-                    <DropdownMenuItem>Home Goods & Decor</DropdownMenuItem>
-                    <DropdownMenuItem>Furniture</DropdownMenuItem>
-                    <DropdownMenuItem>Lawn & Garden</DropdownMenuItem>
-                    <DropdownMenuItem>Sporting Goods</DropdownMenuItem>
-                  </div>
-                </div>
-                <div className="hidden md:block">
-                  <h4 className="font-semibold text-sm mb-3 text-foreground">Professional</h4>
-                  <div className="space-y-2">
-                    <DropdownMenuItem>Business & Industrial</DropdownMenuItem>
-                    <DropdownMenuItem>Construction & Farm</DropdownMenuItem>
-                    <DropdownMenuItem>Computers & Electronics</DropdownMenuItem>
-                    <DropdownMenuItem>Boats & Aviation</DropdownMenuItem>
-                    <DropdownMenuItem>Coins & Currency</DropdownMenuItem>
-                  </div>
-                </div>
+                ))}
               </div>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -82,10 +90,10 @@ const SecondaryHeader = () => {
               <DropdownMenuItem onClick={() => router.push("/auctions")}>
                 Browse All Auctions
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push("/auctions?status=upcoming")}>
+              <DropdownMenuItem onClick={() => router.push("/auctions?auction_status=upcoming")}>
                 Upcoming Auctions
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push("/auctions?status=live")}>
+              <DropdownMenuItem onClick={() => router.push("/auctions?auction_status=live")}>
                 Live Auctions
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => router.push("/auctions/state")}>
