@@ -17,6 +17,8 @@ import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "
 import { toast } from "sonner";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useUser } from "../context/UserContext";
+import Cookies from "js-cookie";
 
 const RequirementItem = ({ met, text }: { met: boolean; text: string }) => (
     <div className="flex items-center gap-2">
@@ -50,6 +52,7 @@ const CreatePassword = () => {
     const email = searchParams.get("email") ?? "";
 
     const [showPassword, setShowPassword] = useState(false);
+    const { setUser } = useUser();
 
     const form = useForm<PasswordForm>({
         resolver: zodResolver(passwordSchema),
@@ -66,10 +69,17 @@ const CreatePassword = () => {
 
     const onSubmit = async (data: PasswordForm) => {
         try {
-            await createPassword.mutateAsync({
+            const response = await createPassword.mutateAsync({
                 password: data.password,
                 email,
             })
+            
+            // Store token and user data from response
+            if (response?.token && response?.user) {
+                Cookies.set("bidooze_token", response.token, { expires: 7 });
+                setUser(response.user);
+            }
+            
             router.push(`/auth/personal-information?email=${encodeURIComponent(email)}`);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {

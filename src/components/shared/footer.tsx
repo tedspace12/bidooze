@@ -110,15 +110,15 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  href="/auctions?status=closing-soon"
+                  href="/auctions?auction_status=live"
                   className="hover:text-foreground transition-colors"
                 >
-                  Closing Soon
+                  Live auctions
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/auctions?status=featured"
+                  href="/auctions?auction_status=featured"
                   className="hover:text-foreground transition-colors"
                 >
                   Featured Auctions
@@ -126,7 +126,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  href="/auctions?status=hot"
+                  href="/auctions?auction_status=hot"
                   className="hover:text-foreground transition-colors"
                 >
                   Hot Auctions
@@ -149,7 +149,7 @@ const Footer = () => {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
                 <Link
-                  href="/lots?lotType=biddable"
+                  href="/lots?lot_type=biddable_lots"
                   className="hover:text-foreground transition-colors"
                 >
                   Biddable
@@ -157,7 +157,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  href="/lots?lotType=webcast"
+                  href="/lots?lot_type=live_webcast_lots"
                   className="hover:text-foreground transition-colors"
                 >
                   Webcast
@@ -165,7 +165,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  href="/lots?lotType=online-only"
+                  href="/lots?lot_type=online_only_lots"
                   className="hover:text-foreground transition-colors"
                 >
                   Online Only
@@ -173,7 +173,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  href="/lots?lotType=absentee"
+                  href="/lots?lot_type=absentee_lots"
                   className="hover:text-foreground transition-colors"
                 >
                   Absentee
@@ -181,7 +181,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  href="/lots?lotType=listing-only"
+                  href="/lots?lot_type=listing_only_lots"
                   className="hover:text-foreground transition-colors"
                 >
                   Listing Only

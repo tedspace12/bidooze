@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -27,36 +28,34 @@ import {
     Plus,
     Pencil,
     HelpCircle,
+    Loader2,
+    Check,
+    ShieldCheck,
 } from "lucide-react";
 import { format } from "date-fns";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 import Link from "next/link";
+import { useAuction } from "./hooks/useAuction";
 import HowToBidModal from "./components/registration/modal/HowToBidModal";
+import { Input } from "@/components/ui/input";
 
-// Mock auction data
-const mockAuctionData = {
-    id: "auction-1",
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400",
-    title: "Premier Classic Car Auction - December 2024",
-    auctioneerName: "Heritage Auctions",
-    address: "2801 W Airport Freeway, Dallas, TX 75261",
-    startDate: "2024-12-15T09:00:00",
-    endDate: "2024-12-20T18:00:00",
-    type: "Timed Online",
-    biddingStatus: "Bidding Open",
-    terms: `1. All items are sold "AS IS, WHERE IS" with no warranties or guarantees.
-2. The auctioneer reserves the right to reject any bid.
-3. Payment is due within 3 business days of the auction closing.
-4. Buyer's premium of 15% will be added to the final bid price.
-5. Shipping arrangements are the responsibility of the buyer.
-6. All sales are final. No returns or refunds.
-7. The auctioneer is not responsible for any errors in the catalog.
-8. By placing a bid, you agree to these terms and conditions.`,
-    pickupAddress: "Heritage Auctions Warehouse, 2801 W Airport Freeway, Dallas, TX 75261",
-    shippingAvailable: true,
-};
+
+interface PaymentMethod {
+    id: number;
+    card_holder_name: string;
+    card_last_four: string;
+    expiration_date: string;
+    card_brand: string;
+    provider: string;
+    ref: string | null;
+    is_verified: boolean;
+    is_default: boolean;
+    created_at: string;
+    updated_at: string;
+}
 
 // Mock lot data
 const mockLotData = {
@@ -73,14 +72,6 @@ const mockLotData = {
     timeRemaining: "2d 14h 32m",
 };
 
-// Mock saved card
-const mockSavedCard = {
-    id: "card-1",
-    last4: "4242",
-    brand: "Visa",
-    expiry: "12/26",
-};
-
 const formatPrice = (price: number) => {
     return new Intl.NumberFormat("en-US", {
         style: "currency",
@@ -91,35 +82,209 @@ const formatPrice = (price: number) => {
 };
 
 const AuctionRegistration = () => {
+    const {
+        getPaymentMethods,
+        addPaymentMethod,
+        verifyPaymentMethod,
+    } = useAuth();
     const router = useRouter();
     const searchParams = useSearchParams();
 
     const source = searchParams.get("source") || "auction";
     const sourceId = searchParams.get("id") || "1";
 
+    const { useAuctionDetails, useRegisterForAuction } = useAuction(sourceId);
+
+    const { data: auctionData, isLoading, isError } = useAuctionDetails();
+
+    const { mutate, isPending } = useRegisterForAuction();
+
     const [paymentOpen, setPaymentOpen] = useState(true);
-    const [deliveryOpen, setDeliveryOpen] = useState(false);
     const [termsOpen, setTermsOpen] = useState(false);
 
-    const [selectedCard, setSelectedCard] = useState(mockSavedCard.id);
-    const [deliveryMethod, setDeliveryMethod] = useState<"pickup" | "ship">("pickup");
+    const [phone, setPhone] = useState("");
+    const [selectedCard, setSelectedCard] = useState<string | null>(null);
     const [agreeToTerms, setAgreeToTerms] = useState(false);
     const [sellerNote, setSellerNote] = useState("");
     const [howToBidOpen, setHowToBidOpen] = useState(false);
     const [selectedLotImage, setSelectedLotImage] = useState(0);
 
-    const isFormComplete = selectedCard && deliveryMethod && agreeToTerms;
+    const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+    const [isLoadingPayments, setIsLoadingPayments] = useState(true);
+    const [showAddCard, setShowAddCard] = useState(false);
+    const [newCard, setNewCard] = useState({
+        provider: "",
+        card_holder_name: "",
+        card_number: "",
+        expiration_date: "",
+        cvv: "",
+        is_default: false,
+    });
+
+    const isFormComplete =
+        selectedCard &&
+        agreeToTerms &&
+        phone.trim().length > 0 &&
+        paymentMethods.find((m) => String(m.id) === selectedCard)?.is_verified;
+
+
+    useEffect(() => {
+        loadPaymentMethods();
+    }, []);
+
+    const loadPaymentMethods = async () => {
+        try {
+            const response = await getPaymentMethods.mutateAsync();
+            setPaymentMethods(response.payment_methods || []);
+        } catch (error: any) {
+            toast.error("Failed to load payment methods");
+        } finally {
+            setIsLoadingPayments(false);
+        }
+    };
+
+    const handleAddCard = async () => {
+        if (!newCard.card_holder_name || !newCard.card_number || !newCard.expiration_date || !newCard.cvv) {
+            toast.error("Please fill in all card details");
+            return;
+        }
+
+        if (!newCard.provider) {
+            toast.error("Please select a verification method");
+            return;
+        }
+
+        try {
+            await addPaymentMethod.mutateAsync(newCard);
+            toast.success("Payment method added successfully");
+            setNewCard({
+                provider: "",
+                card_holder_name: "",
+                card_number: "",
+                expiration_date: "",
+                cvv: "",
+                is_default: false,
+            });
+            setShowAddCard(false);
+            loadPaymentMethods();
+        } catch (error: any) {
+            toast.error(getErrorMessage(error));
+        }
+    };
+
+    const handleVerifyCard = async (paymentMethodId: number) => {
+        try {
+            await verifyPaymentMethod.mutateAsync({
+                paymentMethodId
+            });
+            toast.success("Payment method verified successfully");
+            loadPaymentMethods();
+        }
+        catch (error: any) {
+            toast.error(getErrorMessage(error));
+        };
+    }
+
+    const getErrorMessage = (error: any): string => {
+        // Check if there are specific validation errors
+        if (error?.errors && typeof error.errors === 'object') {
+            const errorMessages = Object.values(error.errors) as string[][];
+            if (errorMessages.length > 0 && errorMessages[0].length > 0) {
+                return errorMessages[0][0]; // First error message from first field
+            }
+        }
+        // Fallback to generic message
+        return error?.message || "An error occurred";
+    };
+
 
     const handleRegister = () => {
-        toast("Registration Successful!", {
-            description: "You are now registered to bid on this auction.",
-        });
-
-        if (source === "lot") {
-            router.push(`/lot/${sourceId}`);
-        } else {
-            router.push(`/auction/${sourceId}`);
+        if (!selectedCard) {
+            toast.error("Please select a payment method");
+            return;
         }
+
+        if (!phone.trim()) {
+            toast.error("Please enter your phone number");
+            return;
+        }
+
+        if (!agreeToTerms) {
+            toast.error("You must agree to the terms");
+            return;
+        }
+
+        const selectedPayment = paymentMethods.find(
+            (m) => String(m.id) === selectedCard
+        );
+
+        if (!selectedPayment) {
+            toast.error("Invalid payment method");
+            return;
+        }
+
+        if (!selectedPayment.is_verified) {
+            toast.error("Please verify your card first");
+            return;
+        }
+
+        if (!selectedPayment.ref) {
+            toast.error("Payment method is not properly linked");
+            return;
+        }
+
+        const payload = {
+            accepted_terms: true,
+            terms_version: "v1",
+            phone: phone.trim(),
+            provider: selectedPayment.provider,
+            payment_method_provider: selectedPayment.provider,
+            payment_method_ref: selectedPayment.ref,
+            return_url: window.location.origin + "/payments/return",
+        };
+
+        mutate(payload, {
+            onSuccess: (res) => {
+                toast.success(res.message || "Registration successful");
+
+                if (res.approval_option === "deposit" && res.deposit) {
+                    const instructions = res.deposit.provider_instructions;
+                    const provider = instructions.provider;
+
+                    if (provider === "stripe" && instructions.client_secret && instructions.publishable_key) {
+                        sessionStorage.setItem("stripe_client_secret", instructions.client_secret);
+                        sessionStorage.setItem("stripe_publishable_key", instructions.publishable_key ?? "");
+                        sessionStorage.setItem("deposit_provider", "stripe");
+                        sessionStorage.setItem("deposit_return_source", source);
+                        sessionStorage.setItem("deposit_return_id", sourceId);
+
+                        router.push("/payments/stripe-confirm");
+                        return;
+                    }
+
+                    const redirectUrl =
+                        instructions?.redirect_url ||
+                        instructions?.authorization_url;
+
+                    if (redirectUrl) {
+                        sessionStorage.setItem("deposit_provider", "paystack");
+                        sessionStorage.setItem("deposit_return_source", source);
+                        sessionStorage.setItem("deposit_return_id", sourceId);
+                        window.location.href = redirectUrl;
+                        return;
+                    }
+                }
+
+                if (res.registration?.status === "pending_deposit" && !res.deposit) {
+                    toast.warning("Registration pending — complete your deposit to bid.");
+                }
+
+                router.push(source === "lot" ? `/lot/${sourceId}` : `/auction/${sourceId}`);
+            },
+            onError: (error: any) => {
+                toast.error(getErrorMessage(error));
+            },
+        });
     };
 
     return (
@@ -221,52 +386,94 @@ const AuctionRegistration = () => {
                                 </div>
                             ) : (
                                 // Auction Context
-                                <div>
-                                    <Image
-                                        src={mockAuctionData.image}
-                                        alt={mockAuctionData.title}
-                                        width={500}
-                                        height={500}
-                                        className="w-full aspect-video object-cover rounded-lg mb-4"
-                                    />
-
-                                    <h3 className="font-semibold text-foreground mb-2 text-sm sm:text-base">
-                                        {mockAuctionData.title}
-                                    </h3>
-                                    <p className="text-xs sm:text-sm text-muted-foreground mb-4">
-                                        by {mockAuctionData.auctioneerName}
-                                    </p>
-
-                                    <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
-                                        <div className="flex items-start gap-2">
-                                            <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground mt-0.5 shrink-0" />
-                                            <span className="text-muted-foreground">{mockAuctionData.address}</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
-                                            <span className="text-muted-foreground">
-                                                {format(new Date(mockAuctionData.startDate), "MMM d")} -{" "}
-                                                {format(new Date(mockAuctionData.endDate), "MMM d, yyyy")}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <Gavel className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
-                                            <span className="text-muted-foreground">{mockAuctionData.type}</span>
-                                        </div>
-                                        <Badge className="bg-emerald-500 text-white text-xs">
-                                            {mockAuctionData.biddingStatus}
-                                        </Badge>
+                                isLoading ? (
+                                    <div className="space-y-4 md:space-y-6">
+                                        <div className="h-24 bg-muted rounded-lg animate-pulse" />
+                                        <div className="h-64 bg-muted rounded-lg animate-pulse" />
                                     </div>
 
-                                    <Button
-                                        variant="link"
-                                        className="mt-3 sm:mt-4 px-0 py-0 h-auto text-primary"
-                                        onClick={() => setHowToBidOpen(true)}
-                                    >
-                                        <HelpCircle className="h-4 w-4 mr-1" />
-                                        How to Bid
-                                    </Button>
-                                </div>
+                                ) : isError || !auctionData ? (
+                                    <div className="text-center py-12 md:py-16 bg-card border border-border rounded-xl">
+                                        <p className="text-red-500 font-medium text-base md:text-lg">
+                                            Error loading auction
+                                        </p>
+                                        <p className="text-sm text-muted-foreground mt-2">
+                                            Failed to fetch auction details. Please try again.
+                                        </p>
+                                        <Button
+                                            variant="outline"
+                                            className="mt-4"
+                                            onClick={() => {
+                                                // detailsQuery.refetch();
+                                                // lotsQuery.refetch();
+                                            }}
+                                        >
+                                            Retry
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <Image
+                                            src={auctionData.image_url || "/placeholder-auction.jpg"}
+                                            alt={auctionData.name}
+                                            width={500}
+                                            height={500}
+                                            className="w-full aspect-video object-cover rounded-lg mb-4"
+                                        />
+
+                                        <h3 className="font-semibold text-foreground mb-2 text-sm sm:text-base">
+                                            {auctionData.name}
+                                        </h3>
+                                        <p className="text-xs sm:text-sm text-muted-foreground mb-4">
+                                            by {auctionData.auctioneer.company_name}
+                                        </p>
+
+                                        <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
+                                            <div className="flex items-start gap-2">
+                                                <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground mt-0.5 shrink-0" />
+                                                <span className="text-muted-foreground">
+                                                    {[auctionData?.location?.city,
+                                                    auctionData?.location?.state,
+                                                    auctionData?.location?.country]
+                                                        .filter(Boolean)
+                                                        .join(", ") || "Location not available"}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
+                                                <span className="text-muted-foreground">
+                                                    {auctionData.start_date && auctionData.end_date && (
+                                                        <>
+                                                            {format(new Date(auctionData.start_date), "MMM d")} -{" "}
+                                                            {format(new Date(auctionData.end_date), "MMM d, yyyy")}
+                                                        </>
+                                                    )}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <Gavel className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
+                                                <span className="text-muted-foreground">{auctionData.type}</span>
+                                            </div>
+                                            <Badge
+                                                className={`${auctionData.bidding_status?.toLowerCase() === "open"
+                                                    ? "bg-emerald-500"
+                                                    : "bg-red-500"
+                                                    } text-white text-xs`}
+                                            >
+                                                {auctionData.bidding_status}
+                                            </Badge>
+                                        </div>
+
+                                        <Button
+                                            variant="link"
+                                            className="mt-3 sm:mt-4 px-0 py-0 h-auto text-primary"
+                                            onClick={() => setHowToBidOpen(true)}
+                                        >
+                                            <HelpCircle className="h-4 w-4 mr-1" />
+                                            How to Bid
+                                        </Button>
+                                    </div>
+                                )
                             )}
                         </Card>
                     </div>
@@ -296,32 +503,176 @@ const AuctionRegistration = () => {
                                         </p>
                                     </div>
 
-                                    <RadioGroup value={selectedCard} onValueChange={setSelectedCard}>
-                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border border-border rounded-lg gap-3 sm:gap-0">
-                                            <div className="flex items-center gap-2 sm:gap-3">
-                                                <RadioGroupItem value={mockSavedCard.id} id={mockSavedCard.id} />
-                                                <Label htmlFor={mockSavedCard.id} className="flex flex-wrap items-center gap-2 sm:gap-3 cursor-pointer">
-                                                    <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
-                                                    <span className="text-foreground text-sm sm:text-base">{mockSavedCard.brand} •••• {mockSavedCard.last4}</span>
-                                                    <span className="text-xs sm:text-sm text-muted-foreground">Expires {mockSavedCard.expiry}</span>
-                                                </Label>
-                                            </div>
-                                            <Button variant="ghost" size="sm" className="self-end sm:self-auto">
-                                                <Pencil className="h-4 w-4" />
-                                            </Button>
+                                    {isLoadingPayments ? (
+                                        <div className="flex items-center justify-center py-8">
+                                            <Loader2 className="h-6 w-6 animate-spin" />
+                                            <span className="ml-2">Loading payment methods...</span>
                                         </div>
-                                    </RadioGroup>
+                                    ) : (
+                                        <>
+                                            {/* Existing Cards */}
+                                            <div className="space-y-3">
+                                                {paymentMethods.length === 0 ? (
+                                                    <div className="text-center py-8 text-muted-foreground">
+                                                        No payment methods added yet
+                                                    </div>
+                                                ) : (
+                                                    <RadioGroup value={selectedCard} onValueChange={setSelectedCard}>
+                                                        {paymentMethods.map((method) => {
+                                                            const id = String(method.id);
 
-                                    <Button variant="outline" className="mt-4 gap-2 w-full sm:w-auto">
-                                        <Plus className="h-4 w-4" />
-                                        Add New Card
-                                    </Button>
+                                                            return (
+                                                                <div key={method.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border border-border rounded-lg gap-3 sm:gap-0">
+                                                                    <div className="flex items-center gap-2 sm:gap-3">
+                                                                        <RadioGroupItem value={id} id={id} />
+                                                                        <Label htmlFor={id} className="flex flex-wrap items-center gap-2 sm:gap-3 cursor-pointer">
+                                                                            <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                                                                            <span className="text-foreground text-sm sm:text-base">
+                                                                                {method.card_brand} •••• {method.card_last_four}
+                                                                            </span>
+                                                                            <span className="text-xs sm:text-sm text-muted-foreground">
+                                                                                Expires {method.expiration_date}
+                                                                            </span>
+                                                                            {!method.is_verified && (
+                                                                                <Badge variant="destructive" className="text-xs">
+                                                                                    Unverified
+                                                                                </Badge>
+                                                                            )}
+                                                                            {method.is_default && (
+                                                                                <Badge variant="secondary" className="text-xs">
+                                                                                    Default
+                                                                                </Badge>
+                                                                            )}
+                                                                        </Label>
+                                                                    </div>
+                                                                    {!method.is_verified && (
+                                                                        <Button variant="outline" size="sm" className="self-end sm:self-auto"
+                                                                            onClick={() => handleVerifyCard(method.id)}
+                                                                        >
+                                                                            Verify
+                                                                        </Button>
+                                                                    )}
+                                                                </div>
+                                                            )
+                                                        }
+                                                        )}
+                                                    </RadioGroup>
+                                                )}
+
+                                                <Button variant="outline" className="mt-4 gap-2 w-full sm:w-auto"
+                                                    onClick={() => setShowAddCard(true)}
+                                                >
+                                                    <Plus className="h-4 w-4" />
+                                                    Add New Card
+                                                </Button>
+                                            </div>
+
+                                            {/* Add Card Form - shown when "Add New Card" is clicked */}
+                                            {showAddCard && (
+                                                <div className="mt-6 p-4 border border-border rounded-lg">
+                                                    <h4 className="font-semibold text-foreground mb-4">Add Payment Method</h4>
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                        <div className="col-span-1">
+                                                            <Label className="text-xs sm:text-sm text-muted-foreground mb-1">Cardholder Name</Label>
+                                                            <Input
+                                                                placeholder="John Doe"
+                                                                value={newCard.card_holder_name}
+                                                                onChange={(e) => setNewCard({ ...newCard, card_holder_name: e.target.value })}
+                                                            />
+                                                        </div>
+                                                        <div className="col-span-1">
+                                                            <Label className="text-xs sm:text-sm text-muted-foreground mb-1">Card Number</Label>
+                                                            <Input
+                                                                placeholder="1234 5678 9012 3456"
+                                                                value={newCard.card_number}
+                                                                onChange={(e) => setNewCard({ ...newCard, card_number: e.target.value })}
+                                                            />
+                                                        </div>
+                                                        <div className="col-span-1">
+                                                            <Label className="text-xs sm:text-sm text-muted-foreground mb-1">Expiration Date</Label>
+                                                            <Input
+                                                                placeholder="MM/YY"
+                                                                value={newCard.expiration_date}
+                                                                onChange={(e) => setNewCard({ ...newCard, expiration_date: e.target.value })}
+                                                            />
+                                                        </div>
+                                                        <div className="col-span-1">
+                                                            <Label className="text-xs sm:text-sm text-muted-foreground mb-1">CVV</Label>
+                                                            <Input
+                                                                placeholder="123"
+                                                                value={newCard.cvv}
+                                                                onChange={(e) => setNewCard({ ...newCard, cvv: e.target.value })}
+                                                            />
+                                                        </div>
+                                                        <div className="border-t border-border pt-4 -mx-4 px-4 col-span-2">
+                                                            <div className="bg-muted/40 rounded-lg p-3 space-y-3">
+                                                                <div>
+                                                                    <p className="text-sm font-medium">Verification method</p>
+                                                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                                                        Choose how your card is securely verified
+                                                                    </p>
+                                                                </div>
+                                                                <div className="grid grid-cols-2 gap-3">
+                                                                    {(['paystack', 'stripe'] as const).map((p) => {
+                                                                        const isSelected = newCard.provider === p;
+                                                                        return (
+                                                                            <button
+                                                                                key={p}
+                                                                                type="button"
+                                                                                onClick={() => setNewCard({ ...newCard, provider: p })}
+                                                                                className={cn(
+                                                                                    "rounded-lg border p-3 text-left transition-all duration-150 relative bg-background",
+                                                                                    isSelected
+                                                                                        ? "border-[#748943] ring-1 ring-[#748943]"
+                                                                                        : "border-border hover:border-[#748943]/40"
+                                                                                )}
+                                                                            >
+                                                                                {isSelected && (
+                                                                                    <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#748943] flex items-center justify-center">
+                                                                                        <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
+                                                                                    </span>
+                                                                                )}
+                                                                                <p className="text-sm font-medium capitalize pr-5">{p}</p>
+                                                                                <p className="text-xs text-muted-foreground mt-0.5">
+                                                                                    {p === 'paystack' ? 'African cards' : 'Global support'}
+                                                                                </p>
+                                                                                <span className="inline-flex items-center gap-1 mt-2 text-[11px] text-muted-foreground border border-border rounded-full px-2 py-0.5">
+                                                                                    <ShieldCheck className="w-3 h-3" />
+                                                                                    3D Secure
+                                                                                </span>
+                                                                            </button>
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="col-span-1 flex items-center gap-2">
+                                                            <Checkbox
+                                                                id="set-default"
+                                                                checked={newCard.is_default}
+                                                                onCheckedChange={(checked) => setNewCard({ ...newCard, is_default: checked === true })}
+                                                            />
+                                                            <Label htmlFor="set-default" className="text-xs sm:text-sm text-muted-foreground">
+                                                                Set as default payment method
+                                                            </Label>
+                                                        </div>
+                                                    </div>
+                                                    <Button className="mt-4" onClick={handleAddCard}>
+                                                        Add Card
+                                                    </Button>
+                                                    <Button variant="ghost" onClick={() => setShowAddCard(false)}>
+                                                        Cancel
+                                                    </Button>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
                                 </CollapsibleContent>
                             </Card>
                         </Collapsible>
 
                         {/* Preferred Delivery Method */}
-                        <Collapsible open={deliveryOpen} onOpenChange={setDeliveryOpen}>
+                        {/* <Collapsible open={deliveryOpen} onOpenChange={setDeliveryOpen}>
                             <Card>
                                 <CollapsibleTrigger className="w-full p-4 sm:p-6 flex items-center justify-between gap-3">
                                     <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -396,7 +747,7 @@ const AuctionRegistration = () => {
                                     </RadioGroup>
                                 </CollapsibleContent>
                             </Card>
-                        </Collapsible>
+                        </Collapsible> */}
 
                         {/* Terms & Conditions */}
                         <Collapsible open={termsOpen} onOpenChange={setTermsOpen}>
@@ -417,11 +768,28 @@ const AuctionRegistration = () => {
                                 <CollapsibleContent className="px-4 sm:px-6 pb-4 sm:pb-6">
                                     <div className="bg-muted/50 rounded-lg p-3 sm:p-4 max-h-40 sm:max-h-48 overflow-y-auto mb-4">
                                         <pre className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap font-sans">
-                                            {mockAuctionData.terms}
+                                            {auctionData?.terms_and_condition || "No terms and conditions provided for this auction."}
                                         </pre>
                                     </div>
 
                                     <div className="mb-4">
+                                        <Label htmlFor="phone" className="text-xs sm:text-sm text-muted-foreground mb-2 block">
+                                            Phone Number <span className="text-destructive">*</span>
+                                        </Label>
+                                        <Input
+                                            id="phone"
+                                            type="tel"
+                                            placeholder="+234 800 000 0000"
+                                            value={phone}
+                                            onChange={(e) => setPhone(e.target.value)}
+                                            className="text-sm"
+                                        />
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                            Used by the auctioneer to contact you if you win.
+                                        </p>
+                                    </div>
+
+                                    {/* <div className="mb-4">
                                         <Label htmlFor="seller-note" className="text-xs sm:text-sm text-muted-foreground mb-2 block">
                                             Note to Seller (Optional)
                                         </Label>
@@ -433,7 +801,7 @@ const AuctionRegistration = () => {
                                             className="resize-none text-sm"
                                             rows={3}
                                         />
-                                    </div>
+                                    </div> */}
 
                                     <div className="flex items-start gap-2 sm:gap-3">
                                         <Checkbox
@@ -452,10 +820,17 @@ const AuctionRegistration = () => {
                         {/* Submit Button */}
                         <Button
                             className="w-full h-11 sm:h-12 text-base sm:text-lg"
-                            disabled={!isFormComplete}
+                            disabled={!isFormComplete || isPending}
                             onClick={handleRegister}
                         >
-                            Complete Registration
+                            {isPending ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                    Processing...
+                                </>
+                            ) : (
+                                "Complete Registration"
+                            )}
                         </Button>
                     </div>
                 </div>

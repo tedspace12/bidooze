@@ -52,6 +52,15 @@ const withAuth = {
     return $http.put<T>(url, data, finalConfig);
   },
 
+  patch: async <T = any>(
+    url: string,
+    data?: any,
+    config: AxiosRequestConfig = {}
+  ): Promise<AxiosResponse<T>> => {
+    const finalConfig = await withAuthHeaders(config);
+    return $http.patch<T>(url, data, finalConfig);
+  },
+
   delete: async <T = any>(
     url: string,
     config: AxiosRequestConfig = {}

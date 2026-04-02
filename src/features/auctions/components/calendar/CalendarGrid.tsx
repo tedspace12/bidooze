@@ -36,7 +36,9 @@ const CalendarGrid = ({
   const getDayData = (day: number) => {
     const dateKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
     const auctions = auctionsMap.get(dateKey) || [];
-    const hasLive = auctions.some((a) => a.status === "live" || a.status === "ending-soon");
+    const hasLive = auctions.some(
+      (a) => a.status === "live" || a.status === "paused" || a.status === "scheduled"
+    );
     const allClosed = auctions.length > 0 && auctions.every((a) => a.status === "closed");
 
     return { dateKey, auctionCount: auctions.length, hasLive, allClosed };

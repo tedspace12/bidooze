@@ -17,13 +17,17 @@ const DailySchedule = ({ selectedDate, auctions }: DailyScheduleProps) => {
   
   const getStatusBadge = (status: CalendarAuction["status"]) => {
     switch (status) {
+      case "scheduled":
+        return (
+          <Badge className="bg-blue-500 text-white text-[10px] md:text-xs py-px md:py-0.5">Upcoming</Badge>
+        );
       case "live":
         return (
           <Badge className="bg-primary text-primary-foreground text-[10px] md:text-xs py-px md:py-0.5">Live</Badge>
         );
-      case "ending-soon":
+      case "paused":
         return (
-          <Badge className="bg-destructive text-white text-[10px] md:text-xs py-px md:py-0.5">Ending Soon</Badge>
+          <Badge className="bg-amber-500 text-white text-[10px] md:text-xs py-px md:py-0.5">Paused</Badge>
         );
       case "closed":
         return (

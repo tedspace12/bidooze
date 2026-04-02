@@ -1,6 +1,7 @@
 'use client';
 
 import Image from "next/image";
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import AuthLayout from "@/components/layout/AuthLayout";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,7 @@ import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import 'react-phone-number-input/style.css';
-import { isValidPhoneNumber, parsePhoneNumber } from 'react-phone-number-input';
+import { Country, isValidPhoneNumber, parsePhoneNumber } from 'react-phone-number-input';
 import { PhoneInput } from "./components/PhoneInput";
 import { useAuth } from "../hooks/useAuth";
 import { toast } from "sonner";
@@ -29,6 +30,7 @@ const PersonalInformation = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email") ?? "";
+  const [selectedCountry, setSelectedCountry] = useState<Country>("NG");
 
   const form = useForm<PersonalForm>({
     resolver: zodResolver(personalSchema),
@@ -45,13 +47,14 @@ const PersonalInformation = () => {
   const onSubmit = async (data: PersonalForm) => {
     try {
       const phone = parsePhoneNumber(data.phone);
+      const countryCode = phone?.country || selectedCountry || "";
 
       await setPersonalInfo.mutateAsync({
-        email: '',
+        email: email,
         first_name: data.firstName,
         last_name: data.lastName,
         phone_number: data.phone,
-        country_code: phone?.country || '',
+        country_code: countryCode,
       })
       router.push(`/auth/profile-setup?email=${encodeURIComponent(email)}`);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -123,11 +126,13 @@ const PersonalInformation = () => {
                 <PhoneInput
                   value={field.value}
                   onChange={field.onChange}
+                  onCountryChange={(country) => {
+                    if (country) setSelectedCountry(country);
+                  }}
+                  country={selectedCountry}
                   defaultCountry="NG"
                   international={true}
                   placeholder="2348161634036"
-                // country={country}
-                // setCountry={setCountry}
                 />
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />

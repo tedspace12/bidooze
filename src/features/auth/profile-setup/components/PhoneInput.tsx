@@ -27,6 +27,8 @@ type PhoneInputProps = Omit<
 > &
     Omit<RPNInput.Props<typeof RPNInput.default>, "onChange"> & {
         onChange?: (value: RPNInput.Value) => void;
+        onCountryChange?: (country: RPNInput.Country | undefined) => void;
+        country?: RPNInput.Country;
     };
 
 const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
@@ -119,7 +121,7 @@ const CountrySelect = ({
                     />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[300px] p-0">
+            <PopoverContent className="w-75 p-0">
                 <Command>
                     <CommandInput
                         value={searchValue}

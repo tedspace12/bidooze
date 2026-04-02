@@ -1,20 +1,15 @@
-export type AuctionStatus =
-  | "all"
-  | "live"
-  | "upcoming"
-  | "closing-soon"
-  | "featured"
-  | "top-picks"
-  | "hot"
-  | "closed";
-export type AuctionCardStatus =
-  | "live"
-  | "upcoming"
-  | "closing-soon"
-  | "featured"
-  | "top-picks"
-  | "hot"
-  | "closed";
+export type {
+  AuctionLifecycle,
+  AuctionStatusFilter,
+} from "@/lib/auctionLifecycle";
+
+import type { AuctionLifecycle, AuctionStatusFilter } from "@/lib/auctionLifecycle";
+
+/** Filter sidebar / URL — `all` or one or more lifecycle values. */
+export type AuctionStatus = AuctionStatusFilter;
+
+/** Card / detail badges — canonical lifecycle only. */
+export type AuctionCardStatus = AuctionLifecycle;
 
 export interface IAuctionsResponse {
   data: [
@@ -32,10 +27,13 @@ export interface IAuctionsResponse {
       timezone: string;
       buyer_premium_percentage: string;
       shipping_availability: string;
-      feature_image_url: string;
+      feature_image_url?: string;
+      image_url?: string;
+      registration_status?: string | null;
       auctioneer: {
         id: number;
         company_name: string;
+        avatar?: string | null;
         user: {
           id: number;
           name: string;
@@ -49,10 +47,14 @@ export interface IAuctionsResponse {
         starting_bid: string;
         estimate_low: string;
         estimate_high: string;
+        primary_image_url?: string;
       }[];
     }
   ];
   pagination: {
     total: number;
+    per_page?: number;
+    current_page?: number;
+    last_page?: number;
   };
 }

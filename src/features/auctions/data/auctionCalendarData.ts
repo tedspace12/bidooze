@@ -1,3 +1,5 @@
+import type { AuctionLifecycle } from "@/lib/auctionLifecycle";
+
 export interface CalendarAuction {
   id: string;
   name: string;
@@ -5,7 +7,7 @@ export interface CalendarAuction {
     name: string;
     image: string;
   };
-  status: "live" | "closed" | "ending-soon";
+  status: AuctionLifecycle;
   time: string;
   catalogUrl: string;
 }
@@ -26,11 +28,10 @@ export const auctioneers = [
 ];
 
 export const auctionTypes = [
+  { id: "scheduled", name: "Scheduled" },
   { id: "live", name: "Live" },
-  { id: "timed", name: "Timed" },
-  { id: "closing-soon", name: "Closing Soon" },
-  { id: "top-picks", name: "Top Picks" },
-  { id: "upcoming", name: "Upcoming" },
+  { id: "paused", name: "Paused" },
+  { id: "closed", name: "Closed" },
 ];
 
 // Generate mock auction data for the calendar
@@ -49,7 +50,7 @@ export const generateMockAuctions = (year: number, month: number): Map<string, C
   ];
 
   const times = ["10:00 AM WAT", "02:00 PM WAT", "04:30 PM WAT", "07:00 PM WAT"];
-  const statuses: CalendarAuction["status"][] = ["live", "closed", "ending-soon"];
+  const statuses: AuctionLifecycle[] = ["scheduled", "live", "paused", "closed"];
   
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const today = new Date();
@@ -65,14 +66,14 @@ export const generateMockAuctions = (year: number, month: number): Map<string, C
       
       for (let i = 0; i < numAuctions; i++) {
         const auction = mockAuctions[Math.floor(Math.random() * mockAuctions.length)];
-        let status: CalendarAuction["status"];
+        let status: AuctionLifecycle;
         
         if (isPast) {
           status = "closed";
         } else if (currentDate.toDateString() === today.toDateString()) {
           status = statuses[Math.floor(Math.random() * statuses.length)];
         } else {
-          status = Math.random() > 0.3 ? "live" : "ending-soon";
+          status = Math.random() > 0.3 ? "live" : "scheduled";
         }
         
         dayAuctions.push({

@@ -69,7 +69,7 @@ const mockAuctions = [
       "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=100&h=100&fit=crop",
       "https://images.unsplash.com/photo-1578926288207-a90a5366759d?w=100&h=100&fit=crop",
     ],
-    status: "upcoming" as const,
+    status: "scheduled" as const,
     shippingAvailable: true,
     location: "London, UK",
   },
@@ -87,7 +87,7 @@ const mockAuctions = [
       "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=100&h=100&fit=crop",
       "https://images.unsplash.com/photo-1587836374828-4dbafa94cf0e?w=100&h=100&fit=crop",
     ],
-    status: "closing-soon" as const,
+    status: "paused" as const,
     shippingAvailable: true,
     location: "Geneva, Switzerland",
     notices: "Extended viewing available by appointment only.",
@@ -114,9 +114,9 @@ const mockAuctions = [
 
 const statusOptions = [
   { value: "all", label: "All Auctions" },
+  { value: "scheduled", label: "Scheduled (upcoming)" },
   { value: "live", label: "Live" },
-  { value: "upcoming", label: "Upcoming" },
-  { value: "closing-soon", label: "Closing Soon" },
+  { value: "paused", label: "Paused" },
   { value: "closed", label: "Closed" },
 ];
 

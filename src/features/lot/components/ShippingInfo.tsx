@@ -64,7 +64,7 @@ const ShippingInfo = ({
             <MapPin className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">Pickup Location</p>
+            <p className="text-xs text-muted-foreground">Pickup Info</p>
             <p className="text-sm md:text-base font-medium text-foreground">{pickupLocation}</p>
           </div>
         </div>

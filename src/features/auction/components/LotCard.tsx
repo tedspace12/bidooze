@@ -25,6 +25,10 @@ interface LotCardProps {
         maxBid?: number;
         shippingAvailable?: boolean;
         auctionName?: string;
+        startBid?: number;
+        bidIncrement?: number;
+        hasBids?: boolean;
+        isInWatchlist?: boolean;
     };
     viewMode?: "grid" | "list";
     isRegistered?: boolean;
@@ -50,14 +54,14 @@ const LotCard = ({
     showAuctionName = false,
     showMaxBid = false
 }: LotCardProps) => {
-    const [isWatchlisted, setIsWatchlisted] = useState(false);
+    const [isWatchlisted, setIsWatchlisted] = useState(lot.isInWatchlist || false);
     const [bidModalOpen, setBidModalOpen] = useState(false);
     const router = useRouter();
 
-    // Calculate next bid (current + typical 10% increment or minimum increment)
-    const bidIncrement = Math.max(Math.ceil(lot.currentBid * 0.1), 100);
+    // Calculate next bid
+    const bidIncrement = lot.bidIncrement || Math.max(Math.ceil(lot.currentBid * 0.1), 100);
     const nextBid = lot.status === "open"
-        ? lot.currentBid + bidIncrement
+        ? (lot.hasBids ? lot.currentBid + bidIncrement : lot.currentBid)
         : 0;
 
     const handleWatchlist = (e: React.MouseEvent) => {
@@ -177,7 +181,7 @@ const LotCard = ({
                                     <>
                                         <div className="flex items-center justify-between sm:block">
                                             <div>
-                                                <p className="text-xs text-muted-foreground">Current Bid</p>
+                                                <p className="text-xs text-muted-foreground">{lot.hasBids !== false ? "Current Bid" : "Starting Bid"}</p>
                                                 <p className="text-base sm:text-lg font-semibold text-foreground">
                                                     {formatPrice(lot.currentBid)}
                                                 </p>
@@ -310,7 +314,7 @@ const LotCard = ({
                         ) : (
                             <>
                                 <div className="mb-3">
-                                    <p className="text-xs text-muted-foreground">Current Bid</p>
+                                    <p className="text-xs text-muted-foreground">{lot.hasBids !== false ? "Current Bid" : "Starting Bid"}</p>
                                     <p className="text-base md:text-lg font-semibold text-foreground">
                                         {formatPrice(lot.currentBid)}
                                     </p>

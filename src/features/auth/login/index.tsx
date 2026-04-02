@@ -18,6 +18,9 @@ import { toast } from "sonner";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { AppleIcon, ColoredGoogleIcon, FacebookIcon, MailIcon } from "@/components/shared/icons";
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
+import Cookies from 'js-cookie';
+import { useAuth } from "@/features/auth/hooks/useAuth";
+import { useUser } from "@/features/auth/context/UserContext";
 
 const loginSchema = z.object({
     email: z
@@ -29,7 +32,12 @@ type LoginSchema = z.infer<typeof loginSchema>;
 
 const Login = () => {
     const router = useRouter();
-    const [showPassword, setShowPassword] = useState(false);
+    const [showPasswordField, setShowPasswordField] = useState(false);
+    const [showPasswordText, setShowPasswordText] = useState(false);
+
+    const { login } = useAuth();
+    const { setUser } = useUser();
+    const isLoading = login.status === 'pending';
 
     const form = useForm<LoginSchema>({
         resolver: zodResolver(loginSchema),
@@ -37,17 +45,45 @@ const Login = () => {
         mode: 'onChange',
     });
 
+    const email = form.watch('email');
+    const password = form.watch('password');
+
     const handleEmailContinue = () => {
-        if (email && !showPassword) {
-            setShowPassword(true);
+        if (email && !showPasswordField) {
+            setShowPasswordField(true);
         } else if (email && password) {
-            router.push("/");
+            onSubmit(form.getValues());
+        } else {
+            toast.error("Please enter your email and password.");
         }
     };
 
-    async function onSubmit(data) {
 
-    }
+    const onSubmit = async (data: LoginSchema) => {
+        if (!data.email || !data.password) {
+            toast.error("Please enter your email and password.");
+            return;
+        }
+
+        try {
+            const response = await login.mutateAsync({
+                email: data.email,
+                password: data.password,
+            });
+
+            if (response?.token && response?.user) {
+                Cookies.set("bidooze_token", response.token, { expires: 7 });
+                setUser(response.user);
+                toast.success("Logged in successfully");
+                router.push("/");
+            } else {
+                toast.error("Login failed: Invalid response from server");
+            }
+        } catch (error: any) {
+            const errorMessage = error?.message || "Login failed. Please try again.";
+            toast.error(errorMessage);
+        }
+    };
 
     const handleSocialLogin = (provider: string) => {
         console.log(`Login with ${provider}`);
@@ -64,7 +100,7 @@ const Login = () => {
                 </div>
             </div>
 
-            <form className="space-y-3 sm:space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
                 <FieldGroup>
                     {/* Email */}
                     <Controller
@@ -89,69 +125,53 @@ const Login = () => {
                         )}
                     />
 
-                    {/* Password */}
-                    <Controller
-                        name="password"
-                        control={form.control}
-                        render={({ field, fieldState }) => (
-                            <Field data-invalid={fieldState.invalid}>
-                                <FieldLabel htmlFor="login-password">Password</FieldLabel>
-                                <InputGroup>
-                                    <InputGroupInput
-                                        {...field}
-                                        id="login-password"
-                                        type={showPassword ? "text" : "password"}
-                                        aria-invalid={fieldState.invalid}
-                                        placeholder="Enter your password"
-                                    />
-                                    <InputGroupAddon align="inline-end">
-                                        <InputGroupButton
-                                            aria-label={showPassword ? "Hide password" : "Show password"}
-                                            type="button"
-                                            title={showPassword ? "Hide password" : "Show password"}
-                                            size="icon-xs"
-                                            onClick={() => setShowPassword((prev) => !prev)}
-                                        >
-                                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                                        </InputGroupButton>
-                                    </InputGroupAddon>
-                                </InputGroup>
-                                {fieldState.invalid && (
-                                    <FieldError errors={[fieldState.error]} />
-                                )}
-                            </Field>
-                        )}
-                    />
+                    {showPasswordField && (
+                        <Controller
+                            name="password"
+                            control={form.control}
+                            render={({ field, fieldState }) => (
+                                <Field data-invalid={fieldState.invalid}>
+                                    <FieldLabel htmlFor="login-password">Password</FieldLabel>
+                                    <InputGroup>
+                                        <InputGroupInput
+                                            {...field}
+                                            id="login-password"
+                                            type={showPasswordText ? "text" : "password"}
+                                            aria-invalid={fieldState.invalid}
+                                            placeholder="Enter your password"
+                                        />
+                                        <InputGroupAddon align="inline-end">
+                                            <InputGroupButton
+                                                aria-label={showPasswordText ? "Hide password" : "Show password"}
+                                                type="button"
+                                                title={showPasswordText ? "Hide password" : "Show password"}
+                                                size="icon-xs"
+                                                onClick={() => setShowPasswordText((prev: boolean) => !prev)}
+                                            >
+                                                {showPasswordText ? <EyeOff size={18} /> : <Eye size={18} />}
+                                            </InputGroupButton>
+                                        </InputGroupAddon>
+                                    </InputGroup>
+                                    {fieldState.invalid && (
+                                        <FieldError errors={[fieldState.error]} />
+                                    )}
+                                </Field>
+                            )}
+                        />
+                    )}
                 </FieldGroup>
             </form>
 
             <div className="space-y-3 sm:not-[]:space-y-4">
-
-                {showPassword && (
-                    <div className="space-y-2">
-                        <div className="flex justify-between items-center">
-                            <Label htmlFor="password">Password</Label>
-                            <Link
-                                href="/auth/reset-password"
-                                className="text-xs sm:text-sm text-primary hover:underline"
-                            >
-                                Forgot password?
-                            </Link>
-                        </div>
-                        <Input
-                            id="password"
-                            type="password"
-                            placeholder="Enter your password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full text-sm sm:text-base"
-                        />
-                    </div>
-                )}
-
-                <Button onClick={handleEmailContinue} className="w-full" size="lg">
+                <Button 
+                    onClick={handleEmailContinue} 
+                    className="w-full" 
+                    size="lg" 
+                    type="button"
+                    disabled={isLoading}
+                >
                     <Mail className="mr-2 h-4 w-4" />
-                    {showPassword ? "Log In" : "Continue with Email"}
+                    {isLoading ? "Logging in..." : (showPasswordField ? "Log In" : "Continue with Email")}
                 </Button>
 
                 <div className="relative">

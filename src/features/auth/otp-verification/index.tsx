@@ -51,6 +51,11 @@ const OTPVerification = () => {
 
     const onSubmit = async (data: OTPForm) => {
         try {
+            await verifyOTP.mutateAsync({
+                email,
+                otp: data.otp
+            });
+            toast.success("OTP verified successfully!");
             router.push(`/auth/create-password?email=${encodeURIComponent(email)}`)
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
@@ -137,7 +142,7 @@ const OTPVerification = () => {
                             disabled={resendOTP.isPending}
                             className="text-sm text-primary hover:underline font-medium"
                         >
-                            {resendOTP.isPending ? 'Resending..' : 'Didn&apos;t receive a code? Resend'}
+                            {resendOTP.isPending ? 'Resending..' : "Didn't receive a code? Resend"}
                         </button>
                     )}
                 </div>

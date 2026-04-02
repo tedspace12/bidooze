@@ -1,5 +1,6 @@
 'use client';
 
+import { useParams, useSearchParams } from "next/navigation";
 import LotHeader from "./components/LotHeader";
 import ImageGallery from "./components/ImageGallery";
 import AuctionDetails from "./components/AuctionDetails";
@@ -10,61 +11,191 @@ import ShippingInfo from "./components/ShippingInfo";
 import BiddingNotice from "./components/BiddingNotice";
 import RelatedLots from "./components/RelatedLots";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-
-// Mock data for the lot
-const lotData = {
-    id: "LOT-2024-8847",
-    title: "Rare 1967 Shelby GT500 Eleanor Recreation - Fully Restored",
-    images: [
-        "https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=800",
-        "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800",
-        "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800",
-        "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800",
-        "https://images.unsplash.com/photo-1525609004556-c46c7d6cf023?w=800",
-    ],
-    currentBid: 125000,
-    startingBid: 75000,
-    bidsCount: 47,
-    endTime: "2024-12-15T18:00:00",
-    startTime: "2024-12-01T09:00:00",
-    closeType: "Soft Close",
-    shippingAvailable: true,
-    description: `This stunning 1967 Shelby GT500 Eleanor recreation represents the pinnacle of American muscle car excellence. Meticulously restored over a 3-year period by master craftsmen, this vehicle features a numbers-matching 428 Police Interceptor V8 engine producing 355 horsepower.
-
-The exterior showcases the iconic Pepper Gray Metallic paint with Wimbledon White Le Mans stripes, perfectly complemented by period-correct chrome accents and the distinctive Eleanor body kit. The interior has been fully reupholstered in premium black leather with white stitching.
-
-Notable features include:
-• Original 428 PI engine, fully rebuilt
-• C6 automatic transmission
-• Power steering and brakes
-• Vintage Air conditioning
-• Custom exhaust system
-• Shelby 10-spoke wheels with Goodyear tires
-• Complete documentation and build records`,
-    auction: {
-        name: "Premier Classic Car Auction - December 2024",
-        type: "Online Only",
-        date: "December 15, 2024",
-        time: "6:00 PM EST",
-        location: "Scottsdale, Arizona",
-        buyerPremium: "15%",
-    },
-    auctioneer: {
-        name: "Heritage Auctions",
-        logo: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100",
-        rating: 4.9,
-        totalAuctions: 1250,
-    },
-    bidIncrements: [
-        { range: "$0 - $999", increment: "$25" },
-        { range: "$1,000 - $4,999", increment: "$100" },
-        { range: "$5,000 - $24,999", increment: "$250" },
-        { range: "$25,000 - $99,999", increment: "$500" },
-        { range: "$100,000+", increment: "$2,500" },
-    ],
-};
+import { Button } from "@/components/ui/button";
+import { useLot } from "./hooks/useLot";
 
 const LotDetail = () => {
+    const params = useParams<{ id: string }>();
+    const searchParams = useSearchParams();
+    const lotId = params?.id;
+    const auctionId = searchParams.get("auctionId") ?? undefined;
+
+    const { useLotDetails } = useLot(auctionId, lotId);
+    const lotQuery = useLotDetails();
+
+    if (!lotId) return null;
+
+    const isLoading = lotQuery.isLoading;
+    const isError = lotQuery.isError;
+    const lot = lotQuery.data?.data;
+    const lotMeta = lotQuery.data?.meta;
+
+    if (!auctionId) {
+        return (
+            <>
+                <div className="container mx-auto px-4 py-4">
+                    <Breadcrumb>
+                        <BreadcrumbList>
+                            <BreadcrumbItem>
+                                <BreadcrumbLink href="/">Home</BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
+                                <BreadcrumbLink href="/auctions">Auctions</BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
+                                <BreadcrumbPage className="truncate max-w-[200px]">Lot</BreadcrumbPage>
+                            </BreadcrumbItem>
+                        </BreadcrumbList>
+                    </Breadcrumb>
+                </div>
+                <main className="container mx-auto px-4 pb-10 md:pb-12">
+                    <div className="text-center py-12 md:py-16 bg-card border border-border rounded-xl">
+                        <p className="text-muted-foreground">Missing auction id for this lot.</p>
+                    </div>
+                </main>
+            </>
+        );
+    }
+
+    if (isLoading) {
+        return (
+            <>
+                <div className="container mx-auto px-4 py-4">
+                    <div className="h-6 w-2/3 bg-muted rounded animate-pulse" />
+                </div>
+                <main className="container mx-auto px-4 pb-10 md:pb-12">
+                    <div className="h-10 w-3/4 bg-muted rounded animate-pulse" />
+                    <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div className="lg:col-span-2 h-80 bg-muted rounded-xl animate-pulse" />
+                        <div className="h-80 bg-muted rounded-xl animate-pulse" />
+                    </div>
+                </main>
+            </>
+        );
+    }
+
+    if (isError || !lot) {
+        return (
+            <>
+                <div className="container mx-auto px-4 py-4">
+                    <Breadcrumb>
+                        <BreadcrumbList>
+                            <BreadcrumbItem>
+                                <BreadcrumbLink href="/">Home</BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
+                                <BreadcrumbLink href="/auctions">Auctions</BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
+                                <BreadcrumbPage className="truncate max-w-[200px]">Lot</BreadcrumbPage>
+                            </BreadcrumbItem>
+                        </BreadcrumbList>
+                    </Breadcrumb>
+                </div>
+                <main className="container mx-auto px-4 pb-10 md:pb-12">
+                    <div className="text-center py-12 md:py-16 bg-card border border-border rounded-xl">
+                        <p className="text-red-500 font-medium">Error loading lot</p>
+                        <p className="text-sm text-muted-foreground mt-2">Failed to fetch lot details. Please try again.</p>
+                        <Button variant="outline" className="mt-4" onClick={() => lotQuery.refetch()}>
+                            Retry
+                        </Button>
+                    </div>
+                </main>
+            </>
+        );
+    }
+
+    const images = (lot.images ?? [])
+        .slice()
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+        .map((img) => img.image_url)
+        .filter(Boolean);
+    if (images.length === 0 && lot.primary_image_url) images.push(lot.primary_image_url);
+
+    const auctionLocation = [lot.auction.location.city, lot.auction.location.state, lot.auction.location.country]
+        .filter(Boolean)
+        .join(", ");
+
+    const currency = lotMeta?.currency ?? "USD";
+    const formatMoney = (amount: number) =>
+        new Intl.NumberFormat(undefined, {
+            style: "currency",
+            currency,
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2,
+        }).format(amount);
+
+        const hasCurrentBid = lot.current_bid != null;
+
+        const baseBid = hasCurrentBid
+            ? Number(lot.current_bid)
+            : Number(lot.starting_bid ?? 0);
+        
+        const increment = lot.bid_increment;
+        
+        const minBid =
+            hasCurrentBid && increment != null && Number.isFinite(Number(increment))
+                ? baseBid + Number(increment)
+                : baseBid;
+
+    const bidIncrementsRows =
+        increment != null
+            ? [
+                  {
+                      range: "Current price tier",
+                      increment: formatMoney(Number(increment)),
+                  },
+              ]
+            : [{ range: "Bid increment", increment: "—" }];
+
+    const startTime =
+        lot.bidding_starts_at ?? lot.auction.dates.effective_open_bidding_at;
+    const endTime =
+        lot.bidding_ends_at ?? lot.auction.dates.effective_close_bidding_at;
+
+    const shippingCostDisplay =
+        lot.shipping_cost != null
+            ? formatMoney(Number(lot.shipping_cost))
+            : "—";
+    const pickupDisplay = lot.pickup_location?.trim() || "—";
+
+    const lotData = {
+        id: `LOT-${lot.lot_number}`,
+        title: lot.title,
+        images,
+        currentBid: lot.current_bid != null ? Number(lot.current_bid) : null,
+        startingBid: Number(lot.starting_bid ?? 0),
+        bidsCount: lot.total_bids_count ?? 0,
+        endTime,
+        startTime,
+        closeType: lot.soft_close_seconds ? "Soft Close" : "Hard Close",
+        shippingAvailable: lot.shipping_availability === "available",
+        description: lot.description,
+        auction: {
+            name: lot.auction.name,
+            type: lot.auction.type,
+            date: new Date(lot.auction.dates.auction_end_at).toLocaleDateString(),
+            time: new Date(lot.auction.dates.auction_end_at).toLocaleTimeString(),
+            location: auctionLocation || "—",
+            buyerPremium: lot.auction.buyer_premium_percentage != null ? `${lot.auction.buyer_premium_percentage}%` : "—",
+        },
+        auctioneer: {
+            name: lot.auctioneer.company_name,
+            logo: lot.auctioneer.avatar_url ?? "",
+            rating: 4.9,
+            totalAuctions: lot.auctioneer.total_auctions ?? 0,
+        },
+        bidIncrements: bidIncrementsRows,
+        minBid,
+        buyersPremiumLabel:
+            lot.auction.buyer_premium_percentage != null
+                ? `${lot.auction.buyer_premium_percentage}%`
+                : "—",
+    };
 
     return (
         <>
@@ -81,7 +212,7 @@ const LotDetail = () => {
                         </BreadcrumbItem>
                         <BreadcrumbSeparator />
                         <BreadcrumbItem>
-                            <BreadcrumbLink href="/auction/1">Classic Cars</BreadcrumbLink>
+                            <BreadcrumbLink href={`/auction/${auctionId}`}>{lot.auction.name}</BreadcrumbLink>
                         </BreadcrumbItem>
                         <BreadcrumbSeparator />
                         <BreadcrumbItem>
@@ -125,23 +256,34 @@ const LotDetail = () => {
 
                         <BiddingActions
                             currentBid={lotData.currentBid}
+                            minBid={lotData.minBid}
                             bidIncrements={lotData.bidIncrements}
                             startTime={lotData.startTime}
                             endTime={lotData.endTime}
                             id={lotData.id}
                             title={lotData.title}
                             images={lotData.images}
+                            buyersPremiumLabel={lotData.buyersPremiumLabel}
+                            currency={currency}
                         />
 
                         <AuctioneerInfo auctioneer={lotData.auctioneer} />
 
-                        <ShippingInfo shippingAvailable={lotData.shippingAvailable} />
+                        <ShippingInfo
+                            shippingAvailable={lotData.shippingAvailable}
+                            shippingCost={shippingCostDisplay}
+                            pickupLocation={pickupDisplay}
+                            shippingNotes=""
+                        />
 
-                        <BiddingNotice />
+                        <BiddingNotice notice={lot.bidding_notice} />
                     </div>
                 </div>
 
-                <RelatedLots />
+                <RelatedLots
+                    auctionId={String(lot.auction.id)}
+                    currentLotId={lot.id}
+                />
             </main>
         </>
     );

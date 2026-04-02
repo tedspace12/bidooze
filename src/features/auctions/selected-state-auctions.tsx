@@ -3,7 +3,8 @@
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import CategoryGrid from "../home/components/CategoryGrid";
 import TopPicks from "../home/components/TopPicks";
-import HotAuctions, { statusConfig } from "../home/components/HotAuctions";
+import HotAuctions from "../home/components/HotAuctions";
+import { badgeForAuctionLifecycle, normalizeBuyerAuctionStatus } from "@/lib/auctionLifecycle";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import Link from "next/link";
 import Image from "next/image";
@@ -33,7 +34,7 @@ const liveAuctions = [
         startDate: "Dec 18, 2024",
         endDate: "Dec 22, 2024",
         location: "New York, NY",
-        status: "closing-soon",
+        status: "live",
     },
     {
         id: 3,
@@ -66,7 +67,7 @@ const liveAuctions = [
         startDate: "Dec 18, 2024",
         endDate: "Dec 22, 2024",
         location: "New York, NY",
-        status: "closing-soon",
+        status: "live",
     },
     {
         id: 6,
@@ -99,7 +100,7 @@ const liveAuctions = [
         startDate: "Dec 18, 2024",
         endDate: "Dec 22, 2024",
         location: "New York, NY",
-        status: "closing-soon",
+        status: "live",
     },
     {
         id: 9,
@@ -141,7 +142,11 @@ const SelectedStateAuctions = () => {
             <div className="px-4 mt-6 md:mt-10">
                 <Carousel className="w-full" opts={{ align: "start", loop: false }}>
                     <CarouselContent className="-ml-4">
-                        {liveAuctions.map((auction) => (
+                        {liveAuctions.map((auction) => {
+                            const statusBadge = badgeForAuctionLifecycle(
+                                normalizeBuyerAuctionStatus(auction.status)
+                            );
+                            return (
                             <CarouselItem key={auction.id} className="pl-4 sm:basis-1/2 lg:basis-1/4">
                                 <Link key={auction.id} href={`/auction/${auction.id}`}>
                                     <div className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-xl transition-all group">
@@ -154,9 +159,9 @@ const SelectedStateAuctions = () => {
                                                 height={500}
                                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                             />
-                                            <Badge className={`absolute top-3 left-3 ${statusConfig[auction.status].className}`}>
+                                            <Badge className={`absolute top-3 left-3 ${statusBadge.className}`}>
                                                 <TrendingUp className="h-3 w-3 mr-1" />
-                                                {statusConfig[auction.status].label}
+                                                {statusBadge.label}
                                             </Badge>
                                         </div>
 
@@ -204,7 +209,8 @@ const SelectedStateAuctions = () => {
                                     </div>
                                 </Link>
                             </CarouselItem>
-                        ))}
+                            );
+                        })}
                     </CarouselContent>
                     <CarouselPrevious className="left-0" />
                     <CarouselNext className="right-0" />

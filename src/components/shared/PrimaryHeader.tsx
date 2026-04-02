@@ -15,11 +15,31 @@ import { useRouter } from "next/navigation";
 import MobileMenu from "./MobileMenu";
 import { SearchForm } from "./SearchForm";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
+import { useUser } from "@/features/auth/context/UserContext";
+import { authService } from "@/features/auth/services/authService";
+import Cookies from "js-cookie";
 
-const PrimaryHeader = ({ isLoggedIn }: { isLoggedIn: boolean }) => {
+const PrimaryHeader = ({ isLoggedIn }: { isLoggedIn?: boolean } = {}) => {
   const router = useRouter();
+  const { user, isLoggedIn: userIsLoggedIn, setUser } = useUser();
 
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+
+  // Use context's isLoggedIn if available, otherwise fall back to prop
+  const loggedIn = userIsLoggedIn || isLoggedIn || false;
+  const userName = user?.name || "User";
+
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      Cookies.remove("bidooze_token");
+      setUser(null);
+      router.push("/");
+    }
+  };
 
   return (
     <div className="border-b border-border bg-background sticky top-0 z-50">
@@ -61,7 +81,7 @@ const PrimaryHeader = ({ isLoggedIn }: { isLoggedIn: boolean }) => {
 
           {/* Desktop Auth */}
           <div className="hidden md:flex items-center gap-3">
-            {!isLoggedIn ? (
+            {!loggedIn ? (
               <>
                 <Link href="/auth/login">
                   <Button variant="ghost" size="sm">
@@ -76,14 +96,14 @@ const PrimaryHeader = ({ isLoggedIn }: { isLoggedIn: boolean }) => {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="flex items-center gap-1">
-                    Welcome, User
+                    Welcome, {userName}
                     <ChevronDown className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-background">
                   <DropdownMenuItem onClick={() => router.push('/account')}>Profile</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => router.push('/settings')}>Settings</DropdownMenuItem>
-                  <DropdownMenuItem>Logout</DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
