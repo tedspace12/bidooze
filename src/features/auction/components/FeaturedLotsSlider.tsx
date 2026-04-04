@@ -7,8 +7,8 @@ import {
     CarouselNext,
     CarouselPrevious,
 } from "@/components/ui/carousel";
-import Image from "next/image";
 import Link from "next/link";
+import ListingImage from "@/components/shared/listing-image";
 
 interface Lot {
     id: string;
@@ -56,7 +56,8 @@ const FeaturedLotsSlider = ({ lots, auctionId }: FeaturedLotsSliderProps) => {
                             <Link href={auctionId ? `/lot/${lot.id}?auctionId=${encodeURIComponent(auctionId)}` : `/lot/${lot.id}`}>
                                 <Card className="overflow-hidden hover:shadow-lg transition-shadow">
                                     <div className="relative aspect-4/3">
-                                        <Image
+                                        <ListingImage
+                                            kind="lot"
                                             src={lot.image}
                                             alt={lot.title}
                                             width={500}

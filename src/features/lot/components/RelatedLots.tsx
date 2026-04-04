@@ -2,12 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, ArrowRight, Eye } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import SectionHeader from "@/components/shared/SectionHeader";
 import { useQuery } from "@tanstack/react-query";
 import { auctionService } from "@/features/auction/services/auctionService";
+import ListingImage from "@/components/shared/listing-image";
 
 interface RelatedLotsProps {
     auctionId: string;
@@ -74,7 +74,8 @@ const RelatedLots = ({ auctionId, currentLotId }: RelatedLotsProps) => {
                         >
                             <Card className="group overflow-hidden border-border hover:border-primary/50 transition-all hover:shadow-lg">
                                 <div className="relative aspect-6/3 md:aspect-4/3 overflow-hidden">
-                                    <Image
+                                    <ListingImage
+                                        kind="lot"
                                         src={lot.image_url}
                                         alt={lot.title}
                                         fill

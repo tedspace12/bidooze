@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
@@ -18,7 +17,6 @@ import {
     ChevronRight,
     ChevronDown,
     CreditCard,
-    Truck,
     MapPin,
     FileText,
     Calendar,
@@ -26,14 +24,12 @@ import {
     Gavel,
     CheckCircle2,
     Plus,
-    Pencil,
     HelpCircle,
     Loader2,
     Check,
     ShieldCheck,
 } from "lucide-react";
 import { format } from "date-fns";
-import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useAuth } from "@/features/auth/hooks/useAuth";
@@ -41,6 +37,7 @@ import Link from "next/link";
 import { useAuction } from "./hooks/useAuction";
 import HowToBidModal from "./components/registration/modal/HowToBidModal";
 import { Input } from "@/components/ui/input";
+import ListingImage from "@/components/shared/listing-image";
 
 
 interface PaymentMethod {
@@ -319,7 +316,8 @@ const AuctionRegistration = () => {
                                 // Lot Context
                                 <div>
                                     <div className="mb-4">
-                                        <Image
+                                        <ListingImage
+                                            kind="lot"
                                             src={mockLotData.images[selectedLotImage]}
                                             alt={mockLotData.title}
                                             width={500}
@@ -336,7 +334,8 @@ const AuctionRegistration = () => {
                                                         : "border-transparent"
                                                         }`}
                                                 >
-                                                    <Image
+                                                    <ListingImage
+                                                        kind="lot"
                                                         src={img}
                                                         alt={`Thumbnail ${idx + 1}`}
                                                         width={500}
@@ -413,8 +412,9 @@ const AuctionRegistration = () => {
                                     </div>
                                 ) : (
                                     <div>
-                                        <Image
-                                            src={auctionData.image_url || "/placeholder-auction.jpg"}
+                                        <ListingImage
+                                            kind="auction"
+                                            src={auctionData.image_url}
                                             alt={auctionData.name}
                                             width={500}
                                             height={500}

@@ -33,6 +33,10 @@ import { Grid3X3, List, RotateCw } from "lucide-react";
 import FilterDrawer from "@/components/shared/FilterDrawer";
 import { useAuctions } from "./hooks";
 import type { Filters } from "./components/AuctionFilters";
+import {
+  ensureListingImageSources,
+  resolveListingImageSrc,
+} from "@/lib/listingImageFallbacks";
 
 const Auctions = () => {
   const searchParams = useSearchParams();
@@ -80,7 +84,10 @@ const Auctions = () => {
       return {
         id: auction.id.toString(),
         title: auction.name,
-        coverImage: (auction.image_url ?? auction.feature_image_url ?? "/images/hero-auction-1.jpg") as string,
+        coverImage: resolveListingImageSrc(
+          auction.image_url ?? auction.feature_image_url,
+          "auction"
+        ),
         auctioneer: {
           name: auction.auctioneer.company_name,
           avatar: auction.auctioneer.avatar ?? null,
@@ -89,10 +96,10 @@ const Auctions = () => {
         startDate: auction.auction_start_at,
         endDate: auction.auction_end_at,
         description: auction.description,
-        lotImages: auction.lots
-          .map((l) => l.primary_image_url)
-          .filter((u): u is string => typeof u === "string" && u.length > 0)
-          .slice(0, 3),
+        lotImages: ensureListingImageSources(
+          auction.lots.map((lot) => lot.primary_image_url),
+          "lot"
+        ).slice(0, 3),
         status,
         shippingAvailable: auction.shipping_availability === "available" ? true : false,
         location: `${auction.city}, ${auction.state}`,

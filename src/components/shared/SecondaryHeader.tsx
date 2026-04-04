@@ -36,7 +36,7 @@ const SecondaryHeader = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="center"
-              className="bg-background w-[280px] md:w-[520px] p-4"
+              className="bg-background w-70 md:w-130 p-4"
             >
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {navCategories.map((category) => (

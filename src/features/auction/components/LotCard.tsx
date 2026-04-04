@@ -3,11 +3,11 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Gavel, Eye, EyeOff, Truck, Package } from "lucide-react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 // import Link from "next/link";
 import { toast } from "sonner";
 import BidConfirmationModal from "@/features/lot/components/modal/BidConfirmationModal";
+import ListingImage from "@/components/shared/listing-image";
 
 interface LotCardProps {
     lot: {
@@ -108,7 +108,8 @@ const LotCard = ({
                     <div className="flex flex-col sm:flex-row">
                         {/* Image */}
                         <div className="relative w-full sm:w-32 md:w-40 lg:w-52 shrink-0">
-                            <Image
+                            <ListingImage
+                                kind="lot"
                                 src={lot.image}
                                 alt={lot.title}
                                 width={500}
@@ -224,7 +225,8 @@ const LotCard = ({
             <Card className="overflow-hidden hover:shadow-lg transition-shadow group h-full flex flex-col">
                 {/* Image */}
                 <div className="relative aspect-6/3 md:aspect-4/3">
-                    <Image
+                    <ListingImage
+                        kind="lot"
                         src={lot.image}
                         alt={lot.title}
                         fill

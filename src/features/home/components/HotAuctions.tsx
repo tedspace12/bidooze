@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TrendingUp, Share2, MapPin, Clock, Layers } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import SectionHeader from "@/components/shared/SectionHeader";
 import { useRouter } from "next/navigation";
@@ -11,6 +10,7 @@ import {
   normalizeBuyerAuctionStatus,
   BUYER_AUCTION_LIFECYCLE_BADGES,
 } from "@/lib/auctionLifecycle";
+import ListingImage from "@/components/shared/listing-image";
 
 /** Re-export for legacy demo sections that import `statusConfig` from this file. */
 export { BUYER_AUCTION_LIFECYCLE_BADGES as statusConfig };
@@ -77,7 +77,8 @@ const HotAuctions = () => {
                                 <div className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-xl transition-all group">
                                     {/* Cover Image */}
                                     <div className="relative h-48 overflow-hidden">
-                                        <Image
+                                        <ListingImage
+                                            kind="auction"
                                             src={auction.image_url}
                                             alt={auction.title}
                                             width={500}

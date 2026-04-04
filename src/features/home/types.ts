@@ -21,21 +21,34 @@ export type HomeHeroAuction = {
 export type HomeFeaturedSlot = {
   slot_id: number;
   position: number;
+  source: "win" | "fallback";
+
   auction: {
     auction_id: number;
-    status: string;
     title: string;
+    status: "draft" | "live" | "ended";
     image_url: string;
     start_datetime: string;
     end_datetime: string;
     currency: string;
+
     registration_status: AuctionRegistrationStatus;
+
     stats?: {
       bid_count: number;
-      current_bid: number | null;
+      highest_bid: number | null;
     };
   };
-  source: string;
+
+  highlight_lot?: {
+    lot_id: number;
+    title: string;
+    highest_bid: number | null;
+    bid_count: number;
+
+    ends_at: string | null;
+    time_remaining: string | null;
+  };
 };
 
 export type HomeRecommendation = {

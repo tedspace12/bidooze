@@ -13,6 +13,7 @@ import RelatedLots from "./components/RelatedLots";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { useLot } from "./hooks/useLot";
+import { ensureListingImageSources } from "@/lib/listingImageFallbacks";
 
 const LotDetail = () => {
     const params = useParams<{ id: string }>();
@@ -45,7 +46,7 @@ const LotDetail = () => {
                             </BreadcrumbItem>
                             <BreadcrumbSeparator />
                             <BreadcrumbItem>
-                                <BreadcrumbPage className="truncate max-w-[200px]">Lot</BreadcrumbPage>
+                                <BreadcrumbPage className="truncate max-w-50">Lot</BreadcrumbPage>
                             </BreadcrumbItem>
                         </BreadcrumbList>
                     </Breadcrumb>
@@ -91,7 +92,7 @@ const LotDetail = () => {
                             </BreadcrumbItem>
                             <BreadcrumbSeparator />
                             <BreadcrumbItem>
-                                <BreadcrumbPage className="truncate max-w-[200px]">Lot</BreadcrumbPage>
+                                <BreadcrumbPage className="truncate max-w-50">Lot</BreadcrumbPage>
                             </BreadcrumbItem>
                         </BreadcrumbList>
                     </Breadcrumb>
@@ -109,12 +110,16 @@ const LotDetail = () => {
         );
     }
 
-    const images = (lot.images ?? [])
-        .slice()
-        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-        .map((img) => img.image_url)
-        .filter(Boolean);
-    if (images.length === 0 && lot.primary_image_url) images.push(lot.primary_image_url);
+    const images = ensureListingImageSources(
+        [
+            ...(lot.images ?? [])
+                .slice()
+                .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+                .map((img) => img.image_url),
+            lot.primary_image_url,
+        ],
+        "lot"
+    );
 
     const auctionLocation = [lot.auction.location.city, lot.auction.location.state, lot.auction.location.country]
         .filter(Boolean)
@@ -216,7 +221,7 @@ const LotDetail = () => {
                         </BreadcrumbItem>
                         <BreadcrumbSeparator />
                         <BreadcrumbItem>
-                            <BreadcrumbPage className="truncate max-w-[200px]">{lotData.title}</BreadcrumbPage>
+                            <BreadcrumbPage className="truncate max-w-50">{lotData.title}</BreadcrumbPage>
                         </BreadcrumbItem>
                     </BreadcrumbList>
                 </Breadcrumb>

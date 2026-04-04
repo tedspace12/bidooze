@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -6,7 +6,8 @@ import {
     DialogContent,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import Image from "next/image";
+import ListingImage from "@/components/shared/listing-image";
+import { ensureListingImageSources } from "@/lib/listingImageFallbacks";
 
 interface ImageGalleryProps {
     images: string[];
@@ -14,22 +15,28 @@ interface ImageGalleryProps {
 }
 
 const ImageGallery = ({ images, title }: ImageGalleryProps) => {
+    const resolvedImages = ensureListingImageSources(images, "lot");
     const [selectedIndex, setSelectedIndex] = useState(0);
 
+    useEffect(() => {
+        setSelectedIndex((prev) => Math.min(prev, resolvedImages.length - 1));
+    }, [resolvedImages.length]);
+
     const goToPrevious = () => {
-        setSelectedIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+        setSelectedIndex((prev) => (prev === 0 ? resolvedImages.length - 1 : prev - 1));
     };
 
     const goToNext = () => {
-        setSelectedIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+        setSelectedIndex((prev) => (prev === resolvedImages.length - 1 ? 0 : prev + 1));
     };
 
     return (
         <div className="space-y-4">
             {/* Main Image */}
             <div className="relative group rounded-xl overflow-hidden bg-muted aspect-6/3">
-                <Image
-                    src={images[selectedIndex]}
+                <ListingImage
+                    kind="lot"
+                    src={resolvedImages[selectedIndex]}
                     alt={`${title} - Image ${selectedIndex + 1}`}
                     fill
                     className="object-cover"
@@ -65,8 +72,9 @@ const ImageGallery = ({ images, title }: ImageGalleryProps) => {
                         </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-4xl p-0 bg-transparent border-none">
-                        <Image
-                            src={images[selectedIndex]}
+                        <ListingImage
+                            kind="lot"
+                            src={resolvedImages[selectedIndex]}
                             alt={`${title} - Full size`}
                             width={500}
                             height={500}
@@ -77,13 +85,13 @@ const ImageGallery = ({ images, title }: ImageGalleryProps) => {
 
                 {/* Image Counter */}
                 <div className="absolute bottom-3 left-3 bg-background/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs sm:text-sm font-medium">
-                    {selectedIndex + 1} / {images.length}
+                    {selectedIndex + 1} / {resolvedImages.length}
                 </div>
             </div>
 
             {/* Thumbnail Strip */}
             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
-                {images.map((image, index) => (
+                {resolvedImages.map((image, index) => (
                     <button
                         key={index}
                         onClick={() => setSelectedIndex(index)}
@@ -92,7 +100,8 @@ const ImageGallery = ({ images, title }: ImageGalleryProps) => {
                             : "border-transparent hover:border-muted-foreground/30"
                             }`}
                     >
-                        <Image
+                        <ListingImage
+                            kind="lot"
                             src={image}
                             alt={`${title} - Thumbnail ${index + 1}`}
                             width={500}

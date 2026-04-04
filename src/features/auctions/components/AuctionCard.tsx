@@ -14,12 +14,13 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AuctionCardStatus } from "../types";
 import { cn } from "@/lib/utils";
 import { isClosingSoon } from "@/lib/auctionLifecycle";
+import ListingImage from "@/components/shared/listing-image";
+import { ensureListingImageSources } from "@/lib/listingImageFallbacks";
 
 const formatDateWithOrdinal = (date: Date) => {
     const day = date.getDate();
@@ -64,6 +65,7 @@ const AuctionCard = ({ auction, isRegistered = false, viewMode = 'list', page = 
     const [countdown, setCountdown] = useState("");
     const router = useRouter();
     const showClosingSoon = isClosingSoon(auction.status, auction.endDate);
+    const lotPreviewImages = ensureListingImageSources(auction.lotImages, "lot").slice(0, 3);
 
     useEffect(() => {
         if (!showClosingSoon) return;
@@ -127,7 +129,8 @@ const AuctionCard = ({ auction, isRegistered = false, viewMode = 'list', page = 
                         //     ? "aspect-6/3 md:aspect-auto md:h-full"
                         //     : "aspect-6/3"
                     )}>
-                        <Image
+                        <ListingImage
+                            kind="auction"
                             src={auction.coverImage}
                             alt={auction.title}
                             width={500}
@@ -213,8 +216,9 @@ const AuctionCard = ({ auction, isRegistered = false, viewMode = 'list', page = 
                     <div className="flex items-center gap-2 mb-4">
                         <span className="text-xs text-muted-foreground">Featured lots:</span>
                         <div className="flex -space-x-2">
-                            {auction.lotImages.map((img, idx) => (
-                                <Image
+                            {lotPreviewImages.map((img, idx) => (
+                                <ListingImage
+                                    kind="lot"
                                     key={idx}
                                     src={img}
                                     alt={`Lot preview ${idx + 1}`}
