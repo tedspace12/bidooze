@@ -19,6 +19,7 @@ import AuctionInfo from "./components/AuctionInfo";
 import { useAuction } from "./hooks/useAuction";
 import type { AuctionDetailsResponse, AuctionLotsResponse } from "./types";
 import { normalizeBuyerAuctionStatus } from "@/lib/auctionLifecycle";
+import { resolveListingImageSrc } from "@/lib/listingImageFallbacks";
 
 const toHeaderAuction = (details: AuctionDetailsResponse) => {
   const location = details.auctioneer.location;
@@ -91,7 +92,7 @@ const toLots = (
       id: String(lot.id),
       lotNumber: Number(lot.lot_number) || lot.id,
       title: lot.title,
-      image: lot.image_url,
+      image: resolveListingImageSrc(lot.image_url, "lot"),
       currentBid: Number(lot.current_bid ?? 0),
       estimateLow,
       estimateHigh,
@@ -120,7 +121,7 @@ const AuctionDetails = () => {
       id: String(lot.id),
       lotNumber: Number(lot.lot_number) || lot.id,
       title: lot.title,
-      image: lot.image_url,
+      image: resolveListingImageSrc(lot.image_url, "lot"),
       currentBid: Number(lot.current_bid ?? 0),
       estimateLow: 0,
       estimateHigh: 0,

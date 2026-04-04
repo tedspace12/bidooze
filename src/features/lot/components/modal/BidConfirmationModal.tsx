@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     Dialog,
     DialogContent,
@@ -12,7 +12,8 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Info, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-import Image from "next/image";
+import ListingImage from "@/components/shared/listing-image";
+import { ensureListingImageSources } from "@/lib/listingImageFallbacks";
 
 interface LotData {
     id: string;
@@ -40,6 +41,7 @@ const formatPrice = (price: number) => {
 };
 
 const BidConfirmationModal = ({ open, onOpenChange, lot }: BidConfirmationModalProps) => {
+    const resolvedImages = ensureListingImageSources(lot.images, "lot");
     const [selectedImage, setSelectedImage] = useState(0);
     const minBid = lot.currentBid + lot.minBidIncrement;
     const [bidAmount, setBidAmount] = useState(minBid.toString());
@@ -53,6 +55,10 @@ const BidConfirmationModal = ({ open, onOpenChange, lot }: BidConfirmationModalP
 
     const parsedBidAmount = parseInt(bidAmount) || 0;
     const isValidBid = parsedBidAmount >= minBid;
+
+    useEffect(() => {
+        setSelectedImage((prev) => Math.min(prev, resolvedImages.length - 1));
+    }, [resolvedImages.length]);
 
     const handleConfirmBid = () => {
         if (!isValidBid || !agreeToTerms) return;
@@ -74,16 +80,17 @@ const BidConfirmationModal = ({ open, onOpenChange, lot }: BidConfirmationModalP
 
                         {/* Lot Image Gallery */}
                         <div className="mb-4">
-                            <Image
-                                src={lot.images[selectedImage]}
+                            <ListingImage
+                                kind="lot"
+                                src={resolvedImages[selectedImage]}
                                 alt={lot.title}
                                 width={500}
                                 height={500}
                                 className="w-full aspect-6/3 object-cover rounded-lg"
                             />
-                            {lot.images.length > 1 && (
+                            {resolvedImages.length > 1 && (
                                 <div className="flex gap-2 mt-2">
-                                    {lot.images.map((img, idx) => (
+                                    {resolvedImages.map((img, idx) => (
                                         <button
                                             key={idx}
                                             onClick={() => setSelectedImage(idx)}
@@ -92,7 +99,8 @@ const BidConfirmationModal = ({ open, onOpenChange, lot }: BidConfirmationModalP
                                                 : "border-transparent"
                                                 }`}
                                         >
-                                            <Image
+                                            <ListingImage
+                                                kind="lot"
                                                 src={img}
                                                 alt={`Thumbnail ${idx + 1}`}
                                                 width={500}

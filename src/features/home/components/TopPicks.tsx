@@ -8,12 +8,12 @@ import {
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Eye } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import SectionHeader from "@/components/shared/SectionHeader";
 import { Button } from "@/components/ui/button";
 import { useHome } from "../hooks/useHome";
+import ListingImage from "@/components/shared/listing-image";
 
 const formatTimeLeft = (iso: string) => {
     const end = new Date(iso).getTime();
@@ -73,7 +73,8 @@ const TopPicks = () => {
                                     <Link href={`/lot/${lot.lot_id}?auctionId=${lot.auction_id}`} passHref>
                                         <Card className="overflow-hidden group cursor-pointer hover:shadow-lg transition-all">
                                             <div className="relative h-48 overflow-hidden">
-                                                <Image
+                                                <ListingImage
+                                                    kind="lot"
                                                     src={lot.image_url}
                                                     alt={lot.title}
                                                     width={500}

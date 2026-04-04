@@ -19,6 +19,7 @@ import { Grid3X3, List } from "lucide-react";
 import Link from "next/link";
 import FilterDrawer from "@/components/shared/FilterDrawer";
 import { useLots } from "./hooks/useLot";
+import { resolveListingImageSrc } from "@/lib/listingImageFallbacks";
 
 const Lots = () => {
     const searchParams = useSearchParams();
@@ -66,7 +67,7 @@ const Lots = () => {
             id: lot.id.toString(),
             lotNumber: parseInt(lot.lot_number, 10) || 0,
             title: lot.title,
-            image: lot.image_url || "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=600&h=400&fit=crop",
+            image: resolveListingImageSrc(lot.image_url, "lot"),
             currentBid: lot.current_bid !== null ? lot.current_bid : lot.starting_bid,
             startBid: lot.starting_bid,
             bidIncrement: lot.bid_increment,

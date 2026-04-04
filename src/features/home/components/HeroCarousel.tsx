@@ -10,9 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, Package } from "lucide-react";
 import Autoplay from "embla-carousel-autoplay";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useHome } from "../hooks/useHome";
+import ListingImage from "@/components/shared/listing-image";
 
 const formatHeroEndDate = (iso: string) => {
     const dt = new Date(iso);
@@ -68,7 +68,8 @@ const HeroCarousel = () => {
                                     onClick={() => router.push(`/auction/${auction.auction_id}`)}
                                     className="relative h-[450px] sm:h-[500px] group cursor-pointer"
                                 >
-                                    <Image
+                                    <ListingImage
+                                        kind="auction"
                                         src={auction.image_url}
                                         alt={auction.title}
                                         width={500}

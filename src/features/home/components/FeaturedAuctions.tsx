@@ -1,12 +1,12 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Eye } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import SectionHeader from "@/components/shared/SectionHeader";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useHome } from "../hooks/useHome";
+import ListingImage from "@/components/shared/listing-image";
 
 const formatTimeLeft = (iso: string) => {
     const end = new Date(iso).getTime();
@@ -40,7 +40,7 @@ const FeaturedAuctions = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {featuredQuery.isLoading ? (
                     Array.from({ length: 6 }).map((_, idx) => (
-                        <div key={idx} className="h-[320px] rounded-xl bg-muted animate-pulse" />
+                        <div key={idx} className="h-80 rounded-xl bg-muted animate-pulse" />
                     ))
                 ) : featuredQuery.isError ? (
                     <div className="col-span-full rounded-xl border border-border p-6 flex items-center justify-between gap-4">
@@ -57,12 +57,13 @@ const FeaturedAuctions = () => {
                     slots.map((slot) => {
                         const auction = slot.auction;
                         const bidCount = auction.stats?.bid_count ?? 0;
-                        const currentBid = auction.stats?.current_bid;
+                        const currentBid = auction.stats?.highest_bid;
                         return (
                             <Link key={slot.slot_id} href={`/auction/${auction.auction_id}`}>
                                 <Card className="overflow-hidden group cursor-pointer hover:shadow-xl transition-all">
                                     <div className="relative h-52 md:h-64 overflow-hidden">
-                                        <Image
+                                        <ListingImage
+                                            kind="auction"
                                             src={auction.image_url}
                                             alt={auction.title}
                                             width={500}
@@ -83,7 +84,7 @@ const FeaturedAuctions = () => {
                                         <h3 className="font-semibold text-base md:text-lg line-clamp-1">
                                             {auction.title}
                                         </h3>
-                                        <div className="flex items-center justify-between gap-3">
+                                        {/* <div className="flex items-center justify-between gap-3">
                                             <div>
                                                 <p className="text-xs md:text-sm text-muted-foreground">Current Bid</p>
                                                 <p className="text-lg md:text-xl font-bold text-primary">
@@ -99,8 +100,25 @@ const FeaturedAuctions = () => {
                                                     {bidCount} bids
                                                 </Badge>
                                             </div>
-                                        </div>
+                                        </div> */}
                                     </div>
+                                    {slot.highlight_lot && (
+                                        <div className="p-3 m-2 rounded-lg border bg-muted/50 space-y-1">
+                                            <div className="flex items-center gap-1.5">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                                                <span className="text-xs font-medium text-amber-600">Closing soon</span>
+                                            </div>
+                                            <p className="font-medium text-sm line-clamp-1">{slot.highlight_lot.title}</p>
+                                            <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                                <span>{slot.highlight_lot.bid_count} bids · High: {auction.currency} {slot.highlight_lot.highest_bid?.toLocaleString() ?? "—"}</span>
+                                                <span className="flex items-center gap-1">
+                                                    <Clock className="h-3 w-3" />
+                                                    {slot.highlight_lot.time_remaining ?? "0:00"}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
+
                                 </Card>
                             </Link>
                         );
