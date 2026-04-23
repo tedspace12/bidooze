@@ -1,10 +1,10 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { BlogPost } from "../data/blogPosts";
+import { BlogListItem } from "../types";
 
 interface ArticleNavigationProps {
-  prevPost: BlogPost | null;
-  nextPost: BlogPost | null;
+  prevPost: BlogListItem | null;
+  nextPost: BlogListItem | null;
 }
 
 const ArticleNavigation = ({ prevPost, nextPost }: ArticleNavigationProps) => {

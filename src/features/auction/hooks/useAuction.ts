@@ -23,10 +23,24 @@ export const useAuction = (identifier?: string) => {
         auctionService.registerForAuction(identifier as string, data),
     });
 
+  const useAddToWatchlist = () =>
+    useMutation({
+      mutationFn: (lotId: string | number) =>
+        auctionService.addToWatchlist(lotId),
+    });
+
+  const useRemoveFromWatchlist = () =>
+    useMutation({
+      mutationFn: (lotId: string | number) =>
+        auctionService.removeFromWatchlist(lotId),
+    });
+
   return {
     useAuctionDetails,
     useAuctionLots,
-    useRegisterForAuction
+    useRegisterForAuction,
+    useAddToWatchlist,
+    useRemoveFromWatchlist,
   };
 };
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, type MouseEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,7 +38,10 @@ interface Filters {
 }
 
 const AuctioneersSearch = () => {
-  const { useAuctioneers } = useAuctioneer();
+  const { useAuctioneers, useAddToFavorites, useRemoveFromFavorites } = useAuctioneer();
+
+  const addToFavoritesMutation = useAddToFavorites();
+  const removeFromFavoritesMutation = useRemoveFromFavorites();
 
   const [searchInput, setSearchInput] = useState("");
   const [filters, setFilters] = useState<Filters>({
@@ -113,12 +116,29 @@ const AuctioneersSearch = () => {
     setFilters((prev) => ({ ...prev, page }));
   };
 
-  const toggleFavorite = (id: number, e: React.MouseEvent) => {
+  const toggleFavorite = async (id: number, isFavourite: boolean, e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    setFavorites((prev) =>
-      prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]
-    );
+
+    try {
+      if (favorites.includes(id) || isFavourite) {
+        await removeFromFavoritesMutation.mutateAsync(id);
+        setFavorites((prev) => prev.filter((f) => f !== id));
+        toast("Removed from favorites", {
+          description: "Auctioneer removed from your favorites.",
+        });
+      } else {
+        await addToFavoritesMutation.mutateAsync(id);
+        setFavorites((prev) => [...prev, id]);
+        toast("Added to favorites", {
+          description: "Auctioneer added to your favorites.",
+        });
+      }
+    } catch (error: any) {
+      toast.error("Unable to update favorites", {
+        description: error?.message || "Please try again later.",
+      });
+    }
   };
 
   if (isError && !isAuthError) {
@@ -226,11 +246,11 @@ const AuctioneersSearch = () => {
                     </AvatarFallback>
                   </Avatar>
                   <button
-                    onClick={(e) => toggleFavorite(auctioneer.id, e)}
+                    onClick={(e) => toggleFavorite(auctioneer.id, auctioneer.is_favourite, e)}
                     className="p-2 rounded-full hover:bg-muted transition-colors"
                   >
                     <Star
-                      className={`h-5 w-5 ${favorites.includes(auctioneer.id)
+                      className={`h-5 w-5 ${(favorites.includes(auctioneer.id) || auctioneer.is_favourite)
                           ? "fill-primary text-primary"
                           : "text-muted-foreground"
                         }`}

@@ -7,7 +7,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { auctioneers, auctionTypes } from "../../data/auctionCalendarData";
+import { Skeleton } from "@/components/ui/skeleton";
+import { auctionTypes, useAuctioneersData } from "../../data/auctionCalendarData";
 
 interface CalendarFiltersProps {
   selectedAuctioneers: string[];
@@ -22,6 +23,7 @@ const CalendarFilters = ({
   onAuctioneersChange,
   onTypesChange,
 }: CalendarFiltersProps) => {
+  const { auctioneers, isLoading: auctioneersLoading } = useAuctioneersData();
   const handleAuctioneerToggle = (id: string) => {
     if (selectedAuctioneers.includes(id)) {
       onAuctioneersChange(selectedAuctioneers.filter((a) => a !== id));
@@ -58,21 +60,31 @@ const CalendarFilters = ({
           <div className="space-y-3">
             <h4 className="font-medium text-sm text-foreground">Auctioneers</h4>
             <div className="space-y-2">
-              {auctioneers.map((auctioneer) => (
-                <div key={auctioneer.id} className="flex items-center gap-2">
-                  <Checkbox
-                    id={`auctioneer-${auctioneer.id}`}
-                    checked={selectedAuctioneers.includes(auctioneer.id)}
-                    onCheckedChange={() => handleAuctioneerToggle(auctioneer.id)}
-                  />
-                  <label
-                    htmlFor={`auctioneer-${auctioneer.id}`}
-                    className="text-sm text-muted-foreground cursor-pointer"
-                  >
-                    {auctioneer.name}
-                  </label>
-                </div>
-              ))}
+              {auctioneersLoading ? (
+                <>
+                  <Skeleton className="h-5 w-full" />
+                  <Skeleton className="h-5 w-full" />
+                  <Skeleton className="h-5 w-full" />
+                </>
+              ) : auctioneers.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No auctioneers available</p>
+              ) : (
+                auctioneers.map((auctioneer) => (
+                  <div key={auctioneer.id} className="flex items-center gap-2">
+                    <Checkbox
+                      id={`auctioneer-${auctioneer.id}`}
+                      checked={selectedAuctioneers.includes(auctioneer.id)}
+                      onCheckedChange={() => handleAuctioneerToggle(auctioneer.id)}
+                    />
+                    <label
+                      htmlFor={`auctioneer-${auctioneer.id}`}
+                      className="text-sm text-muted-foreground cursor-pointer"
+                    >
+                      {auctioneer.name}
+                    </label>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </PopoverContent>

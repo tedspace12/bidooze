@@ -8,6 +8,7 @@ export type LotDetailsResponse = {
     description: string;
     status: string;
     current_bid: number | null;
+    next_bid: number | null;
     /** Resolved increment for current/starting price tier from auction schedule */
     bid_increment: number | null;
     total_bids_count: number;

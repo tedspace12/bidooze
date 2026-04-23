@@ -6,10 +6,10 @@ import { Calendar, Clock } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
 import Image from "next/image";
-import { BlogPost } from "../data/blogPosts";
+import { BlogListItem } from "../types";
 
 interface BlogCardProps {
-    post: BlogPost;
+    post: BlogListItem;
 }
 
 const BlogCard = ({ post }: BlogCardProps) => {
@@ -18,7 +18,7 @@ const BlogCard = ({ post }: BlogCardProps) => {
             <Link href={`/blog/${post.slug}`}>
                 <div className="relative aspect-16/10 overflow-hidden">
                     <Image
-                        src={post.featuredImage}
+                        src={post.featured_image}
                         alt={post.title}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -57,11 +57,11 @@ const BlogCard = ({ post }: BlogCardProps) => {
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
                             <Calendar className="h-3.5 w-3.5" />
-                            {format(new Date(post.publishDate), "MMM d, yyyy")}
+                            {format(new Date(post.publish_date), "MMM d, yyyy")}
                         </span>
                         <span className="flex items-center gap-1">
                             <Clock className="h-3.5 w-3.5" />
-                            {post.readTime}
+                            {post.read_time}
                         </span>
                     </div>
                     <Button variant="link" size="sm" asChild className="p-0 h-auto">

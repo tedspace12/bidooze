@@ -42,16 +42,19 @@ import ListingImage from "@/components/shared/listing-image";
 
 interface PaymentMethod {
     id: number;
-    card_holder_name: string;
-    card_last_four: string;
-    expiration_date: string;
-    card_brand: string;
     provider: string;
+    label: string;
+    card_holder_name: string;
+    card_type: string;
+    last4: string;
+    expiry_month: number;
+    expiry_year: number;
+    bank: string;
+    country_code: string;
     ref: string | null;
     is_verified: boolean;
     is_default: boolean;
     created_at: string;
-    updated_at: string;
 }
 
 // Mock lot data
@@ -192,6 +195,12 @@ const AuctionRegistration = () => {
         }
         // Fallback to generic message
         return error?.message || "An error occurred";
+    };
+
+    const formatExpiryDateInput = (raw: string): string => {
+        const digits = raw.replace(/\D/g, "").slice(0, 4);
+        if (digits.length <= 2) return digits;
+        return `${digits.slice(0, 2)}/${digits.slice(2)}`;
     };
 
 
@@ -527,11 +536,11 @@ const AuctionRegistration = () => {
                                                                         <RadioGroupItem value={id} id={id} />
                                                                         <Label htmlFor={id} className="flex flex-wrap items-center gap-2 sm:gap-3 cursor-pointer">
                                                                             <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
-                                                                            <span className="text-foreground text-sm sm:text-base">
-                                                                                {method.card_brand} •••• {method.card_last_four}
+                                                                            <span className="text-foreground text-sm sm:text-base capitalize">
+                                                                                {method.card_type} •••• {method.last4}
                                                                             </span>
                                                                             <span className="text-xs sm:text-sm text-muted-foreground">
-                                                                                Expires {method.expiration_date}
+                                                                                Expires {String(method.expiry_month).padStart(2, "0")}/{String(method.expiry_year).slice(-2)}
                                                                             </span>
                                                                             {!method.is_verified && (
                                                                                 <Badge variant="destructive" className="text-xs">
@@ -569,7 +578,7 @@ const AuctionRegistration = () => {
 
                                             {/* Add Card Form - shown when "Add New Card" is clicked */}
                                             {showAddCard && (
-                                                <div className="mt-6 p-4 border border-border rounded-lg">
+                                                <div className="mt-6 p-3 sm:p-4 border border-border rounded-lg">
                                                     <h4 className="font-semibold text-foreground mb-4">Add Payment Method</h4>
                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                         <div className="col-span-1">
@@ -588,23 +597,39 @@ const AuctionRegistration = () => {
                                                                 onChange={(e) => setNewCard({ ...newCard, card_number: e.target.value })}
                                                             />
                                                         </div>
-                                                        <div className="col-span-1">
-                                                            <Label className="text-xs sm:text-sm text-muted-foreground mb-1">Expiration Date</Label>
-                                                            <Input
-                                                                placeholder="MM/YY"
-                                                                value={newCard.expiration_date}
-                                                                onChange={(e) => setNewCard({ ...newCard, expiration_date: e.target.value })}
-                                                            />
+                                                        <div className="col-span-1 sm:col-span-2 grid grid-cols-2 gap-3 sm:gap-4">
+                                                            <div>
+                                                                <Label className="text-xs sm:text-sm text-muted-foreground mb-1">Expiration Date</Label>
+                                                                <Input
+                                                                    placeholder="MM/YY"
+                                                                    inputMode="numeric"
+                                                                    maxLength={5}
+                                                                    value={newCard.expiration_date}
+                                                                    onChange={(e) =>
+                                                                        setNewCard({
+                                                                            ...newCard,
+                                                                            expiration_date: formatExpiryDateInput(e.target.value),
+                                                                        })
+                                                                    }
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <Label className="text-xs sm:text-sm text-muted-foreground mb-1">CVV</Label>
+                                                                <Input
+                                                                    placeholder="123"
+                                                                    inputMode="numeric"
+                                                                    maxLength={4}
+                                                                    value={newCard.cvv}
+                                                                    onChange={(e) =>
+                                                                        setNewCard({
+                                                                            ...newCard,
+                                                                            cvv: e.target.value.replace(/\D/g, "").slice(0, 4),
+                                                                        })
+                                                                    }
+                                                                />
+                                                            </div>
                                                         </div>
-                                                        <div className="col-span-1">
-                                                            <Label className="text-xs sm:text-sm text-muted-foreground mb-1">CVV</Label>
-                                                            <Input
-                                                                placeholder="123"
-                                                                value={newCard.cvv}
-                                                                onChange={(e) => setNewCard({ ...newCard, cvv: e.target.value })}
-                                                            />
-                                                        </div>
-                                                        <div className="border-t border-border pt-4 -mx-4 px-4 col-span-2">
+                                                        <div className="border-t border-border pt-4 -mx-3 sm:-mx-4 px-3 sm:px-4 col-span-1 sm:col-span-2">
                                                             <div className="bg-muted/40 rounded-lg p-3 space-y-3">
                                                                 <div>
                                                                     <p className="text-sm font-medium">Verification method</p>
@@ -612,7 +637,7 @@ const AuctionRegistration = () => {
                                                                         Choose how your card is securely verified
                                                                     </p>
                                                                 </div>
-                                                                <div className="grid grid-cols-2 gap-3">
+                                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                                                     {(['paystack', 'stripe'] as const).map((p) => {
                                                                         const isSelected = newCard.provider === p;
                                                                         return (
@@ -646,7 +671,7 @@ const AuctionRegistration = () => {
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div className="col-span-1 flex items-center gap-2">
+                                                        <div className="col-span-1 sm:col-span-2 flex items-center gap-2">
                                                             <Checkbox
                                                                 id="set-default"
                                                                 checked={newCard.is_default}
@@ -657,12 +682,14 @@ const AuctionRegistration = () => {
                                                             </Label>
                                                         </div>
                                                     </div>
-                                                    <Button className="mt-4" onClick={handleAddCard}>
-                                                        Add Card
-                                                    </Button>
-                                                    <Button variant="ghost" onClick={() => setShowAddCard(false)}>
-                                                        Cancel
-                                                    </Button>
+                                                    <div className="mt-4 flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+                                                        <Button variant="ghost" className="w-full sm:w-auto" onClick={() => setShowAddCard(false)}>
+                                                            Cancel
+                                                        </Button>
+                                                        <Button className="w-full sm:w-auto" onClick={handleAddCard}>
+                                                            Add Card
+                                                        </Button>
+                                                    </div>
                                                 </div>
                                             )}
                                         </>

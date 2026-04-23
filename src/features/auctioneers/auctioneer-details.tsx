@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -18,6 +18,7 @@ import {
   Linkedin,
   Globe
 } from "lucide-react";
+import { toast } from "sonner";
 import AuctionCard from "../auctions/components/AuctionCard";
 import Link from "next/link";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -104,12 +105,34 @@ const mapAuction = (a: AuctioneerDetailsResponse["data"]["auctions"][number]) =>
 const AuctioneerDetails = () => {
   const { id } = useParams<{ id: string }>();
 
-  const { useAuctioneerDetails } = useAuctioneer(id);
+  const { useAuctioneerDetails, useAddToFavorites, useRemoveFromFavorites } = useAuctioneer(id);
   const [isFavorite, setIsFavorite] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [statusFilter, setStatusFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const isMobile = useIsMobile();
+
+  const addToFavoritesMutation = useAddToFavorites();
+  const removeFromFavoritesMutation = useRemoveFromFavorites();
+
+  const toggleFavorite = async () => {
+    if (!auctioneer) return;
+
+    try {
+      if (isFavorite) {
+        await removeFromFavoritesMutation.mutateAsync(auctioneer.id);
+        setIsFavorite(false);
+        toast.success("Removed from favorites");
+      } else {
+        await addToFavoritesMutation.mutateAsync(auctioneer.id);
+        setIsFavorite(true);
+        toast.success("Added to favorites");
+      }
+    } catch (error) {
+      console.error('Failed to toggle favorite:', error);
+      toast.error("Failed to update favorites");
+    }
+  };
 
   const params = useMemo(() => ({
     ...(statusFilter !== "all" ? { status: statusFilter } : {}),
@@ -123,6 +146,12 @@ const AuctioneerDetails = () => {
   const auctions = data?.data?.auctions ?? [];
   const pagination = data?.pagination;
   const totalPages = pagination?.last_page ?? 1;
+
+  useEffect(() => {
+    if (auctioneer?.is_favourite !== undefined) {
+      setIsFavorite(auctioneer.is_favourite);
+    }
+  }, [auctioneer?.is_favourite]);
 
   const activeFilterCount = statusFilter !== "all" ? 1 : 0;
 
@@ -181,7 +210,7 @@ const AuctioneerDetails = () => {
             <div className="flex-1 text-center sm:text-left">
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
                 <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">{auctioneer?.company_name}</h1>
-                <Button variant={isFavorite ? "default" : "outline"} onClick={() => setIsFavorite(!isFavorite)} size="sm" className="w-full sm:w-auto shrink-0">
+                <Button variant={isFavorite ? "default" : "outline"} onClick={toggleFavorite} size="sm" className="w-full sm:w-auto shrink-0">
                   <Star className={`h-4 w-4 mr-2 ${isFavorite ? "fill-current" : ""}`} />
                   {isFavorite ? "Favorited" : "Add to Favorites"}
                 </Button>

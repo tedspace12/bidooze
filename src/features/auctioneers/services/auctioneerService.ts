@@ -14,7 +14,7 @@ export interface AuctioneerParams {
 export const auctioneerService = {
   async getAuctioneerDetails(identifier: string, params?: { status?: string; per_page?: number; page?: number }): Promise<AuctioneerDetailsResponse> {
     try {
-        const res = await withoutAuth.get<AuctioneerDetailsResponse>(`/auctioneers/${identifier}`, { params });
+        const res = await withAuth.get<AuctioneerDetailsResponse>(`/auctioneers/${identifier}`, { params });
         return res.data;
     } catch (error: any) {
         throw error?.response?.data || { message: error.message };
@@ -25,6 +25,24 @@ export const auctioneerService = {
         try {
             const client = params?.favourites ? withAuth : withoutAuth;
             const res = await client.get<AuctioneerResponse>(`/auctioneers`, { params});
+            return res.data;
+        } catch (error: any) {
+            throw error?.response?.data || { message: error.message };
+        }
+    },
+
+    async addToFavorites(auctioneerId: string | number): Promise<{ message: string }> {
+        try {
+            const res = await withAuth.post(`/auctioneers/${auctioneerId}/favorite`);
+            return res.data;
+        } catch (error: any) {
+            throw error?.response?.data || { message: error.message };
+        }
+    },
+
+    async removeFromFavorites(auctioneerId: string | number): Promise<{ message: string }> {
+        try {
+            const res = await withAuth.delete(`/auctioneers/${auctioneerId}/favorite`);
             return res.data;
         } catch (error: any) {
             throw error?.response?.data || { message: error.message };

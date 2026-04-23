@@ -93,8 +93,7 @@ const TopPicks = () => {
                                                         {currentBid == null ? "—" : `${lot.currency} ${currentBid}`}
                                                     </p>
                                                     <Badge variant="secondary" className="text-xs">
-                                                        {item.timing?.time_remaining ?? "—"}
-                                                        {formatTimeLeft(item.timing?.ends_at ?? "")}
+                                                        {item.timing?.time_remaining ?? formatTimeLeft(item.timing?.ends_at ?? "")}
                                                     </Badge>
                                                 </div>
                                             </div>

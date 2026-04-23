@@ -61,11 +61,14 @@ const toHeaderAuction = (details: AuctionDetailsResponse) => {
     description: details.description || "",
     fullDescription: details.description || "",
     buyersPremium: [],
-    bidIncrements: (details.bid_increments ?? []).map((item) => ({
-      startRange: item.minimum ?? 0,
-      endRange: item.maximum ?? null,
-      increment: item.increment ?? 0,
-    })),
+    bidIncrements: (details.bid_increments ?? []).map((item, index) => {
+      const previousItem = index > 0 ? details.bid_increments[index - 1] : null;
+      return {
+        startRange: previousItem?.up_to_amount ?? 0,
+        endRange: item.up_to_amount,
+        increment: item.increment,
+      };
+    }),
     shippingInfo: details.shipping_info || "No shipping information available.",
     termsAndConditions:
       details.terms_and_condition || "No terms and conditions available.",
@@ -101,6 +104,8 @@ const toLots = (
       realizedPrice: lot.final_price ?? undefined,
       featured: false,
       shippingAvailable: lot.shipping_availability === "available",
+      nextBid: lot.next_bid ?? undefined,
+      isInWatchlist: lot.is_in_watchlist ?? false,
     };
   });
 };
@@ -115,13 +120,20 @@ const AuctionDetails = () => {
 
   const mappedAuction = detailsQuery.data ? toHeaderAuction(detailsQuery.data) : null;
   const mappedLots = toLots(lotsQuery.data, detailsQuery.data);
-  const fallbackFeaturedLots = mappedLots.filter((lot) => lot.status === "open").slice(0, 4);
+  const fallbackFeaturedLots = mappedLots
+    .filter((lot) => lot.status === "open")
+    .slice(0, 4)
+    .map((lot) => ({
+      ...lot,
+      total_bids_count: lot.bids,
+    }));
   const featuredLots =
     (detailsQuery.data?.featured_lots ?? []).map((lot) => ({
       id: String(lot.id),
       lotNumber: Number(lot.lot_number) || lot.id,
       title: lot.title,
       image: resolveListingImageSrc(lot.image_url, "lot"),
+      total_bids_count: lot.total_bids,
       currentBid: Number(lot.current_bid ?? 0),
       estimateLow: 0,
       estimateHigh: 0,
@@ -214,7 +226,7 @@ const AuctionDetails = () => {
             <FeaturedLotsSlider lots={featuredLotsForUi} auctionId={mappedAuction.id} />
 
             {/* Lots Grid */}
-            <LotsGrid lots={mappedLots} isRegistered={isRegistered} />
+            <LotsGrid lots={mappedLots} isRegistered={isRegistered} bidding={lotsQuery.data?.meta?.bidding} buyerPremiumPercentage={lotsQuery.data?.meta?.buyer_premium_percentage} />
           </TabsContent>
 
           <TabsContent value="info" className="mt-6">

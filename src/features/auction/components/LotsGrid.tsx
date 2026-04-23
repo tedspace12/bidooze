@@ -91,11 +91,20 @@ interface Lot {
   status: "open" | "closed";
   realizedPrice?: number;
   featured?: boolean;
+  shippingAvailable: boolean;
+  nextBid?: number;
 }
 
 interface LotsGridProps {
   lots: Lot[];
   isRegistered?: boolean;
+  bidding?: {
+    mode: string;
+    allow_proxy: boolean;
+    require_proxy: boolean;
+    default_amount_type: string;
+  };
+  buyerPremiumPercentage?: number | null;
 }
 
 const sortOptions = [
@@ -110,7 +119,7 @@ const sortOptions = [
 
 const itemsPerPageOptions = [12, 24, 48, 96];
 
-const LotsGrid = ({ lots, isRegistered = false }: LotsGridProps) => {
+const LotsGrid = ({ lots, isRegistered = false, bidding, buyerPremiumPercentage }: LotsGridProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("lot-number");
   const [itemsPerPage, setItemsPerPage] = useState(12);
@@ -149,6 +158,11 @@ const LotsGrid = ({ lots, isRegistered = false }: LotsGridProps) => {
     );
   };
 
+  const getLotEffectivePrice = (lot: Lot) =>
+    lot.status === "closed"
+      ? lot.realizedPrice || 0
+      : lot.nextBid ?? lot.currentBid;
+
   const toggleParentCategory = (parentId: string) => {
     const parent = categoryTree.find((c) => c.id === parentId);
     if (!parent) return;
@@ -182,13 +196,13 @@ const LotsGrid = ({ lots, isRegistered = false }: LotsGridProps) => {
     // Price filter
     if (priceFrom) {
       result = result.filter((lot) => {
-        const price = lot.status === "closed" ? lot.realizedPrice || 0 : lot.currentBid;
+        const price = getLotEffectivePrice(lot);
         return price >= parseInt(priceFrom);
       });
     }
     if (priceTo) {
       result = result.filter((lot) => {
-        const price = lot.status === "closed" ? lot.realizedPrice || 0 : lot.currentBid;
+        const price = getLotEffectivePrice(lot);
         return price <= parseInt(priceTo);
       });
     }
@@ -199,10 +213,10 @@ const LotsGrid = ({ lots, isRegistered = false }: LotsGridProps) => {
         result.sort((a, b) => a.lotNumber - b.lotNumber);
         break;
       case "price-low":
-        result.sort((a, b) => a.currentBid - b.currentBid);
+        result.sort((a, b) => getLotEffectivePrice(a) - getLotEffectivePrice(b));
         break;
       case "price-high":
-        result.sort((a, b) => b.currentBid - a.currentBid);
+        result.sort((a, b) => getLotEffectivePrice(b) - getLotEffectivePrice(a));
         break;
       case "most-bids":
         result.sort((a, b) => b.bids - a.bids);
@@ -407,7 +421,7 @@ const LotsGrid = ({ lots, isRegistered = false }: LotsGridProps) => {
         }
       >
         {paginatedLots.map((lot) => (
-          <LotCard key={lot.id} lot={lot} viewMode={viewMode} isRegistered={isRegistered} />
+          <LotCard key={lot.id} lot={lot} viewMode={viewMode} isRegistered={isRegistered} bidding={bidding} buyerPremiumPercentage={buyerPremiumPercentage} />
         ))}
       </div>
 

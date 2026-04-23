@@ -135,6 +135,7 @@ const LotDetail = () => {
         }).format(amount);
 
         const hasCurrentBid = lot.current_bid != null;
+        const nextBidFromApi = lot.next_bid != null ? Number(lot.next_bid) : null;
 
         const baseBid = hasCurrentBid
             ? Number(lot.current_bid)
@@ -143,7 +144,9 @@ const LotDetail = () => {
         const increment = lot.bid_increment;
         
         const minBid =
-            hasCurrentBid && increment != null && Number.isFinite(Number(increment))
+            nextBidFromApi != null
+                ? nextBidFromApi
+                : hasCurrentBid && increment != null && Number.isFinite(Number(increment))
                 ? baseBid + Number(increment)
                 : baseBid;
 
@@ -169,7 +172,7 @@ const LotDetail = () => {
     const pickupDisplay = lot.pickup_location?.trim() || "—";
 
     const lotData = {
-        id: `LOT-${lot.lot_number}`,
+        id: `${lot.lot_number}`,
         title: lot.title,
         images,
         currentBid: lot.current_bid != null ? Number(lot.current_bid) : null,
@@ -200,6 +203,7 @@ const LotDetail = () => {
             lot.auction.buyer_premium_percentage != null
                 ? `${lot.auction.buyer_premium_percentage}%`
                 : "—",
+        isWatchlisted: lot.is_in_watchlist,
     };
 
     return (
@@ -231,7 +235,9 @@ const LotDetail = () => {
             <main className="container mx-auto px-4 pb-10 md:pb-12">
                 <LotHeader
                     title={lotData.title}
-                    lotId={lotData.id}
+                    lotNumberLabel={lotData.id}
+                    lotId={String(lot.id)}
+                    isWatchlisted={lotData.isWatchlisted}
                 />
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-4 sm:mt-6">

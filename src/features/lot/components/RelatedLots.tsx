@@ -62,9 +62,24 @@ const RelatedLots = ({ auctionId, currentLotId }: RelatedLotsProps) => {
                     ))}
                 </div>
             ) : lots.length === 0 ? (
-                <p className="mt-6 text-sm text-muted-foreground">
-                    No other lots in this auction.
-                </p>
+                <div className="mt-6 rounded-3xl border border-border bg-muted/50 p-8 text-center">
+                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-background text-muted-foreground">
+                        <Eye className="h-6 w-6" />
+                    </div>
+                    <h3 className="text-base font-semibold text-foreground">
+                        No other lots in this auction
+                    </h3>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                        There aren’t any additional lots to show for this auction right now.
+                    </p>
+                    <Button
+                        variant="outline"
+                        className="mt-6"
+                        onClick={() => router.push(`/auction/${auctionId}`)}
+                    >
+                        Browse auction catalog
+                    </Button>
+                </div>
             ) : (
                 <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {lots.map((lot) => (

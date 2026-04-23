@@ -1,6 +1,5 @@
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
 import { usePlacesWidget } from "react-google-autocomplete";
@@ -43,11 +42,32 @@ const cardSchema = z.object({
 
 type CardFormValues = z.infer<typeof cardSchema>;
 
+type ManualFields = {
+  street: string;
+  city: string;
+  state: string;
+  zip: string;
+  country: string;
+};
+
+const hasApiKey = !!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
 const PersonalDetails = ({ step, setStep, email }: { step: number; setStep: React.Dispatch<React.SetStateAction<number>>, email: string }) => {
   const [openSections, setOpenSections] = useState({
     personal: false,
     address: true,
     card: false,
+  });
+
+  // Default to manual when no API key is configured
+  const [useManual, setUseManual] = useState(!hasApiKey);
+
+  const [manualFields, setManualFields] = useState<ManualFields>({
+    street: "",
+    city: "",
+    state: "",
+    zip: "",
+    country: "",
   });
 
   const form = useForm<CardFormValues>({
@@ -61,6 +81,23 @@ const PersonalDetails = ({ step, setStep, email }: { step: number; setStep: Reac
     },
     mode: 'onChange'
   });
+
+  // Compose manual sub-fields into the address form value
+  useEffect(() => {
+    if (!useManual) return;
+    const composed = [
+      manualFields.street,
+      manualFields.city,
+      manualFields.state,
+      manualFields.zip,
+      manualFields.country,
+    ]
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .join(", ");
+    form.setValue("address", composed, { shouldValidate: composed.length > 0 });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [manualFields, useManual]);
 
   const { completeProfile } = useAuth();
 
@@ -82,13 +119,30 @@ const PersonalDetails = ({ step, setStep, email }: { step: number; setStep: Reac
     }
   };
 
-  // const { ref } = usePlacesWidget({
-  //   apiKey: '',
-  //   onPlaceSelected: (place) => console.log(place)
-  // });
+  const { ref: placesRef } = usePlacesWidget({
+    onPlaceSelected: (place) => {
+      form.setValue("address", place.formatted_address ?? "", { shouldValidate: true });
+    },
+    options: { types: ["address"] },
+  });
 
   const toggleSection = (section: keyof typeof openSections) => {
     setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  const handleManualChange = (field: keyof ManualFields, value: string) => {
+    setManualFields((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const switchToManual = () => {
+    form.setValue("address", "", { shouldValidate: false });
+    setManualFields({ street: "", city: "", state: "", zip: "", country: "" });
+    setUseManual(true);
+  };
+
+  const switchToSearch = () => {
+    form.setValue("address", "", { shouldValidate: false });
+    setUseManual(false);
   };
 
   return (
@@ -113,31 +167,135 @@ const PersonalDetails = ({ step, setStep, email }: { step: number; setStep: Reac
             <CollapsibleTrigger className="flex items-center justify-between w-full p-3 sm:p-4 bg-secondary rounded-lg hover:bg-muted transition-colors">
               <span className="text-sm sm:text-base font-medium">Address</span>
               <ChevronDown
-                className={`h-4 w-4 sm:h-5 sm:w-5 transition-transform ${openSections.address ? "rotate-180" : ""
-                  }`}
+                className={`h-4 w-4 sm:h-5 sm:w-5 transition-transform ${openSections.address ? "rotate-180" : ""}`}
               />
             </CollapsibleTrigger>
 
             <CollapsibleContent className="pt-3 sm:pt-4 space-y-3 sm:space-y-4 px-1">
-              <Field>
-                <FieldLabel htmlFor="addressSearch">Search Address</FieldLabel>
-                <FieldContent>
-                  <Input
-                    id="addressSearch"
-                    placeholder="Start typing your address..."
-                    className="text-sm h-11 md:text-base"
-                    {...form.register("address")}
-                  />
-                </FieldContent>
-                <FieldError>{form.formState.errors.address?.message}</FieldError>
-              </Field>
+              {!useManual ? (
+                /* ── Autocomplete search mode ── */
+                <>
+                  <Field>
+                    <FieldLabel htmlFor="addressSearch">Search Address</FieldLabel>
+                    <FieldContent>
+                      {(() => {
+                        const { ref: registerRef, ...addressRest } = form.register("address");
+                        return (
+                          <Input
+                            {...addressRest}
+                            ref={(el) => {
+                              registerRef(el);
+                              (placesRef as { current: HTMLInputElement | null }).current = el;
+                            }}
+                            id="addressSearch"
+                            placeholder="Start typing your address..."
+                            className="text-sm h-11 md:text-base"
+                            autoComplete="off"
+                          />
+                        );
+                      })()}
+                    </FieldContent>
+                    <FieldError>{form.formState.errors.address?.message}</FieldError>
+                  </Field>
 
-              <button
-                type="button"
-                className="text-xs sm:text-sm text-primary hover:underline"
-              >
-                + Add manually
-              </button>
+                  <button
+                    type="button"
+                    className="text-xs sm:text-sm text-primary hover:underline"
+                    onClick={switchToManual}
+                  >
+                    + Add manually
+                  </button>
+                </>
+              ) : (
+                /* ── Manual entry mode ── */
+                <>
+                  <FieldGroup>
+                    <Field>
+                      <FieldLabel htmlFor="street">Street address</FieldLabel>
+                      <FieldContent>
+                        <Input
+                          id="street"
+                          placeholder="123 Main St"
+                          className="text-sm h-11 md:text-base"
+                          value={manualFields.street}
+                          onChange={(e) => handleManualChange("street", e.target.value)}
+                        />
+                      </FieldContent>
+                    </Field>
+
+                    <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                      <Field>
+                        <FieldLabel htmlFor="city">City</FieldLabel>
+                        <FieldContent>
+                          <Input
+                            id="city"
+                            placeholder="New York"
+                            className="text-sm h-11 md:text-base"
+                            value={manualFields.city}
+                            onChange={(e) => handleManualChange("city", e.target.value)}
+                          />
+                        </FieldContent>
+                      </Field>
+
+                      <Field>
+                        <FieldLabel htmlFor="state">State / Province</FieldLabel>
+                        <FieldContent>
+                          <Input
+                            id="state"
+                            placeholder="NY"
+                            className="text-sm h-11 md:text-base"
+                            value={manualFields.state}
+                            onChange={(e) => handleManualChange("state", e.target.value)}
+                          />
+                        </FieldContent>
+                      </Field>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                      <Field>
+                        <FieldLabel htmlFor="zip">ZIP / Postal code</FieldLabel>
+                        <FieldContent>
+                          <Input
+                            id="zip"
+                            placeholder="10001"
+                            className="text-sm h-11 md:text-base"
+                            value={manualFields.zip}
+                            onChange={(e) => handleManualChange("zip", e.target.value)}
+                          />
+                        </FieldContent>
+                      </Field>
+
+                      <Field>
+                        <FieldLabel htmlFor="country">Country</FieldLabel>
+                        <FieldContent>
+                          <Input
+                            id="country"
+                            placeholder="United States"
+                            className="text-sm h-11 md:text-base"
+                            value={manualFields.country}
+                            onChange={(e) => handleManualChange("country", e.target.value)}
+                          />
+                        </FieldContent>
+                      </Field>
+                    </div>
+
+                    {/* Show validation error on the composed address */}
+                    {form.formState.errors.address && (
+                      <p className="text-xs text-destructive">{form.formState.errors.address.message}</p>
+                    )}
+                  </FieldGroup>
+
+                  {hasApiKey && (
+                    <button
+                      type="button"
+                      className="text-xs sm:text-sm text-primary hover:underline"
+                      onClick={switchToSearch}
+                    >
+                      ← Use address search
+                    </button>
+                  )}
+                </>
+              )}
             </CollapsibleContent>
           </Collapsible>
         </fieldset>
@@ -155,8 +313,7 @@ const PersonalDetails = ({ step, setStep, email }: { step: number; setStep: Reac
                 Card Details
               </span>
               <ChevronDown
-                className={`h-4 w-4 sm:h-5 sm:w-5 transition-transform ${openSections.card ? "rotate-180" : ""
-                  }`}
+                className={`h-4 w-4 sm:h-5 sm:w-5 transition-transform ${openSections.card ? "rotate-180" : ""}`}
               />
             </CollapsibleTrigger>
 
@@ -211,6 +368,7 @@ const PersonalDetails = ({ step, setStep, email }: { step: number; setStep: Reac
                         placeholder="123"
                         inputMode="numeric"
                         className="text-sm h-11 md:text-base"
+                        {...form.register("cvv")}
                       />
                     </FieldContent>
                     <FieldError>{form.formState.errors.cvv?.message}</FieldError>

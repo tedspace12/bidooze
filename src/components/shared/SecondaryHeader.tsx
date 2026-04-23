@@ -68,7 +68,7 @@ const SecondaryHeader = () => {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <button className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap">
+          <button onClick={() => router.push('/watchlist')} className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap">
             <Heart className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Watch</span> List
           </button>
@@ -115,7 +115,7 @@ const SecondaryHeader = () => {
             Blog
           </button>
 
-          <button className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap">
+          <button onClick={() => router.push('/sell')} className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap">
             <ShoppingBag className="h-3.5 w-3.5" />
             Sell
           </button>
@@ -134,7 +134,7 @@ const SecondaryHeader = () => {
             Manage notifications
           </button> */}
 
-          <button className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
+          <button onClick={() => router.push('/help')} className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap">
             <HelpCircle className="h-3.5 w-3.5" />
             Help
           </button>

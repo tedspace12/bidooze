@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -12,9 +13,12 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from "sonner";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { AppleIcon, ColoredGoogleIcon, FacebookIcon, MailIcon } from "@/components/shared/icons";
+import { ColoredGoogleIcon, FacebookIcon, MailIcon } from "@/components/shared/icons";
 import { useAuth } from "../hooks/useAuth";
+import { useSocialAuth } from "../hooks/useSocialAuth";
 import Link from "next/link";
+import Cookies from 'js-cookie';
+import { useUser } from "@/features/auth/context/UserContext";
 
 const signupSchema = z.object({
     email: z
@@ -25,6 +29,7 @@ type SignupSchema = z.infer<typeof signupSchema>;
 
 const SignupEmail = () => {
     const router = useRouter();
+    const [pendingProvider, setPendingProvider] = useState<"google" | "facebook" | null>(null);
 
     const form = useForm<SignupSchema>({
         resolver: zodResolver(signupSchema),
@@ -32,7 +37,9 @@ const SignupEmail = () => {
         mode: 'onChange',
     });
 
-    const { registerEmail } = useAuth();
+    const { registerEmail, socialAuth } = useAuth();
+    const { getGoogleToken, getFacebookToken } = useSocialAuth();
+    const { setUser } = useUser();
 
     async function onSubmit(data: SignupSchema) {
         try {
@@ -46,8 +53,48 @@ const SignupEmail = () => {
         }
     }
 
-    const handleSocialLogin = (provider: string) => {
-        console.log(`Sign up with ${provider}`);
+    const handleSocialAuth = async (provider: "google" | "facebook") => {
+        try {
+            setPendingProvider(provider);
+            const token = provider === "google"
+                ? await getGoogleToken()
+                : await getFacebookToken();
+
+            const data = await socialAuth.mutateAsync({ provider, token });
+
+            if (data?.status === "registration_required") {
+                // New user — go to personal info (step 4), skip email/OTP/password
+                const params = new URLSearchParams();
+                if (data.prefilled?.email) params.set("email", data.prefilled.email);
+                if (data.prefilled?.name) params.set("name", data.prefilled.name);
+                if (data.token) params.set("social_token", data.token);
+                router.push(`/auth/personal-information?${params.toString()}`);
+            } else if (data?.token && data?.user) {
+                // Returning user — log them in
+                Cookies.set("bidooze_token", data.token, { expires: 7 });
+                setUser(data.user);
+                toast.success("Logged in successfully");
+
+                const shouldResumeProfileSetup =
+                    data?.profile_setup_pending === true &&
+                    data?.profile_setup_completed !== true;
+
+                if (shouldResumeProfileSetup) {
+                    router.replace(`/auth/profile-setup?email=${encodeURIComponent(data.user.email ?? "")}`);
+                    return;
+                }
+
+                router.replace("/");
+            } else {
+                toast.error("Unexpected response from server. Please try again.");
+            }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+            const msg = error?.message || `${provider === "google" ? "Google" : "Facebook"} sign-up failed.`;
+            toast.error(msg);
+        } finally {
+            setPendingProvider(null);
+        }
     };
 
     return (
@@ -89,7 +136,6 @@ const SignupEmail = () => {
                             <MailIcon className="mr-2 h-4 w-4" />
                             {registerEmail.isPending ? 'Registering..' : 'Continue with Email'}
                         </Button>
-
                     </Field>
                 </FieldGroup>
 
@@ -102,33 +148,27 @@ const SignupEmail = () => {
 
                 <div className="space-y-3">
                     <Button
+                        type="button"
                         variant="outline"
-                        onClick={() => handleSocialLogin("google")}
+                        onClick={() => handleSocialAuth("google")}
                         className="w-full [&_svg:not([class*='size-'])]:size-4"
                         size="lg"
+                        disabled={pendingProvider !== null}
                     >
                         <ColoredGoogleIcon className="mr-2" />
-                        Continue with Google
+                        {pendingProvider === "google" ? "Connecting..." : "Continue with Google"}
                     </Button>
 
                     <Button
+                        type="button"
                         variant="outline"
-                        onClick={() => handleSocialLogin("apple")}
-                        className="w-full [&_svg:not([class*='size-'])]:size-6"
-                        size="lg"
-                    >
-                        <AppleIcon className="mr-2" />
-                        Continue with Apple
-                    </Button>
-
-                    <Button
-                        variant="outline"
-                        onClick={() => handleSocialLogin("facebook")}
+                        onClick={() => handleSocialAuth("facebook")}
                         className="w-full [&_svg:not([class*='size-'])]:size-5"
                         size="lg"
+                        disabled={pendingProvider !== null}
                     >
                         <FacebookIcon className="mr-2 h-4 w-4" />
-                        Continue with Facebook
+                        {pendingProvider === "facebook" ? "Connecting..." : "Continue with Facebook"}
                     </Button>
                 </div>
             </form>

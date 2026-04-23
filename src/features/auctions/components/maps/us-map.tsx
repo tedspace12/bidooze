@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { unitedStatesAuctionMap, unitedStatesMap } from "../../constants/data";
+import { unitedStatesMap } from "../../constants/data";
 import { useRouter } from "next/navigation";
 
-export const USMap = () => {
+export const USMap = ({ countsByCode }: { countsByCode: Record<string, number> }) => {
     const [hoveredState, setHoveredState] = useState<{
         name: string;
         count: number;
@@ -17,8 +17,7 @@ export const USMap = () => {
         const stateId = path.id;
         const stateName = path.getAttribute('data-state');
 
-        const count = unitedStatesAuctionMap[stateId];
-        if (!count) return;
+        const count = countsByCode[stateId] ?? 0;
 
         const rect = path.getBoundingClientRect();
 
@@ -51,7 +50,7 @@ export const USMap = () => {
             >
                 <g>
                     {unitedStatesMap.map((state) => (
-                        <path key={state.id} id={state.id} data-state={state.name} className="land" onClick={handleClick} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} d={state.d} />
+                        <path key={state.id} id={state.id} data-state={state.name} className={`land ${countsByCode[state.id] > 0 ? "hover:fill-primary" : ""}`} onClick={handleClick} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} d={state.d} />
                     ))}
                 </g>
             </svg>
@@ -69,7 +68,9 @@ export const USMap = () => {
                 >
                     <div className="font-semibold">{hoveredState.name}</div>
                     <div className="text-muted-foreground">
-                        {hoveredState.count} auctions
+                        {hoveredState.count > 0
+                            ? `${hoveredState.count} auctions`
+                            : "No auctions"}
                     </div>
                 </div>
             )}

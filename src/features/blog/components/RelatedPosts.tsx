@@ -1,12 +1,12 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { BlogPost } from "../data/blogPosts";
+import { BlogListItem } from "../types";
 import Link from "next/link";
 import Image from "next/image";
 
 interface RelatedPostsProps {
-    posts: BlogPost[];
+    posts: BlogListItem[];
 }
 
 const RelatedPosts = ({ posts }: RelatedPostsProps) => {
@@ -19,11 +19,11 @@ const RelatedPosts = ({ posts }: RelatedPostsProps) => {
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                 {posts.map((post) => (
-                    <Card key={post.id} className="overflow-hidden group hover:shadow-md transition-shadow">
+                    <Card key={post.slug} className="overflow-hidden group hover:shadow-md transition-shadow">
                         <Link href={`/blog/${post.slug}`}>
                             <div className="relative aspect-16/10 overflow-hidden">
                                 <Image
-                                    src={post.featuredImage}
+                                    src={post.featured_image}
                                     alt={post.title}
                                     fill
                                     className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -40,7 +40,7 @@ const RelatedPosts = ({ posts }: RelatedPostsProps) => {
                                 </h3>
                             </Link>
                             <p className="text-xs text-muted-foreground mt-2">
-                                {format(new Date(post.publishDate), "MMM d, yyyy")}
+                                {format(new Date(post.publish_date), "MMM d, yyyy")}
                             </p>
                         </CardContent>
                     </Card>

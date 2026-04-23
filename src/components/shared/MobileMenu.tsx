@@ -124,7 +124,7 @@ const MobileMenu = ({ isLoggedIn: defaultIsLoggedIn }: MobileMenuProps) => {
 
                             {/* Watch List */}
                             <button
-                                onClick={() => handleNavigate("/bids")}
+                                onClick={() => handleNavigate("/watchlist")}
                                 className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg hover:bg-muted transition-colors"
                             >
                                 <Heart className="h-4 w-4" />
@@ -179,7 +179,7 @@ const MobileMenu = ({ isLoggedIn: defaultIsLoggedIn }: MobileMenuProps) => {
 
                             {/* Sell */}
                             <button
-                                onClick={() => handleNavigate("/auctioneers")}
+                                onClick={() => handleNavigate("/sell")}
                                 className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg hover:bg-muted transition-colors"
                             >
                                 <ShoppingBag className="h-4 w-4" />
@@ -197,6 +197,7 @@ const MobileMenu = ({ isLoggedIn: defaultIsLoggedIn }: MobileMenuProps) => {
 
                             {/* Help */}
                             <button
+                                onClick={() => handleNavigate("/help")}
                                 className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg hover:bg-muted transition-colors"
                             >
                                 <HelpCircle className="h-4 w-4" />

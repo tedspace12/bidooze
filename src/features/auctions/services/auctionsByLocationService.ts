@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { withoutAuth } from "@/services/api";
+import { withAuth, withoutAuth } from "@/services/api";
 import {
   AuctionsByLocationResponse,
   AuctionsByLocationParams,
@@ -12,7 +12,7 @@ export const auctionsByLocationService = {
     params: AuctionsByLocationParams,
   ): Promise<AuctionsByLocationResponse> {
     try {
-      const res = await withoutAuth.get<AuctionsByLocationResponse>(
+      const res = await withAuth.get<AuctionsByLocationResponse>(
         "/auctions/by-location",
         { params },
       );
