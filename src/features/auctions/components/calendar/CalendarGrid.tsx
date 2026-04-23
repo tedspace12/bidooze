@@ -1,5 +1,5 @@
 import { useIsMobile } from "@/hooks/use-mobile";
-import { CalendarAuction } from "../../data/auctionCalendarData";
+import { CalendarAuction } from "../../types";
 import { cn } from "@/lib/utils";
 
 interface CalendarGridProps {
@@ -7,6 +7,7 @@ interface CalendarGridProps {
   selectedDate: Date;
   auctionsMap: Map<string, CalendarAuction[]>;
   onDateSelect: (date: Date) => void;
+  isLoading?: boolean;
 }
 
 const DAYS_OF_WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -17,6 +18,7 @@ const CalendarGrid = ({
   selectedDate,
   auctionsMap,
   onDateSelect,
+  isLoading = false,
 }: CalendarGridProps) => {
   const isMobile = useIsMobile();
   const year = currentDate.getFullYear();
@@ -116,24 +118,31 @@ const CalendarGrid = ({
   const daysLabels = isMobile ? DAYS_OF_WEEK_SHORT : DAYS_OF_WEEK;
 
   return (
-    <div className="space-y-2 md:space-y-3">
-      {/* Days of week header */}
-      <div className="grid grid-cols-7 gap-1 md:gap-2">
-        {daysLabels.map((day, idx) => (
-          <div
-            key={`${day}-${idx}`}
-            className={cn("flex items-center justify-center font-medium text-muted-foreground uppercase tracking-wide",
-               isMobile ? "h-6 text-[10px]" : "h-8 text-xs"
-            )}
-          >
-            {day}
-          </div>
-        ))}
-      </div>
+    <div className="relative">
+      {isLoading && (
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center rounded-lg z-10">
+          <div className="text-sm text-muted-foreground">Loading auctions...</div>
+        </div>
+      )}
+      <div className="space-y-2 md:space-y-3">
+        {/* Days of week header */}
+        <div className="grid grid-cols-7 gap-1 md:gap-2">
+          {daysLabels.map((day, idx) => (
+            <div
+              key={`${day}-${idx}`}
+              className={cn("flex items-center justify-center font-medium text-muted-foreground uppercase tracking-wide",
+                 isMobile ? "h-6 text-[10px]" : "h-8 text-xs"
+              )}
+            >
+              {day}
+            </div>
+          ))}
+        </div>
 
-      {/* Calendar grid */}
-      <div className="grid grid-cols-7 gap-1 md:gap-2">
-        {cells}
+        {/* Calendar grid */}
+        <div className="grid grid-cols-7 gap-1 md:gap-2">
+          {cells}
+        </div>
       </div>
     </div>
   );

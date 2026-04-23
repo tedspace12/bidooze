@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { auctioneerService, type AuctioneerParams } from "../services/auctioneerService";
 
 export const useAuctioneer = (identifier?: string) => {
@@ -15,8 +15,22 @@ export const useAuctioneer = (identifier?: string) => {
             queryFn: () => auctioneerService.getAuctioneers(params),
         });
 
+    const useAddToFavorites = () =>
+        useMutation({
+            mutationFn: (auctioneerId: string | number) =>
+                auctioneerService.addToFavorites(auctioneerId),
+        });
+
+    const useRemoveFromFavorites = () =>
+        useMutation({
+            mutationFn: (auctioneerId: string | number) =>
+                auctioneerService.removeFromFavorites(auctioneerId),
+        });
+
     return {
         useAuctioneerDetails,
         useAuctioneers,
+        useAddToFavorites,
+        useRemoveFromFavorites,
     };
 }

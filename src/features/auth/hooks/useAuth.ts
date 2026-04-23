@@ -32,6 +32,11 @@ export const useAuth = () => {
     mutationKey: ["register-complete-profile"],
   });
 
+  const socialAuth = useMutation({
+    mutationFn: authService.socialAuth,
+    mutationKey: ["social-auth"],
+  });
+
   const login = useMutation({
     mutationFn: authService.login,
     mutationKey: ["login"],
@@ -107,6 +112,7 @@ export const useAuth = () => {
     createPassword,
     setPersonalInfo,
     completeProfile,
+    socialAuth,
     login,
     getBuyerProfile,
     updateBuyerProfile,

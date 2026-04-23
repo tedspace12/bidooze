@@ -37,16 +37,19 @@ import {
 
 interface PaymentMethod {
   id: number;
-  card_holder_name: string;
-  card_last_four: string;
-  expiration_date: string;
-  card_brand: string;
   provider: string;
+  label: string;
+  card_holder_name: string;
+  card_type: string;
+  last4: string;
+  expiry_month: number;
+  expiry_year: number;
+  bank: string;
+  country_code: string;
   ref: string | null;
   is_verified: boolean;
   is_default: boolean;
   created_at: string;
-  updated_at: string;
 }
 
 interface BillingAddress {
@@ -133,20 +136,14 @@ const PaymentAddress = () => {
     }
   };
 
-  const getCardIcon = (brand: string) => {
-    switch (brand?.toLowerCase()) {
-      case "visa":
-        return "Visa";
-      case "mastercard":
-        return "Mastercard";
-      case "amex":
-      case "american_express":
-        return "Amex";
-      case "discover":
-        return "Discover";
-      default:
-        return "Card";
-    }
+  const getCardIcon = (cardType: string) => {
+    const t = cardType?.toLowerCase() ?? "";
+    if (t.includes("visa")) return "Visa";
+    if (t.includes("mastercard")) return "Mastercard";
+    if (t.includes("amex") || t.includes("american express")) return "Amex";
+    if (t.includes("discover")) return "Discover";
+    if (t.includes("verve")) return "Verve";
+    return "Card";
   };
 
   const handleAddCard = async () => {
@@ -336,8 +333,8 @@ const PaymentAddress = () => {
                       </div>
                       <div>
                         <div className="flex items-center gap-2 text-sm sm:text-base">
-                          <span className="font-medium">{getCardIcon(method.card_brand)}</span>
-                          <span className="text-muted-foreground">•••• {method.card_last_four}</span>
+                          <span className="font-medium capitalize">{getCardIcon(method.card_type)}</span>
+                          <span className="text-muted-foreground">•••• {method.last4}</span>
                           {method.is_default && (
                             <Badge variant="secondary" className="text-xs">Default</Badge>
                           )}
@@ -348,7 +345,7 @@ const PaymentAddress = () => {
                           )}
                         </div>
                         <span className="text-xs sm:text-sm text-muted-foreground">
-                          Expires {method.expiration_date}
+                          Expires {String(method.expiry_month).padStart(2, "0")}/{String(method.expiry_year).slice(-2)}
                         </span>
                       </div>
                     </div>

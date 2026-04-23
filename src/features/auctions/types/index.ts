@@ -122,3 +122,68 @@ export interface StateFeaturedSlot {
 export interface StateFeaturedResponse {
   data: StateFeaturedSlot[];
 }
+
+export type AuctionStatesSummaryCountry = "US" | "CA";
+
+export type AuctionStatesSummaryStatus = AuctionLifecycle;
+
+export interface AuctionStateSummaryItem {
+  code: string;
+  name: string;
+  auction_count: number;
+}
+
+export interface AuctionStatesSummaryResponse {
+  country: AuctionStatesSummaryCountry;
+  total_auctions: number;
+  states: AuctionStateSummaryItem[];
+  updated_at: string;
+}
+
+// Calendar API Types
+export interface CalendarAuction {
+  id: string;
+  name: string;
+  status: AuctionLifecycle;
+  start_at: string;
+  end_at: string;
+  auctioneer: {
+    id: string;
+    name: string;
+    image: string;
+  };
+}
+
+export interface CalendarAuctionResponse {
+  data: CalendarAuction[];
+}
+
+export interface AuctionsByDateResponse {
+  data: CalendarAuction[];
+}
+
+export interface ReminderRequest {
+  minutes_before: number;
+}
+
+export interface ReminderResponse {
+  message: string;
+  reminder: {
+    id: number;
+    user_id: number;
+    auction_id: string;
+    remind_before_minutes: number;
+    reminded_at: string | null;
+    created_at: string;
+    updated_at: string;
+  };
+}
+
+export interface CalendarFilters {
+  year?: number;
+  month?: number;
+  auctioneer_id?: number[];
+  status?: AuctionStatusFilter;
+  per_page?: number;
+  page?: number;
+}

@@ -1,5 +1,4 @@
 import { format } from "date-fns";
-import { CalendarAuction } from "../../data/auctionCalendarData";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -7,15 +6,28 @@ import { Calendar, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
-interface DailyScheduleProps {
-  selectedDate: Date;
-  auctions: CalendarAuction[];
+interface AuctionDisplay {
+  id: string;
+  name: string;
+  auctioneer: {
+    name: string;
+    image: string;
+  };
+  status: string;
+  time: string;
+  catalogUrl: string;
 }
 
-const DailySchedule = ({ selectedDate, auctions }: DailyScheduleProps) => {
+interface DailyScheduleProps {
+  selectedDate: Date;
+  auctions: AuctionDisplay[];
+  isLoading?: boolean;
+}
+
+const DailySchedule = ({ selectedDate, auctions, isLoading = false }: DailyScheduleProps) => {
   const router = useRouter();
   
-  const getStatusBadge = (status: CalendarAuction["status"]) => {
+  const getStatusBadge = (status: string) => {
     switch (status) {
       case "scheduled":
         return (
@@ -71,7 +83,14 @@ const DailySchedule = ({ selectedDate, auctions }: DailyScheduleProps) => {
         </div>
       </div>
 
-      {auctions.length === 0 ? (
+      {isLoading ? (
+        <div className="text-center py-8 md:py-12">
+          <div className="h-12 w-12 md:h-16 md:w-16 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-3 md:mb-4">
+            <Clock className="h-6 w-6 md:h-8 md:w-8 text-muted-foreground animate-spin" />
+          </div>
+          <p className="text-muted-foreground text-sm md:text-base">Loading auctions...</p>
+        </div>
+      ) : auctions.length === 0 ? (
         <div className="text-center py-8 md:py-12">
           <div className="h-12 w-12 md:h-16 md:w-16 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-3 md:mb-4">
             <Calendar className="h-6 w-6 md:h-8 md:w-8 text-muted-foreground" />

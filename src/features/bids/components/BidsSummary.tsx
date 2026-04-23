@@ -1,4 +1,4 @@
-import { RefreshCw, TrendingUp, AlertTriangle, Eye, CheckCircle, Lock } from "lucide-react";
+import { RefreshCw, TrendingUp, AlertTriangle, Eye, CheckCircle, ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -7,9 +7,15 @@ interface BidsSummaryProps {
     winningHighBid: number;
     winningMaxBid: number;
     winning: number;
-    sealedPending: number;
+    total_bids: number;
     losingDeclined: number;
     watched: number;
+    winningBreakdown?: {
+      manual: number;
+      auto: number;
+    };
+    wonLots?: number;
+    lostLots?: number;
   };
   onRefresh: () => void;
 }
@@ -17,39 +23,40 @@ interface BidsSummaryProps {
 const BidsSummary = ({ stats, onRefresh }: BidsSummaryProps) => {
   const summaryItems = [
     { 
-      label: "Winning (High Bid)", 
-      value: stats.winningHighBid, 
+      label: "Winning Now", 
+      value: stats.winning, 
       icon: TrendingUp, 
       color: "text-emerald-500",
-      bg: "bg-emerald-500/10"
+      bg: "bg-emerald-500/10",
+      subtext: stats.winningBreakdown ? `Manual: ${stats.winningBreakdown.manual}, Auto: ${stats.winningBreakdown.auto}` : undefined,
     },
     { 
-      label: "Winning (Your Max Bid)", 
-      value: stats.winningMaxBid, 
+      label: "Won Lots", 
+      value: stats.wonLots ?? 0, 
       icon: CheckCircle, 
       color: "text-blue-500",
       bg: "bg-blue-500/10"
     },
     { 
-      label: "Winning Bids", 
-      value: stats.winning, 
-      icon: TrendingUp, 
-      color: "text-emerald-500",
-      bg: "bg-emerald-500/10"
+      label: "Lost Lots", 
+      value: stats.lostLots ?? 0, 
+      icon: AlertTriangle, 
+      color: "text-orange-500",
+      bg: "bg-orange-500/10"
     },
     { 
-      label: "Sealed & Pending", 
-      value: stats.sealedPending, 
-      icon: Lock, 
-      color: "text-amber-500",
-      bg: "bg-amber-500/10"
-    },
-    { 
-      label: "Losing & Declined", 
+      label: "Outbid", 
       value: stats.losingDeclined, 
       icon: AlertTriangle, 
       color: "text-red-500",
       bg: "bg-red-500/10"
+    },
+    {
+      label: "Total Bids",
+      value: stats.total_bids,
+      icon: ArrowUpDown,
+      color: "text-gray-500",
+      bg: "bg-gray-500/10"
     },
     { 
       label: "Watched Lots", 
@@ -78,6 +85,9 @@ const BidsSummary = ({ stats, onRefresh }: BidsSummaryProps) => {
             <item.icon className={`h-5 w-5 mx-auto mb-2 ${item.color}`} />
             <p className={`text-2xl font-bold ${item.color}`}>{item.value}</p>
             <p className="text-xs text-muted-foreground mt-1">{item.label}</p>
+            {item.subtext && (
+              <p className="text-xs text-muted-foreground mt-2 border-t border-foreground/10 pt-2">{item.subtext}</p>
+            )}
           </div>
         ))}
       </div>

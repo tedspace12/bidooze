@@ -1,15 +1,22 @@
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import type { NextRequest } from "next/server"
+import { getSafeRedirectPath } from "@/lib/authRedirect";
+
+const AUTH_ONBOARDING_ALLOWED_WITH_TOKEN = [
+  "/auth/personal-information",
+  "/auth/profile-setup",
+];
 
 export function proxy(request: NextRequest) {
   const token = request.cookies.get("bidooze_token")?.value;
 
-  const { pathname } = request.nextUrl;
+  const { pathname, searchParams } = request.nextUrl;
 
   const protectedRoutes = [
     "/account",
     "/auction/register",
     "/bids",
+    "/watchlist",
     "/settings",
   ];
 
@@ -19,12 +26,20 @@ export function proxy(request: NextRequest) {
 
   if (isProtected && !token) {
     const loginUrl = new URL("/auth/login", request.url);
-    loginUrl.searchParams.set("next", pathname);
+    const nextPath = `${pathname}${request.nextUrl.search}`;
+    loginUrl.searchParams.set("next", nextPath);
     return NextResponse.redirect(loginUrl);
   }
 
   if (pathname.startsWith("/auth") && token) {
-    return NextResponse.redirect(new URL("/account", request.url));
+    const isAllowedOnboardingRoute = AUTH_ONBOARDING_ALLOWED_WITH_TOKEN.some((route) =>
+      pathname.startsWith(route)
+    );
+
+    if (!isAllowedOnboardingRoute) {
+      const nextPath = getSafeRedirectPath(searchParams.get("next"), "/account");
+      return NextResponse.redirect(new URL(nextPath, request.url));
+    }
   }
 
   return NextResponse.next();

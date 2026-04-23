@@ -33,9 +33,9 @@ export type AuctionDetailsResponse = {
   end_date: string;
   registration_status: string | null;
   bid_increments: {
-    minimum?: number;
-    maximum?: number | null;
-    increment?: number;
+    up_to_amount: number;
+    increment: number;
+    sort_order: number;
   }[];
   bidding_notice?: string | null;
   shipping_info?: string | null;
@@ -56,19 +56,39 @@ export type AuctionLotsResponse = {
     lot_number: string;
     image_url: string;
     title: string;
+    description?: string;
+    quantity?: number;
     total_bids_count: number;
+    starts_at?: string;
+    ends_at?: string;
+    time_remaining_seconds?: number;
     estimate_low: string | null;
     estimate_high: string | null;
     current_bid: number | null;
     shipping_availability: string | null;
+    is_in_watchlist?: boolean;
+    next_bid?: number;
     status: string;
     final_price: number | null;
   }[];
   meta: {
     auction_id: number;
+    auction_code?: string;
+    auction_name?: string;
     auction_status: string;
     registration_status: string | null;
     currency?: string;
+    bid_visibility?: string;
+    bidding?: {
+      mode: string;
+      allow_proxy: boolean;
+      require_proxy: boolean;
+      default_amount_type: string;
+    };
+    buyer_premium_percentage?: number | null;
+    effective_open_bidding_at?: string;
+    effective_close_bidding_at?: string;
+    count?: number;
   };
 };
 
@@ -116,5 +136,32 @@ export type AuctionRegistrationResponse = {
       callback_url?: string | null;
       message?: string;
     };
+  };
+};
+
+export type BidPayload = {
+  amount: number;
+  bid_amount_type?: "fixed_flat" | "maximum_up_to";
+  max_amount?: number;
+};
+
+export type BidResponse = {
+  message: string;
+  bid: {
+    id: number;
+    auction_id: number;
+    lot_id: number;
+    amount: number;
+    status: "accepted" | "pending_approval" | "rejected" | "outbid" | "proxy_active";
+    is_proxy: boolean;
+    source: string;
+  };
+};
+
+export type WatchlistResponse = {
+  message: string;
+  data: {
+    lot_id: number;
+    watchlist_count: number;
   };
 };

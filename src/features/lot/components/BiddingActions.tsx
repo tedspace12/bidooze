@@ -57,6 +57,9 @@ const BiddingActions = ({
     currentBid: currentBid ?? 0,
     minBidIncrement: minBid ?? 0,
     buyersPremium: buyersPremiumLabel ?? "—",
+    auction: {
+      buyer_premium_percentage: buyersPremiumLabel ? parseFloat(buyersPremiumLabel.replace('%', '')) : null,
+    },
   };
 
   const formatDate = (dateString: string) => {

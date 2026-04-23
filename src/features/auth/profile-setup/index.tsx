@@ -9,7 +9,7 @@ import CategorySelection from "./components/CategorySelection";
 import PersonalDetails from "./components/PersonalDetails";
 import Image from "next/image";
 
-const ProfileSetup = () => {
+const  ProfileSetup = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const email = searchParams.get("email") ?? "";

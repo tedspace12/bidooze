@@ -24,17 +24,23 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Gavel, Store, Send, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useContact } from "./hooks/useContact";
+import type { ContactReason } from "./types";
+
+const sellerPanelUrl = process.env.NEXT_PUBLIC_SELLER_PANEL_URL?.trim() || "";
 
 const Contact = () => {
     const router = useRouter();
 
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { useSubmitContact } = useContact();
+    const { mutate: submitContact, isPending } = useSubmitContact();
+
     const [formData, setFormData] = useState({
         firstName: "",
         lastName: "",
         email: "",
         phone: "",
-        reason: "",
+        reason: "" as ContactReason | "",
         message: "",
     });
 
@@ -42,10 +48,9 @@ const Contact = () => {
         setFormData((prev) => ({ ...prev, [field]: value }));
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Basic validation
         if (!formData.firstName.trim() || !formData.lastName.trim()) {
             toast.error("Missing information", {
                 description: "Please enter your first and last name.",
@@ -74,25 +79,37 @@ const Contact = () => {
             return;
         }
 
-        setIsSubmitting(true);
-
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        toast("Message sent!", {
-            description: "Thank you for reaching out. We'll get back to you shortly.",
-        });
-
-        setFormData({
-            firstName: "",
-            lastName: "",
-            email: "",
-            phone: "",
-            reason: "",
-            message: "",
-        });
-
-        setIsSubmitting(false);
+        submitContact(
+            {
+                first_name: formData.firstName,
+                last_name: formData.lastName,
+                email: formData.email,
+                phone: formData.phone || undefined,
+                reason: formData.reason,
+                message: formData.message,
+            },
+            {
+                onSuccess: () => {
+                    toast("Message sent!", {
+                        description: "Thank you for reaching out. We'll get back to you shortly.",
+                    });
+                    setFormData({
+                        firstName: "",
+                        lastName: "",
+                        email: "",
+                        phone: "",
+                        reason: "",
+                        message: "",
+                    });
+                },
+                onError: (error: unknown) => {
+                    const err = error as { message?: string };
+                    toast.error("Failed to send message", {
+                        description: err?.message || "Something went wrong. Please try again.",
+                    });
+                },
+            }
+        );
     };
 
     return (
@@ -159,7 +176,10 @@ const Contact = () => {
                         </p>
                         <Button
                             variant="secondary"
-                            onClick={() => router.push("/auctioneers")}
+                            onClick={() => {
+                            if (sellerPanelUrl) window.location.assign(sellerPanelUrl);
+                            }}
+                            disabled={!sellerPanelUrl}
                             className="group"
                         >
                             Start Selling
@@ -231,11 +251,11 @@ const Contact = () => {
                                     <SelectValue placeholder="Select a reason" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="general">General inquiry</SelectItem>
-                                    <SelectItem value="auction-support">Auction support</SelectItem>
-                                    <SelectItem value="bidding-issue">Bidding issue</SelectItem>
-                                    <SelectItem value="account-help">Account help</SelectItem>
-                                    <SelectItem value="partnership">Partnership / Selling on Bidooze</SelectItem>
+                                    <SelectItem value="general_inquiry">General inquiry</SelectItem>
+                                    <SelectItem value="auction_support">Auction support</SelectItem>
+                                    <SelectItem value="bidding_issue">Bidding issue</SelectItem>
+                                    <SelectItem value="account_help">Account help</SelectItem>
+                                    <SelectItem value="partnership_selling">Partnership / Selling on Bidooze</SelectItem>
                                     <SelectItem value="feedback">Feedback</SelectItem>
                                 </SelectContent>
                             </Select>
@@ -252,8 +272,8 @@ const Contact = () => {
                             />
                         </div>
 
-                        <Button type="submit" className="w-full" disabled={isSubmitting}>
-                            {isSubmitting ? "Sending..." : "Send Message"}
+                        <Button type="submit" className="w-full" disabled={isPending}>
+                            {isPending ? "Sending..." : "Send Message"}
                         </Button>
                     </form>
                 </CardContent>

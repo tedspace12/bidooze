@@ -14,7 +14,9 @@ import 'react-phone-number-input/style.css';
 import { Country, isValidPhoneNumber, parsePhoneNumber } from 'react-phone-number-input';
 import { PhoneInput } from "./components/PhoneInput";
 import { useAuth } from "../hooks/useAuth";
+import { useUser } from "../context/UserContext";
 import { toast } from "sonner";
+import Cookies from 'js-cookie';
 
 const personalSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -30,32 +32,47 @@ const PersonalInformation = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email") ?? "";
+  const socialToken = searchParams.get("social_token") ?? "";
   const [selectedCountry, setSelectedCountry] = useState<Country>("NG");
+
+  // Pre-fill name from social auth prefilled data (e.g. "John Doe" → first: "John", last: "Doe")
+  const rawName = searchParams.get("name") ?? "";
+  const nameParts = rawName.trim().split(/\s+/);
+  const prefilledFirst = nameParts[0] ?? "";
+  const prefilledLast = nameParts.slice(1).join(" ");
 
   const form = useForm<PersonalForm>({
     resolver: zodResolver(personalSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
+      firstName: prefilledFirst,
+      lastName: prefilledLast,
       phone: "",
     },
     mode: 'onChange',
   });
 
   const { setPersonalInfo } = useAuth();
+  const { setUser } = useUser();
 
   const onSubmit = async (data: PersonalForm) => {
     try {
       const phone = parsePhoneNumber(data.phone);
       const countryCode = phone?.country || selectedCountry || "";
 
-      await setPersonalInfo.mutateAsync({
+      const response = await setPersonalInfo.mutateAsync({
         email: email,
         first_name: data.firstName,
         last_name: data.lastName,
         phone_number: data.phone,
         country_code: countryCode,
-      })
+      });
+
+      // Social auth new-user flow: save the token that came from /buyer/social
+      if (socialToken) {
+        Cookies.set("bidooze_token", socialToken, { expires: 7 });
+        if (response?.user) setUser(response.user);
+      }
+
       router.push(`/auth/profile-setup?email=${encodeURIComponent(email)}`);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {

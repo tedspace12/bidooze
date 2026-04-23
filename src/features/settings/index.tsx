@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -10,42 +10,52 @@ import {
     BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { Gavel, Bell, CreditCard, Megaphone } from "lucide-react";
+import { Gavel, Bell, CreditCard, Megaphone, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import NotificationSection from "./components/NotificationSection";
-
-interface NotificationSettings {
-    [key: string]: boolean;
-}
+import { useSettings } from "./hooks/useSettings";
+import {
+    defaultBuyerNotificationSettings,
+    type BuyerNotificationSettings,
+} from "./types";
 
 const Settings = () => {
-    const [settings, setSettings] = useState<NotificationSettings>({
-        // Bidding Activity
-        outbid: true,
-        winAuction: true,
-        auctionEndingSoon: true,
-        watchedPriceChange: false,
-        watchedClosingSoon: true,
-        // Auction & Event Reminders
-        registeredReminders: true,
-        auctionsStartingSoon: true,
-        dailySummary: false,
-        // Account & Transactions
-        paymentStatus: true,
-        securityUpdates: true,
-        policyUpdates: true,
-        // Marketing & Updates
-        productUpdates: false,
-        newRecommendations: true,
-        promotions: false,
-    });
+    const { useBuyerSettings, updateBuyerSettings } = useSettings();
+    const settingsQuery = useBuyerSettings();
+    const [settings, setSettings] = useState<BuyerNotificationSettings>(defaultBuyerNotificationSettings);
+
+    useEffect(() => {
+        if (settingsQuery.data?.data) {
+            setSettings(settingsQuery.data.data);
+        }
+    }, [settingsQuery.data]);
+
+    const isDirty = useMemo(() => {
+        const source = settingsQuery.data?.data ?? defaultBuyerNotificationSettings;
+        return Object.keys(defaultBuyerNotificationSettings).some((key) => {
+            const typedKey = key as keyof BuyerNotificationSettings;
+            return settings[typedKey] !== source[typedKey];
+        });
+    }, [settings, settingsQuery.data]);
 
     const handleToggle = useCallback((id: string, enabled: boolean) => {
-        setSettings((prev) => ({ ...prev, [id]: enabled }));
-        toast("Setting updated", {
-            description: `Notification ${enabled ? "enabled" : "disabled"} successfully.`,
-        });
+        setSettings((prev) => ({ ...prev, [id]: enabled } as BuyerNotificationSettings));
     }, []);
+
+    const handleSave = async () => {
+        try {
+            const response = await updateBuyerSettings.mutateAsync(settings);
+            if (response?.data) {
+                setSettings(response.data);
+            }
+            settingsQuery.refetch();
+            toast("Settings saved", {
+                description: "Your notification preferences have been saved successfully.",
+            });
+        } catch (error: any) {
+            toast.error(error?.message || "Failed to save settings");
+        }
+    };
 
     const biddingActivitySettings = [
         {
@@ -167,16 +177,31 @@ const Settings = () => {
                     </p>
                 </div>
                 <Button
-                    onClick={() => {
-                        toast("Settings saved", {
-                            description: "Your notification preferences have been saved successfully.",
-                        });
-                    }}
+                    onClick={handleSave}
                     className="w-full sm:w-fit"
+                    disabled={updateBuyerSettings.isPending || settingsQuery.isLoading || !isDirty}
                 >
-                    Save Changes
+                    {updateBuyerSettings.isPending ? (
+                        <>
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            Saving...
+                        </>
+                    ) : (
+                        "Save Changes"
+                    )}
                 </Button>
             </div>
+
+            {settingsQuery.isLoading && (
+                <div className="max-w-3xl mb-6 rounded-lg border border-border p-4 text-sm text-muted-foreground">
+                    Loading your notification settings...
+                </div>
+            )}
+            {settingsQuery.isError && (
+                <div className="max-w-3xl mb-6 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+                    Couldn&apos;t load settings. You can still adjust defaults and try saving again.
+                </div>
+            )}
 
             {/* Notification Sections */}
             <div className="max-w-3xl space-y-6">

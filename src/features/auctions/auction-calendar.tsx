@@ -13,10 +13,11 @@ import DailySchedule from "./components/calendar/DailySchedule";
 import CalendarGrid from "./components/calendar/CalendarGrid";
 import CalendarFilters from "./components/calendar/CalendarFilters";
 import CalendarHeader from "./components/calendar/CalendarHeader";
-import { generateMockAuctions } from "./data/auctionCalendarData";
+import { useCalendarAuctions, useAuctionsByDate } from "./data/auctionCalendarData";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, List } from "lucide-react";
+import type { CalendarFilters as CalendarFiltersType } from "./types";
 
 const AuctionCalendar = () => {
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -29,12 +30,55 @@ const AuctionCalendar = () => {
     const fullYear = currentDate.getFullYear();
     const month = currentDate.getMonth();
 
-    const auctionsMap = useMemo(() => {
-        return generateMockAuctions(fullYear, month);
-    }, [fullYear, month]);
+    // Build filters for API call
+    const filters: CalendarFiltersType = {
+        year: fullYear,
+        month: month + 1, // API expects 1-based month
+        ...(selectedAuctioneers.length > 0 && { auctioneer_id: selectedAuctioneers.map(id => parseInt(id)) }),
+        ...(selectedTypes.length > 0 && { status: selectedTypes as any }),
+    };
+
+    // Fetch calendar auctions for the current month
+    const { data: calendarData, isLoading: calendarLoading } = useCalendarAuctions(filters);
+
+    // Fetch auctions for selected date
+    const selectedDateString = selectedDate.toISOString().split('T')[0];
+    const { data: selectedDateData, isLoading: selectedDateLoading } = useAuctionsByDate(selectedDateString);
+
+    // Transform API data to component format
+    const transformedAuctionsMap = useMemo(() => {
+        const map = new Map<string, any[]>();
+        if (calendarData?.data) {
+            calendarData.data.forEach((auction) => {
+                const dateKey = new Date(auction.start_at).toISOString().split('T')[0];
+                if (!map.has(dateKey)) {
+                    map.set(dateKey, []);
+                }
+                map.get(dateKey)!.push({
+                    id: auction.id,
+                    name: auction.name,
+                    auctioneer: {
+                        name: auction.auctioneer.name,
+                        image: auction.auctioneer.image,
+                    },
+                    status: auction.status,
+                    time: new Date(auction.start_at).toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true,
+                        timeZone: 'Africa/Lagos'
+                    }),
+                    catalogUrl: `/auction/${auction.id}`,
+                });
+            });
+        }
+        return map;
+    }, [calendarData]);
 
     const selectedDateKey = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`;
-    const selectedDayAuctions = auctionsMap.get(selectedDateKey) || [];
+    const selectedDayAuctions = transformedAuctionsMap.get(selectedDateKey) || [];
+
+    const transformedSelectedDayAuctions = selectedDayAuctions;
 
     const handlePreviousMonth = () => {
         setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
@@ -110,8 +154,9 @@ const AuctionCalendar = () => {
                                     <CalendarGrid
                                         currentDate={currentDate}
                                         selectedDate={selectedDate}
-                                        auctionsMap={auctionsMap}
+                                        auctionsMap={transformedAuctionsMap}
                                         onDateSelect={handleDateSelect}
+                                        isLoading={calendarLoading}
                                     />
                                 </div>
 
@@ -131,7 +176,8 @@ const AuctionCalendar = () => {
                             <TabsContent value="schedule" className="mt-4">
                                 <DailySchedule
                                     selectedDate={selectedDate}
-                                    auctions={selectedDayAuctions}
+                                    auctions={transformedSelectedDayAuctions}
+                                    isLoading={selectedDateLoading}
                                 />
                             </TabsContent>
                         </Tabs>
@@ -156,8 +202,9 @@ const AuctionCalendar = () => {
                                 <CalendarGrid
                                     currentDate={currentDate}
                                     selectedDate={selectedDate}
-                                    auctionsMap={auctionsMap}
+                                    auctionsMap={transformedAuctionsMap}
                                     onDateSelect={handleDateSelect}
+                                    isLoading={calendarLoading}
                                 />
                             </div>
 
@@ -178,7 +225,8 @@ const AuctionCalendar = () => {
                         <div className="lg:col-span-1">
                             <DailySchedule
                                 selectedDate={selectedDate}
-                                auctions={selectedDayAuctions}
+                                auctions={transformedSelectedDayAuctions}
+                                isLoading={selectedDateLoading}
                             />
                         </div>
                     </div>

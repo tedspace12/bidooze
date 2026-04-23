@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { withoutAuth } from "@/services/api";
+import { withAuth } from "@/services/api";
 import type { LotDetailsResponse, LotsListResponse } from "../types";
 
 export type LotsListParams = Record<string, any> & {
@@ -10,7 +10,7 @@ export type LotsListParams = Record<string, any> & {
 export const lotService = {
   async getLotDetails(auctionId: string, lotId: string): Promise<LotDetailsResponse> {
     try {
-      const res = await withoutAuth.get<LotDetailsResponse>(
+      const res = await withAuth.get<LotDetailsResponse>(
         `/auctions/${auctionId}/lots/${lotId}`
       );
       return res.data;
@@ -21,7 +21,7 @@ export const lotService = {
 
   async getLots(params: LotsListParams = {}): Promise<LotsListResponse> {
     try {
-      const res = await withoutAuth.get<LotsListResponse>("/lots", { params });
+      const res = await withAuth.get<LotsListResponse>("/lots", { params });
       return res.data;
     } catch (error: any) {
       throw error?.response?.data || { message: error.message };

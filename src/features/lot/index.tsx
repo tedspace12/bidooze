@@ -81,6 +81,7 @@ const Lots = () => {
             shippingAvailable: lot.auction?.shipping_availability === 'available',
             auctionStatus: normalizeBuyerAuctionStatus(lot.auction?.status ?? "live"),
             auctionName: lot.auction?.name,
+            isRegistered: !!lot.auction?.registration_status,
             maxBid: undefined,
             realizedPrice: undefined,
             auctionId: lot.auction?.id?.toString()
@@ -199,7 +200,13 @@ const Lots = () => {
                             : "flex flex-col gap-4 mb-6 md:mb-8"
                     }>
                         {mappedLots.map((lot) => (
-                            <LotCard key={lot.id} lot={lot} viewMode={viewMode} isRegistered />
+                            <LotCard
+                                key={lot.id}
+                                lot={lot}
+                                viewMode={viewMode}
+                                isRegistered={lot.isRegistered}
+                                buyerPremiumPercentage={null}
+                            />
                         ))}
                     </div>
 

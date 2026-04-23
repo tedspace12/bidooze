@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
+import GoogleOneTap from "@/components/shared/GoogleOneTap";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -24,6 +25,7 @@ export default function RootLayout({
         className={`${inter.variable} antialiased`}
       >
         <Providers>
+          <GoogleOneTap />
           {children}
         </Providers>
       </body>

@@ -79,8 +79,18 @@ const CreatePassword = () => {
                 Cookies.set("bidooze_token", response.token, { expires: 7 });
                 setUser(response.user);
             }
-            
-            router.push(`/auth/personal-information?email=${encodeURIComponent(email)}`);
+
+            const responseEmail = response?.email || email;
+            const nextStep = response?.next_step;
+            const personalInfoPath = `/auth/personal-information?email=${encodeURIComponent(responseEmail)}`;
+
+            // Personal information is required immediately after password creation.
+            if (nextStep === "personal_info") {
+                router.push(personalInfoPath);
+                return;
+            }
+
+            router.push(personalInfoPath);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             toast.error(error?.response?.data?.message || error?.message);

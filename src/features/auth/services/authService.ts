@@ -75,6 +75,16 @@ export const authService = {
     }
   },
 
+  async socialAuth(data: { provider: "google" | "facebook"; token: string }) {
+    try {
+      const res = await withoutAuth.post("/buyer/social", data);
+      return res.data;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      throw error?.response?.data || { message: error.message };
+    }
+  },
+
   async login(data: { email: string; password: string }) {
     try {
       const res = await withoutAuth.post("/buyer/login", data);

@@ -3,11 +3,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Mail, Chrome, Apple, Facebook, EyeOff, Eye } from "lucide-react";
+import { Mail, EyeOff, Eye } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import AuthLayout from "@/components/layout/AuthLayout";
 import Link from "next/link";
 
@@ -16,11 +15,13 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from "sonner";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { AppleIcon, ColoredGoogleIcon, FacebookIcon, MailIcon } from "@/components/shared/icons";
+import { ColoredGoogleIcon, FacebookIcon } from "@/components/shared/icons";
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
 import Cookies from 'js-cookie';
 import { useAuth } from "@/features/auth/hooks/useAuth";
+import { useSocialAuth } from "@/features/auth/hooks/useSocialAuth";
 import { useUser } from "@/features/auth/context/UserContext";
+import { getSafeRedirectPath } from "@/lib/authRedirect";
 
 const loginSchema = z.object({
     email: z
@@ -32,10 +33,14 @@ type LoginSchema = z.infer<typeof loginSchema>;
 
 const Login = () => {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [showPasswordField, setShowPasswordField] = useState(false);
     const [showPasswordText, setShowPasswordText] = useState(false);
 
-    const { login } = useAuth();
+    const [pendingProvider, setPendingProvider] = useState<"google" | "facebook" | null>(null);
+
+    const { login, socialAuth } = useAuth();
+    const { getGoogleToken, getFacebookToken } = useSocialAuth();
     const { setUser } = useUser();
     const isLoading = login.status === 'pending';
 
@@ -47,6 +52,7 @@ const Login = () => {
 
     const email = form.watch('email');
     const password = form.watch('password');
+    const nextPath = getSafeRedirectPath(searchParams.get("next"));
 
     const handleEmailContinue = () => {
         if (email && !showPasswordField) {
@@ -75,7 +81,17 @@ const Login = () => {
                 Cookies.set("bidooze_token", response.token, { expires: 7 });
                 setUser(response.user);
                 toast.success("Logged in successfully");
-                router.push("/");
+
+                const shouldResumeProfileSetup =
+                    response?.profile_setup_pending === true &&
+                    response?.profile_setup_completed !== true;
+
+                if (shouldResumeProfileSetup) {
+                    router.replace(`/auth/profile-setup?email=${encodeURIComponent(response.user.email ?? data.email)}`);
+                    return;
+                }
+
+                router.replace(nextPath);
             } else {
                 toast.error("Login failed: Invalid response from server");
             }
@@ -85,9 +101,47 @@ const Login = () => {
         }
     };
 
-    const handleSocialLogin = (provider: string) => {
-        console.log(`Login with ${provider}`);
-        router.push("/");
+    const handleSocialAuth = async (provider: "google" | "facebook") => {
+        try {
+            setPendingProvider(provider);
+            const token = provider === "google"
+                ? await getGoogleToken()
+                : await getFacebookToken();
+
+            const data = await socialAuth.mutateAsync({ provider, token });
+
+            if (data?.status === "registration_required") {
+                // New user — send to personal info step
+                const params = new URLSearchParams();
+                if (data.prefilled?.email) params.set("email", data.prefilled.email);
+                if (data.prefilled?.name) params.set("name", data.prefilled.name);
+                if (data.token) params.set("social_token", data.token);
+                router.replace(`/auth/personal-information?${params.toString()}`);
+            } else if (data?.token && data?.user) {
+                Cookies.set("bidooze_token", data.token, { expires: 7 });
+                setUser(data.user);
+                toast.success("Logged in successfully");
+
+                const shouldResumeProfileSetup =
+                    data?.profile_setup_pending === true &&
+                    data?.profile_setup_completed !== true;
+
+                if (shouldResumeProfileSetup) {
+                    router.replace(`/auth/profile-setup?email=${encodeURIComponent(data.user.email ?? "")}`);
+                    return;
+                }
+
+                router.replace(nextPath);
+            } else {
+                toast.error("Unexpected response from server. Please try again.");
+            }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+            const msg = error?.message || `${provider === "google" ? "Google" : "Facebook"} sign-in failed.`;
+            toast.error(msg);
+        } finally {
+            setPendingProvider(null);
+        }
     };
 
     return (
@@ -183,33 +237,27 @@ const Login = () => {
 
                 <div className="space-y-3">
                     <Button
+                        type="button"
                         variant="outline"
-                        onClick={() => handleSocialLogin("google")}
-                        className="w-full"
+                        onClick={() => handleSocialAuth("google")}
+                        className="w-full [&_svg:not([class*='size-'])]:size-4"
                         size="lg"
+                        disabled={pendingProvider !== null}
                     >
-                        <Chrome className="mr-2 h-4 w-4" />
-                        Continue with Google
+                        <ColoredGoogleIcon className="mr-2" />
+                        {pendingProvider === "google" ? "Connecting..." : "Continue with Google"}
                     </Button>
 
                     <Button
+                        type="button"
                         variant="outline"
-                        onClick={() => handleSocialLogin("apple")}
-                        className="w-full"
+                        onClick={() => handleSocialAuth("facebook")}
+                        className="w-full [&_svg:not([class*='size-'])]:size-5"
                         size="lg"
+                        disabled={pendingProvider !== null}
                     >
-                        <Apple className="mr-2 h-4 w-4" />
-                        Continue with Apple
-                    </Button>
-
-                    <Button
-                        variant="outline"
-                        onClick={() => handleSocialLogin("facebook")}
-                        className="w-full"
-                        size="lg"
-                    >
-                        <Facebook className="mr-2 h-4 w-4" />
-                        Continue with Facebook
+                        <FacebookIcon className="mr-2 h-4 w-4" />
+                        {pendingProvider === "facebook" ? "Connecting..." : "Continue with Facebook"}
                     </Button>
                 </div>
             </div>

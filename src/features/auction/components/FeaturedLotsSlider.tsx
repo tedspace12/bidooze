@@ -16,6 +16,7 @@ interface Lot {
     title: string;
     image: string;
     currentBid: number;
+    total_bids_count: number;
     estimateLow: number;
     estimateHigh: number;
     status: "open" | "closed";
@@ -72,7 +73,7 @@ const FeaturedLotsSlider = ({ lots, auctionId }: FeaturedLotsSliderProps) => {
                                         <h3 className="font-medium text-foreground line-clamp-1 mb-2">
                                             {lot.title}
                                         </h3>
-                                        <p className="font-medium text-xs text-amber-600 mb-2">23 Bids</p>
+                                        <p className="font-medium text-xs text-amber-600 mb-2">{lot.total_bids_count} Bids</p>
                                         {lot.status === "open" ? (
                                             <div>
                                                 <p className="text-xs text-muted-foreground">Current Bid</p>
