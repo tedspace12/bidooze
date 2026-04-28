@@ -46,6 +46,10 @@ export type ListingFiltersState = {
   currency: string;
   activeOnly: boolean;
   archived: boolean;
+  nearLat: number | null;
+  nearLng: number | null;
+  radius: string;
+  radiusUnit: "miles" | "km";
 };
 
 export function getDefaultListingFilters(): ListingFiltersState {
@@ -68,6 +72,10 @@ export function getDefaultListingFilters(): ListingFiltersState {
     currency: "",
     activeOnly: false,
     archived: false,
+    nearLat: null,
+    nearLng: null,
+    radius: "50",
+    radiusUnit: "miles",
   };
 }
 
@@ -173,6 +181,10 @@ export function createListingFiltersFromSearchParams(
     currency: searchParams.get("currency")?.trim().toUpperCase() ?? defaults.currency,
     activeOnly: parseBooleanQueryValue(searchParams.get("active_only")),
     archived: parseBooleanQueryValue(searchParams.get("archived")),
+    nearLat: searchParams.get("near_lat") ? parseFloat(searchParams.get("near_lat")!) : null,
+    nearLng: searchParams.get("near_lng") ? parseFloat(searchParams.get("near_lng")!) : null,
+    radius: searchParams.get("radius")?.trim() ?? defaults.radius,
+    radiusUnit: searchParams.get("radius_unit") === "km" ? "km" : "miles",
   };
 }
 
@@ -267,6 +279,14 @@ export function buildAuctionListQueryParams(
 
   if (filters.activeOnly) out.active_only = true;
   if (filters.archived) out.archived = true;
+
+  if (filters.nearLat != null && filters.nearLng != null) {
+    out.near_lat = filters.nearLat;
+    out.near_lng = filters.nearLng;
+    const radiusNum = parseInt(filters.radius, 10);
+    if (!isNaN(radiusNum) && radiusNum > 0) out.radius = radiusNum;
+    out.radius_unit = filters.radiusUnit;
+  }
 
   return out;
 }

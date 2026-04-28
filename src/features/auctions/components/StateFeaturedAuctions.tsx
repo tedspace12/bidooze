@@ -62,7 +62,7 @@ const FeaturedSlotCard = ({ slot }: { slot: StateFeaturedSlot }) => {
             <span className="text-muted-foreground">{auction.stats.bid_count} bids</span>
             {auction.stats.highest_bid > 0 && (
               <span className="font-medium text-foreground">
-                High: {auction.currency} {auction.stats.highest_bid.toLocaleString()}
+                High: {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(auction.stats.highest_bid)}
               </span>
             )}
           </div>
@@ -77,7 +77,7 @@ const FeaturedSlotCard = ({ slot }: { slot: StateFeaturedSlot }) => {
               </div>
               <p className="text-sm font-medium text-foreground line-clamp-1">{highlight_lot.title}</p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                {highlight_lot.bid_count} bids · High bid: {auction.currency} {highlight_lot.highest_bid.toLocaleString()}
+                {highlight_lot.bid_count} bids · High bid: {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(highlight_lot.highest_bid)}
               </p>
             </div>
           )}

@@ -90,7 +90,7 @@ const TopPicks = () => {
                                                 <p className="text-xs font-medium text-amber-600">{bidCount} Bids</p>
                                                 <div className="flex items-center justify-between gap-2">
                                                     <p className="text-lg font-bold text-primary">
-                                                        {currentBid == null ? "—" : `${lot.currency} ${currentBid}`}
+                                                        {currentBid == null ? "—" : new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(currentBid)}
                                                     </p>
                                                     <Badge variant="secondary" className="text-xs">
                                                         {item.timing?.time_remaining ?? formatTimeLeft(item.timing?.ends_at ?? "")}

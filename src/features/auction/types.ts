@@ -1,3 +1,17 @@
+export type RegistrationRequirements = {
+  approval_mode: "immediate" | "approval" | "deposit";
+  requires_deposit: boolean;
+  requires_card: boolean;
+  deposit: {
+    type: "fixed" | "percentage";
+    value: number;
+    cap: number | null;
+    requires_max_bid_limit: boolean;
+    fixed_amount: number | null;
+    currency: string;
+  } | null;
+};
+
 export type AuctionDetailsResponse = {
   id: number;
   status: string;
@@ -40,6 +54,7 @@ export type AuctionDetailsResponse = {
   bidding_notice?: string | null;
   shipping_info?: string | null;
   terms_and_condition?: string | null;
+  registration_requirements?: RegistrationRequirements;
   featured_lots: {
     id: number;
     lot_number: string;
@@ -77,6 +92,7 @@ export type AuctionLotsResponse = {
     auction_name?: string;
     auction_status: string;
     registration_status: string | null;
+    registration_requirements?: RegistrationRequirements;
     currency?: string;
     bid_visibility?: string;
     bidding?: {
