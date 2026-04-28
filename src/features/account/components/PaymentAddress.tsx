@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
-import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, Plus, Trash2, Loader2, MapPin, Edit, X, Check, ShieldCheck } from "lucide-react";
+import { CreditCard, Plus, Trash2, Loader2, MapPin, Edit, X } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -34,6 +33,17 @@ import {
   type Country,
   type Subdivision,
 } from "@/lib/locationData";
+
+const formatCardNumber = (raw: string): string => {
+  const digits = raw.replace(/\D/g, "").slice(0, 16);
+  return digits.replace(/(.{4})/g, "$1 ").trim();
+};
+
+const formatExpiryDateInput = (raw: string): string => {
+  const digits = raw.replace(/\D/g, "").slice(0, 4);
+  if (digits.length <= 2) return digits;
+  return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+};
 
 interface PaymentMethod {
   id: number;
@@ -152,13 +162,28 @@ const PaymentAddress = () => {
       return;
     }
 
-    if (!newCard.provider) {
-      toast.error("Please select a verification method");
+    const cardDigits = newCard.card_number.replace(/\s/g, "");
+    if (cardDigits.length < 13 || cardDigits.length > 19) {
+      toast.error("Please enter a valid card number");
+      return;
+    }
+
+    const [mm, yy] = newCard.expiration_date.split("/");
+    const month = parseInt(mm, 10);
+    const year = 2000 + parseInt(yy ?? "", 10);
+    const now = new Date();
+    if (!yy || month < 1 || month > 12 || year < now.getFullYear() || (year === now.getFullYear() && month < now.getMonth() + 1)) {
+      toast.error("Please enter a valid expiry date");
+      return;
+    }
+
+    if (newCard.cvv.length < 3) {
+      toast.error("Please enter a valid CVV (3-4 digits)");
       return;
     }
 
     try {
-      await addPaymentMethod.mutateAsync(newCard);
+      await addPaymentMethod.mutateAsync({ ...newCard, card_number: cardDigits });
       toast.success("Payment method added successfully");
       setNewCard({
         provider: "",
@@ -323,18 +348,20 @@ const PaymentAddress = () => {
                 </div>
               ) : (
                 paymentMethods.map((method) => (
-                  <div 
+                  <div
                     key={method.id}
-                    className="flex items-center justify-between p-4 border border-border rounded-lg"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border border-border rounded-lg"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="h-8 sm:h-10 w-12 sm:w-14 bg-secondary rounded flex items-center justify-center">
-                        <CreditCard className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground" />
+                    {/* Card info */}
+                    <div className="flex items-start gap-3">
+                      <div className="h-10 w-14 bg-secondary rounded flex items-center justify-center shrink-0">
+                        <CreditCard className="h-5 w-5 text-muted-foreground" />
                       </div>
-                      <div>
-                        <div className="flex items-center gap-2 text-sm sm:text-base">
-                          <span className="font-medium capitalize">{getCardIcon(method.card_type)}</span>
-                          <span className="text-muted-foreground">•••• {method.last4}</span>
+                      <div className="min-w-0 space-y-1">
+                        {/* Row 1: card type + last4 + badges */}
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                          <span className="font-medium text-sm capitalize">{getCardIcon(method.card_type)}</span>
+                          <span className="text-sm text-muted-foreground">•••• {method.last4}</span>
                           {method.is_default && (
                             <Badge variant="secondary" className="text-xs">Default</Badge>
                           )}
@@ -344,12 +371,21 @@ const PaymentAddress = () => {
                             <Badge variant="destructive" className="text-xs">Unverified</Badge>
                           )}
                         </div>
-                        <span className="text-xs sm:text-sm text-muted-foreground">
-                          Expires {String(method.expiry_month).padStart(2, "0")}/{String(method.expiry_year).slice(-2)}
-                        </span>
+                        {/* Row 2: cardholder name */}
+                        {method.card_holder_name && (
+                          <p className="text-xs text-foreground font-medium truncate">{method.card_holder_name}</p>
+                        )}
+                        {/* Row 3: bank · expiry */}
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+                          {method.bank && <span>{method.bank}</span>}
+                          {method.bank && <span>·</span>}
+                          <span>Expires {String(method.expiry_month).padStart(2, "0")}/{String(method.expiry_year).slice(-2)}</span>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
                       {!method.is_default && (
                         <Button
                           variant="outline"
@@ -364,17 +400,17 @@ const PaymentAddress = () => {
                           )}
                         </Button>
                       )}
-
-                    {!method.is_verified && (
-                        <Button variant="outline" size="sm"
-                        onClick={() => handleVerifyCard(method.id)}
+                      {!method.is_verified && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleVerifyCard(method.id)}
                         >
                           Verify
                         </Button>
                       )}
-
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="icon"
                         onClick={() => handleRemoveCard(method.id)}
                         disabled={deletePaymentMethod.isPending}
@@ -413,74 +449,37 @@ const PaymentAddress = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="cardNumber">Card Number</Label>
-                <Input 
-                  id="cardNumber" 
-                  placeholder="4242424242424242"
+                <Input
+                  id="cardNumber"
+                  placeholder="1234 5678 9012 3456"
+                  inputMode="numeric"
+                  maxLength={19}
                   value={newCard.card_number}
-                  onChange={(e) => setNewCard({ ...newCard, card_number: e.target.value })}
+                  onChange={(e) => setNewCard({ ...newCard, card_number: formatCardNumber(e.target.value) })}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="expiry">Expiration Date</Label>
-                  <Input 
-                    id="expiry" 
-                    placeholder="12/30"
+                  <Input
+                    id="expiry"
+                    placeholder="MM/YY"
+                    inputMode="numeric"
+                    maxLength={5}
                     value={newCard.expiration_date}
-                    onChange={(e) => setNewCard({ ...newCard, expiration_date: e.target.value })}
+                    onChange={(e) => setNewCard({ ...newCard, expiration_date: formatExpiryDateInput(e.target.value) })}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="cvv">CVV</Label>
-                  <Input 
-                    id="cvv" 
+                  <Input
+                    id="cvv"
                     placeholder="123"
+                    inputMode="numeric"
                     maxLength={4}
                     value={newCard.cvv}
-                    onChange={(e) => setNewCard({ ...newCard, cvv: e.target.value })}
+                    onChange={(e) => setNewCard({ ...newCard, cvv: e.target.value.replace(/\D/g, "").slice(0, 4) })}
                   />
-                </div>
-              </div>
-              <div className="border-t border-border pt-4 -mx-4 px-4">
-                <div className="bg-muted/40 rounded-lg p-3 space-y-3">
-                  <div>
-                    <p className="text-sm font-medium">Verification method</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Choose how your card is securely verified
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    {(['paystack', 'stripe'] as const).map((p) => {
-                      const isSelected = newCard.provider === p;
-                      return (
-                        <button
-                          key={p}
-                          type="button"
-                          onClick={() => setNewCard({ ...newCard, provider: p })}
-                          className={cn(
-                            "rounded-lg border p-3 text-left transition-all duration-150 relative bg-background",
-                            isSelected
-                              ? "border-[#748943] ring-1 ring-[#748943]"
-                              : "border-border hover:border-[#748943]/40"
-                          )}
-                        >
-                          {isSelected && (
-                            <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#748943] flex items-center justify-center">
-                              <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
-                            </span>
-                          )}
-                          <p className="text-sm font-medium capitalize pr-5">{p}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            {p === 'paystack' ? 'African cards' : 'Global support'}
-                          </p>
-                          <span className="inline-flex items-center gap-1 mt-2 text-[11px] text-muted-foreground border border-border rounded-full px-2 py-0.5">
-                            <ShieldCheck className="w-3 h-3" />
-                            3D Secure
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
