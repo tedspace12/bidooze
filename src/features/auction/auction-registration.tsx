@@ -26,8 +26,6 @@ import {
     Plus,
     HelpCircle,
     Loader2,
-    Check,
-    ShieldCheck,
     Info,
     AlertCircle,
 } from "lucide-react";
@@ -74,6 +72,11 @@ const calcDeposit = (
     if (deposit.type === "fixed") return deposit.fixed_amount ?? 0;
     const raw = (maxBid * deposit.value) / 100;
     return deposit.cap ? Math.min(raw, deposit.cap) : raw;
+};
+
+const formatCardNumber = (raw: string): string => {
+    const digits = raw.replace(/\D/g, "").slice(0, 16);
+    return digits.replace(/(.{4})/g, "$1 ").trim();
 };
 
 const formatExpiryDateInput = (raw: string): string => {
@@ -163,12 +166,29 @@ const AuctionRegistration = () => {
             toast.error("Please fill in all card details");
             return;
         }
-        if (!newCard.provider) {
-            toast.error("Please select a verification method");
+
+        const cardDigits = newCard.card_number.replace(/\s/g, "");
+        if (cardDigits.length < 13 || cardDigits.length > 19) {
+            toast.error("Please enter a valid card number");
             return;
         }
+
+        const [mm, yy] = newCard.expiration_date.split("/");
+        const month = parseInt(mm, 10);
+        const year = 2000 + parseInt(yy ?? "", 10);
+        const now = new Date();
+        if (!yy || month < 1 || month > 12 || year < now.getFullYear() || (year === now.getFullYear() && month < now.getMonth() + 1)) {
+            toast.error("Please enter a valid expiry date");
+            return;
+        }
+
+        if (newCard.cvv.length < 3) {
+            toast.error("Please enter a valid CVV (3-4 digits)");
+            return;
+        }
+
         try {
-            await addPaymentMethod.mutateAsync(newCard);
+            await addPaymentMethod.mutateAsync({ ...newCard, card_number: cardDigits });
             toast.success("Payment method added successfully");
             setNewCard({ provider: "", card_holder_name: "", card_number: "", expiration_date: "", cvv: "", is_default: false });
             setShowAddCard(false);
@@ -572,7 +592,13 @@ const AuctionRegistration = () => {
                                                                     </div>
                                                                     <div className="col-span-1">
                                                                         <Label className="text-xs sm:text-sm text-muted-foreground mb-1">Card Number</Label>
-                                                                        <Input placeholder="1234 5678 9012 3456" value={newCard.card_number} onChange={(e) => setNewCard({ ...newCard, card_number: e.target.value })} />
+                                                                        <Input
+                                                                            placeholder="1234 5678 9012 3456"
+                                                                            inputMode="numeric"
+                                                                            maxLength={19}
+                                                                            value={newCard.card_number}
+                                                                            onChange={(e) => setNewCard({ ...newCard, card_number: formatCardNumber(e.target.value) })}
+                                                                        />
                                                                     </div>
                                                                     <div className="col-span-1 sm:col-span-2 grid grid-cols-2 gap-3 sm:gap-4">
                                                                         <div>
@@ -594,42 +620,6 @@ const AuctionRegistration = () => {
                                                                                 value={newCard.cvv}
                                                                                 onChange={(e) => setNewCard({ ...newCard, cvv: e.target.value.replace(/\D/g, "").slice(0, 4) })}
                                                                             />
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="border-t border-border pt-4 -mx-3 sm:-mx-4 px-3 sm:px-4 col-span-1 sm:col-span-2">
-                                                                        <div className="bg-muted/40 rounded-lg p-3 space-y-3">
-                                                                            <div>
-                                                                                <p className="text-sm font-medium">Verification method</p>
-                                                                                <p className="text-xs text-muted-foreground mt-0.5">Choose how your card is securely verified</p>
-                                                                            </div>
-                                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                                                                {(["paystack", "stripe"] as const).map((p) => {
-                                                                                    const isSelected = newCard.provider === p;
-                                                                                    return (
-                                                                                        <button
-                                                                                            key={p}
-                                                                                            type="button"
-                                                                                            onClick={() => setNewCard({ ...newCard, provider: p })}
-                                                                                            className={cn(
-                                                                                                "rounded-lg border p-3 text-left transition-all duration-150 relative bg-background",
-                                                                                                isSelected ? "border-primary ring-1 ring-primary" : "border-border hover:border-primary/40"
-                                                                                            )}
-                                                                                        >
-                                                                                            {isSelected && (
-                                                                                                <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-primary flex items-center justify-center">
-                                                                                                    <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
-                                                                                                </span>
-                                                                                            )}
-                                                                                            <p className="text-sm font-medium capitalize pr-5">{p}</p>
-                                                                                            <p className="text-xs text-muted-foreground mt-0.5">{p === "paystack" ? "African cards" : "Global support"}</p>
-                                                                                            <span className="inline-flex items-center gap-1 mt-2 text-[11px] text-muted-foreground border border-border rounded-full px-2 py-0.5">
-                                                                                                <ShieldCheck className="w-3 h-3" />
-                                                                                                3D Secure
-                                                                                            </span>
-                                                                                        </button>
-                                                                                    );
-                                                                                })}
-                                                                            </div>
                                                                         </div>
                                                                     </div>
                                                                     <div className="col-span-1 sm:col-span-2 flex items-center gap-2">
