@@ -58,7 +58,7 @@ const PrimaryHeader = ({ isLoggedIn }: { isLoggedIn?: boolean } = {}) => {
             />
           </Link>
 
-          <div className="hidden md:flex flex-1 items-center gap-3 max-w-3xl">
+          <div className="hidden md:flex flex-1 items-center gap-3 min-w-0">
             <SearchForm />
           </div>
 
@@ -80,7 +80,7 @@ const PrimaryHeader = ({ isLoggedIn }: { isLoggedIn?: boolean } = {}) => {
           </Dialog>
 
           {/* Desktop Auth */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-3 shrink-0">
             {!loggedIn ? (
               <>
                 <Link href="/auth/login">

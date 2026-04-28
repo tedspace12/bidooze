@@ -110,7 +110,7 @@ const FeaturedAuctions = () => {
                                             </div>
                                             <p className="font-medium text-sm line-clamp-1">{slot.highlight_lot.title}</p>
                                             <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                                <span>{slot.highlight_lot.bid_count} bids · High: {auction.currency} {slot.highlight_lot.highest_bid?.toLocaleString() ?? "—"}</span>
+                                                <span>{slot.highlight_lot.bid_count} bids · High: {slot.highlight_lot.highest_bid != null ? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(slot.highlight_lot.highest_bid) : "—"}</span>
                                                 <span className="flex items-center gap-1">
                                                     <Clock className="h-3 w-3" />
                                                     {slot.highlight_lot.time_remaining ?? "0:00"}
