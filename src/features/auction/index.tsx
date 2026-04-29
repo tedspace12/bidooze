@@ -142,9 +142,10 @@ const AuctionDetails = () => {
     }));
   const featuredLotsForUi = featuredLots.length > 0 ? featuredLots : fallbackFeaturedLots;
 
-  const isRegistered =
-    detailsQuery.data?.registration_status != null ||
-    lotsQuery.data?.meta?.registration_status != null;
+  const registrationStatus =
+    detailsQuery.data?.registration_status ??
+    lotsQuery.data?.meta?.registration_status ??
+    null;
 
   const isLoading = detailsQuery.isLoading || lotsQuery.isLoading;
   const isError = detailsQuery.isError || lotsQuery.isError;
@@ -202,7 +203,7 @@ const AuctionDetails = () => {
         </Breadcrumb>
 
         {/* Auction Header */}
-        <AuctionHeader auction={mappedAuction} isRegistered={isRegistered} />
+        <AuctionHeader auction={mappedAuction} registrationStatus={registrationStatus} />
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-8">
@@ -226,7 +227,7 @@ const AuctionDetails = () => {
             <FeaturedLotsSlider lots={featuredLotsForUi} auctionId={mappedAuction.id} />
 
             {/* Lots Grid */}
-            <LotsGrid lots={mappedLots} isRegistered={isRegistered} bidding={lotsQuery.data?.meta?.bidding} buyerPremiumPercentage={lotsQuery.data?.meta?.buyer_premium_percentage} />
+            <LotsGrid lots={mappedLots} registrationStatus={registrationStatus} bidding={lotsQuery.data?.meta?.bidding} buyerPremiumPercentage={lotsQuery.data?.meta?.buyer_premium_percentage} auctionId={lotsQuery.data?.meta.auction_id} />
           </TabsContent>
 
           <TabsContent value="info" className="mt-6">

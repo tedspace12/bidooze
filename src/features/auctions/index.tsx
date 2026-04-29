@@ -92,7 +92,7 @@ const Auctions = () => {
           name: auction.auctioneer.company_name,
           avatar: auction.auctioneer.avatar ?? null,
         },
-        totalLots: auction.lots.length,
+        totalLots: auction.lot_count,
         startDate: auction.auction_start_at,
         endDate: auction.auction_end_at,
         description: auction.description,
@@ -104,7 +104,7 @@ const Auctions = () => {
         shippingAvailable: auction.shipping_availability === "available" ? true : false,
         location: `${auction.city}, ${auction.state}`,
         notices: auction.bidding_notice,
-        isRegistered: !!auction.registration_status,
+        registrationStatus: auction.registration_status ?? null,
       };
     });
   }, [allAuctions]);
@@ -225,7 +225,7 @@ const Auctions = () => {
                   : "space-y-4 md:space-y-6"
               }>
                 {refactoredAuctions?.map((auction) => (
-                  <AuctionCard key={auction.id} auction={auction} isRegistered={auction.isRegistered} viewMode={viewMode} page="auctions" />
+                  <AuctionCard key={auction.id} auction={auction} registrationStatus={auction.registrationStatus} viewMode={viewMode} page="auctions" />
                 ))}
               </div>
 

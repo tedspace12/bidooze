@@ -15,7 +15,7 @@ import { useSearchParams } from "next/navigation";
 import LotCard from "../auction/components/LotCard";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
-import { Grid3X3, List } from "lucide-react";
+import { Grid3X3, List, RotateCw } from "lucide-react";
 import Link from "next/link";
 import FilterDrawer from "@/components/shared/FilterDrawer";
 import { useLots } from "./hooks/useLot";
@@ -59,7 +59,7 @@ const Lots = () => {
         [currentPage, filters]
     );
 
-    const { data: lotsResponse } = useLots(listingParams);
+    const { data: lotsResponse, isLoading, isError, refetch } = useLots(listingParams);
 
     const mappedLots = useMemo(() => {
         if (!lotsResponse?.data) return [];
@@ -81,10 +81,10 @@ const Lots = () => {
             shippingAvailable: lot.auction?.shipping_availability === 'available',
             auctionStatus: normalizeBuyerAuctionStatus(lot.auction?.status ?? "live"),
             auctionName: lot.auction?.name,
-            isRegistered: !!lot.auction?.registration_status,
+            registrationStatus: lot.auction?.registration_status ?? null,
             maxBid: undefined,
             realizedPrice: undefined,
-            auctionId: lot.auction?.id?.toString()
+            auctionId: lot.auction?.id
         }));
     }, [lotsResponse]);
 
@@ -175,6 +175,16 @@ const Lots = () => {
                     >
                         <List className="h-4 w-4" />
                     </Button>
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => refetch()}
+                        disabled={isLoading}
+                        className="h-9 w-9 ml-2"
+                        title="Refresh lots"
+                    >
+                        <RotateCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+                    </Button>
                 </div>
 
                 {/* Mobile Filter Button */}
@@ -192,28 +202,49 @@ const Lots = () => {
                     <AuctionFilters filters={filters} onFiltersChange={handleFiltersChange} type="lot" />
                 </aside>
 
-                {/* Auction Grid */}
+                {/* Lots Grid */}
                 <div className="flex-1">
-                    <div className={
-                        viewMode === "grid"
-                            ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6 md:mb-8"
-                            : "flex flex-col gap-4 mb-6 md:mb-8"
-                    }>
-                        {mappedLots.map((lot) => (
-                            <LotCard
-                                key={lot.id}
-                                lot={lot}
-                                viewMode={viewMode}
-                                isRegistered={lot.isRegistered}
-                                buyerPremiumPercentage={null}
-                            />
-                        ))}
-                    </div>
-
-                    {mappedLots.length === 0 && (
+                    {isLoading ? (
+                        <div className={
+                            viewMode === "grid"
+                                ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6 md:mb-8"
+                                : "flex flex-col gap-4 mb-6 md:mb-8"
+                        }>
+                            {Array.from({ length: 8 }).map((_, i) => (
+                                <div key={i} className="h-64 bg-muted rounded-xl animate-pulse" />
+                            ))}
+                        </div>
+                    ) : isError ? (
+                        <div className="text-center py-12 md:py-16 bg-card border border-border rounded-xl">
+                            <p className="text-red-500 font-medium text-base md:text-lg">Error loading lots</p>
+                            <p className="text-sm text-muted-foreground mt-2">Failed to fetch lots. Please try again.</p>
+                            <Button variant="outline" className="mt-4" onClick={() => refetch()}>
+                                Retry
+                            </Button>
+                        </div>
+                    ) : mappedLots.length === 0 ? (
                         <div className="text-center py-12 md:py-16 bg-card border border-border rounded-xl">
                             <p className="text-muted-foreground text-base md:text-lg">No lots match your filters.</p>
                             <p className="text-sm text-muted-foreground mt-2">Try adjusting your search criteria.</p>
+                            <Button variant="outline" className="mt-4" onClick={clearFilters}>
+                                Clear Filters
+                            </Button>
+                        </div>
+                    ) : (
+                        <div className={
+                            viewMode === "grid"
+                                ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6 md:mb-8"
+                                : "flex flex-col gap-4 mb-6 md:mb-8"
+                        }>
+                            {mappedLots.map((lot) => (
+                                <LotCard
+                                    key={lot.id}
+                                    lot={lot}
+                                    viewMode={viewMode}
+                                    registrationStatus={lot.registrationStatus}
+                                    buyerPremiumPercentage={null}
+                                />
+                            ))}
                         </div>
                     )}
 

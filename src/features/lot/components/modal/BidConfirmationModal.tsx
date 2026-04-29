@@ -14,7 +14,7 @@ import { Info, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
 import ListingImage from "@/components/shared/listing-image";
 import { ensureListingImageSources } from "@/lib/listingImageFallbacks";
-import { auctionService } from "@/features/auction/services/auctionService";
+import { useLot } from "@/features/lot/hooks/useLot";
 
 interface LotData {
     id: string;
@@ -76,6 +76,9 @@ const resolveApiErrorMessage = (error: any): string => {
 };
 
 const BidConfirmationModal = ({ open, onOpenChange, lot }: BidConfirmationModalProps) => {
+    const { usePlaceBid } = useLot(lot.auctionId, lot.id);
+    const placeBidMutation = usePlaceBid();
+
     const resolvedImages = ensureListingImageSources(lot.images, "lot");
     const [selectedImage, setSelectedImage] = useState(0);
     const minBid = lot.nextBid ?? (lot.currentBid + lot.minBidIncrement);
@@ -84,7 +87,6 @@ const BidConfirmationModal = ({ open, onOpenChange, lot }: BidConfirmationModalP
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [maxBidAmount, setMaxBidAmount] = useState("");
     const [enableProxy, setEnableProxy] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleBidChange = (value: string) => {
         // Allow only numeric input
@@ -110,10 +112,10 @@ const BidConfirmationModal = ({ open, onOpenChange, lot }: BidConfirmationModalP
         setEnableProxy(false);
     }, [minBid]);
 
+    const isSubmitting = placeBidMutation.isPending;
+
     const handleConfirmBid = async () => {
         if (!canSubmit || isSubmitting) return;
-
-        setIsSubmitting(true);
 
         try {
             const bidData = {
@@ -122,9 +124,8 @@ const BidConfirmationModal = ({ open, onOpenChange, lot }: BidConfirmationModalP
                 ...(enableProxy && parsedMaxBidAmount > 0 && { max_amount: parsedMaxBidAmount }),
             };
 
-            const response = await auctionService.placeBid(lot.auctionId || "1", lot.id, bidData);
+            const response = await placeBidMutation.mutateAsync(bidData);
 
-            // Handle different bid statuses
             switch (response.bid.status) {
                 case "accepted":
                     toast("Bid Placed Successfully!", {
@@ -155,8 +156,6 @@ const BidConfirmationModal = ({ open, onOpenChange, lot }: BidConfirmationModalP
             toast.error("Bid Failed", {
                 description: errorMessage,
             });
-        } finally {
-            setIsSubmitting(false);
         }
     };
 

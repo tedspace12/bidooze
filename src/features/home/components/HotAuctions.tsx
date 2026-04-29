@@ -69,7 +69,8 @@ const HotAuctions = () => {
                 ) : (
                     items.map((row) => {
                         const auction = row.auction;
-                        const isRegistered = !!auction.registration_status;
+                        const registrationStatus = auction.registration_status ?? null;
+                        const hasRegistration = registrationStatus != null;
                         const lifecycle = normalizeBuyerAuctionStatus(auction.status);
                         const statusInfo = BUYER_AUCTION_LIFECYCLE_BADGES[lifecycle];
                         return (
@@ -155,14 +156,14 @@ const HotAuctions = () => {
                                                 size="sm"
                                                 onClick={(e) => {
                                                     e.preventDefault();
-                                                    if (isRegistered) {
+                                                    if (hasRegistration) {
                                                         router.push(`/auction/${auction.auction_id}`);
                                                         return;
                                                     }
                                                     router.push(`/auction/register?source=home-hot&id=${auction.auction_id}`);
                                                 }}
                                             >
-                                                Register to Bid
+                                                {hasRegistration ? "Registered" : "Register to Bid"}
                                             </Button>
                                             )}
                                         </div>

@@ -44,7 +44,7 @@ const GoogleOneTap = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { socialAuth } = useAuth();
-  const { user, setUser } = useUser();
+  const { user, setUser, isLoading: isUserLoading } = useUser();
   const [statusText, setStatusText] = useState<string | null>(null);
   const isAuthenticatingRef = useRef(false);
   const loadingToastIdRef = useRef<string | number | null>(null);
@@ -75,6 +75,8 @@ const GoogleOneTap = () => {
       "/auth/reset-password",
     ];
     if (AUTH_FLOW_PATHS.some((p) => pathname.startsWith(p))) return;
+    // Wait until we know the auth state — user starts null during the async fetch
+    if (isUserLoading) return;
     // Skip if already logged in
     if (user) return;
     // Skip if no client ID configured
@@ -169,7 +171,7 @@ const GoogleOneTap = () => {
       return () => clearInterval(interval);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname, user]);
+  }, [pathname, user, isUserLoading]);
 
   return statusText ? (
     <div className="pointer-events-none fixed bottom-4 right-4 z-[80]">

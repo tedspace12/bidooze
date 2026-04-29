@@ -27,6 +27,7 @@ export interface IAuctionsResponse {
       shipping_availability: string;
       feature_image_url?: string;
       image_url?: string;
+      lot_count: number;
       registration_status?: string | null;
       auctioneer: {
         id: number;

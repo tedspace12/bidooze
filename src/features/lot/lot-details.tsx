@@ -272,10 +272,13 @@ const LotDetail = () => {
                             startTime={lotData.startTime}
                             endTime={lotData.endTime}
                             id={lotData.id}
+                            lotId={String(lot.id)}
+                            auctionId={auctionId}
                             title={lotData.title}
                             images={lotData.images}
                             buyersPremiumLabel={lotData.buyersPremiumLabel}
                             currency={currency}
+                            registrationStatus={lotMeta?.registration_status ?? null}
                         />
 
                         <AuctioneerInfo auctioneer={lotData.auctioneer} />

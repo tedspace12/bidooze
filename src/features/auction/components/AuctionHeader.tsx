@@ -1,12 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Share2, Bell, Calendar, CheckCircle } from "lucide-react";
+import { Share2, Bell, Calendar, CheckCircle, Clock, AlertTriangle, XCircle, Ban } from "lucide-react";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { AuctionLifecycle } from "@/lib/auctionLifecycle";
 import { BUYER_AUCTION_LIFECYCLE_BADGES } from "@/lib/auctionLifecycle";
+
+type RegistrationStatus = string | null;
 
 interface AuctionHeaderProps {
     auction: {
@@ -21,7 +23,7 @@ interface AuctionHeaderProps {
         endDate: string;
         description: string;
     };
-    isRegistered?: boolean;
+    registrationStatus?: RegistrationStatus;
 }
 
 const statusConfig = BUYER_AUCTION_LIFECYCLE_BADGES;
@@ -32,7 +34,54 @@ const formatDateWithOrdinal = (date: Date) => {
     return `${day}${suffix} ${format(date, "MMMM yyyy")}`;
 };
 
-const AuctionHeader = ({ auction, isRegistered = false }: AuctionHeaderProps) => {
+const RegistrationBadge = ({ status }: { status: string }) => {
+    switch (status) {
+        case "approved":
+            return (
+                <Badge className="gap-1.5 bg-emerald-500/10 text-emerald-600 border-emerald-300 dark:text-emerald-400 dark:border-emerald-800">
+                    <CheckCircle className="h-3.5 w-3.5" />
+                    Registered
+                </Badge>
+            );
+        case "pending_approval":
+            return (
+                <Badge className="gap-1.5 bg-amber-500/10 text-amber-700 border-amber-300 dark:text-amber-400 dark:border-amber-800">
+                    <Clock className="h-3.5 w-3.5" />
+                    Pending Approval
+                </Badge>
+            );
+        case "pending_deposit":
+            return (
+                <Badge className="gap-1.5 bg-blue-500/10 text-blue-700 border-blue-300 dark:text-blue-400 dark:border-blue-800">
+                    <Clock className="h-3.5 w-3.5" />
+                    Deposit Required
+                </Badge>
+            );
+        case "rejected":
+            return (
+                <Badge className="gap-1.5 bg-destructive/10 text-destructive border-destructive/30">
+                    <XCircle className="h-3.5 w-3.5" />
+                    Registration Declined
+                </Badge>
+            );
+        case "suspended":
+            return (
+                <Badge className="gap-1.5 bg-orange-500/10 text-orange-700 border-orange-300 dark:text-orange-400 dark:border-orange-800">
+                    <Ban className="h-3.5 w-3.5" />
+                    Registration Suspended
+                </Badge>
+            );
+        default:
+            return (
+                <Badge variant="secondary" className="gap-1.5">
+                    <AlertTriangle className="h-3.5 w-3.5" />
+                    {status}
+                </Badge>
+            );
+    }
+};
+
+const AuctionHeader = ({ auction, registrationStatus = null }: AuctionHeaderProps) => {
     const router = useRouter();
 
     const handleShare = () => {
@@ -49,9 +98,33 @@ const AuctionHeader = ({ auction, isRegistered = false }: AuctionHeaderProps) =>
     };
 
     const handleRegisterClick = () => {
-        if (!isRegistered) {
-            router.push(`/auction/register?source=auction&id=${auction.id || "1"}`);
+        router.push(`/auction/register?source=auction&id=${auction.id || "1"}`);
+    };
+
+    const handlePayDeposit = () => {
+        router.push(`/auction/register?source=auction&id=${auction.id || "1"}`);
+    };
+
+    const renderRegistrationAction = () => {
+        if (auction.status === "closed") return null;
+
+        if (registrationStatus === null) {
+            return (
+                <Button className="gap-2" onClick={handleRegisterClick}>
+                    Register to Bid
+                </Button>
+            );
         }
+
+        return (
+            <div className="flex flex-col gap-1.5">
+                <Button className="gap-2" variant="outline" disabled>
+                    <CheckCircle className="h-4 w-4 text-emerald-500" />
+                    Registered
+                </Button>
+                <RegistrationBadge status={registrationStatus} />
+            </div>
+        );
     };
 
     return (
@@ -96,21 +169,11 @@ const AuctionHeader = ({ auction, isRegistered = false }: AuctionHeaderProps) =>
 
                 {/* Actions */}
                 <div className="flex flex-col sm:flex-row lg:flex-col gap-3 shrink-0">
-                    {auction.status !== "closed" &&
-                        (isRegistered ? (
-                            <Button className="gap-2" variant="outline" disabled>
-                                <CheckCircle className="h-4 w-4 text-emerald-500" />
-                                Registered
-                            </Button>
-                        ) : (
-                            <Button className="gap-2" onClick={handleRegisterClick}>
-                                Register to Bid
-                            </Button>
-                        ))}
-                    <Button variant="outline" className="gap-2" onClick={handleSetReminder}>
+                    {renderRegistrationAction()}
+                    {/* <Button variant="outline" className="gap-2" onClick={handleSetReminder}>
                         <Bell className="h-4 w-4" />
                         Set Reminder
-                    </Button>
+                    </Button> */}
                     <Button variant="ghost" className="gap-2" onClick={handleShare}>
                         <Share2 className="h-4 w-4" />
                         Share
