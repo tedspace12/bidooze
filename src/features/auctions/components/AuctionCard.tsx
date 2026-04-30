@@ -46,7 +46,7 @@ interface Auction {
 
 interface AuctionCardProps {
     auction: Auction;
-    isRegistered?: boolean;
+    registrationStatus?: string | null;
     viewMode?: 'list' | 'grid';
     page?: 'auctions' | 'regular';
 }
@@ -61,7 +61,8 @@ const statusConfig: Record<
     closed: { label: "Closed", className: "bg-muted text-muted-foreground" },
 };
 
-const AuctionCard = ({ auction, isRegistered = false, viewMode = 'list', page = 'regular' }: AuctionCardProps) => {
+const AuctionCard = ({ auction, registrationStatus = null, viewMode = 'list', page = 'regular' }: AuctionCardProps) => {
+    const hasRegistration = registrationStatus != null;
     const [countdown, setCountdown] = useState("");
     const router = useRouter();
     const showClosingSoon = isClosingSoon(auction.status, auction.endDate);
@@ -100,7 +101,7 @@ const AuctionCard = ({ auction, isRegistered = false, viewMode = 'list', page = 
 
     const handleRegisterClick = (e: React.MouseEvent) => {
         e.preventDefault();
-        if (!isRegistered) {
+        if (!hasRegistration) {
             router.push(`/auction/register?source=auction&id=${auction.id}`);
         }
     };
@@ -249,7 +250,7 @@ const AuctionCard = ({ auction, isRegistered = false, viewMode = 'list', page = 
                             </Button>
                         </Link>
                         {auction.status !== "closed" && (
-                            isRegistered ? (
+                            hasRegistration ? (
                                 <Button
                                     className="flex-1 gap-2 text-xs md:text-sm"
                                     variant="outline"

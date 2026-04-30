@@ -33,8 +33,8 @@ interface LotCardProps {
         nextBid?: number;
     };
     viewMode?: "grid" | "list";
-    isRegistered?: boolean;
-    auctionId?: string;
+    registrationStatus?: string | null;
+    auctionId?: number;
     bidding?: {
         mode: string;
         allow_proxy: boolean;
@@ -43,6 +43,16 @@ interface LotCardProps {
     };
     buyerPremiumPercentage?: number | null;
 }
+
+const getBidButtonLabel = (status: string) => {
+    switch (status) {
+        case "pending_approval": return "Pending Approval";
+        case "pending_deposit": return "Deposit Required";
+        case "rejected": return "Registration Declined";
+        case "suspended": return "Registration Suspended";
+        default: return "Registered";
+    }
+};
 
 const formatPrice = (price: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -56,13 +66,16 @@ const formatPrice = (price: number) => {
 const LotCard = ({
     lot,
     viewMode = "grid",
-    isRegistered = false,
-    auctionId = "1",
+    registrationStatus = null,
+    auctionId,
     bidding,
     buyerPremiumPercentage,
 }: LotCardProps) => {
+    const hasRegistration = registrationStatus != null;
+    const canBid = registrationStatus === "approved";
     const router = useRouter();
-    const { useAddToWatchlist, useRemoveFromWatchlist } = useAuction(auctionId);
+    const auctionIdStr = auctionId != null ? String(auctionId) : undefined;
+    const { useAddToWatchlist, useRemoveFromWatchlist } = useAuction(auctionIdStr);
     const addToWatchlistMutation = useAddToWatchlist();
     const removeFromWatchlistMutation = useRemoveFromWatchlist();
 
@@ -100,17 +113,42 @@ const LotCard = ({
         }
     };
 
+    const registrationToast: Record<string, { title: string; description: string }> = {
+        pending_approval: {
+            title: "Registration Pending",
+            description: "Your registration is awaiting approval. You'll be notified once it's reviewed.",
+        },
+        pending_deposit: {
+            title: "Deposit Required",
+            description: "A deposit is required to complete your registration before you can bid.",
+        },
+        rejected: {
+            title: "Registration Declined",
+            description: "Your registration was declined. Contact the auctioneer for more information.",
+        },
+        suspended: {
+            title: "Registration Suspended",
+            description: "Your registration has been suspended. Contact the auctioneer for more information.",
+        },
+    };
+
     const handlePlaceBid = (e: MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         e.stopPropagation();
 
-        if (!isRegistered) {
-            // Redirect to auction registration since registration is auction-scoped
-            router.push(`/auction/register?source=auction&id=${encodeURIComponent(auctionId)}`);
-        } else {
-            // Open bid confirmation modal
-            setBidModalOpen(true);
+        if (!hasRegistration) {
+            router.push(`/auction/register?source=auction&id=${encodeURIComponent(auctionIdStr ?? "")}`);
+            return;
         }
+        if (canBid) {
+            setBidModalOpen(true);
+            return;
+        }
+        const info = registrationToast[registrationStatus!] ?? {
+            title: "Cannot Place Bid",
+            description: "Your registration is not yet approved to place bids.",
+        };
+        toast(info.title, { description: info.description });
     };
 
     const lotDataForModal = {
@@ -121,7 +159,7 @@ const LotCard = ({
         currentBid: lot.currentBid,
         minBidIncrement: nextBid - lot.currentBid, // Use the actual increment from nextBid
         nextBid: nextBid, // Pass the next bid amount
-        auctionId: auctionId,
+        auctionId: auctionIdStr,
         bidding: bidding,
         buyersPremium: "15%",
         auction: {
@@ -221,11 +259,12 @@ const LotCard = ({
                                         <Button
                                             className="gap-2 w-full sm:w-auto shrink-0"
                                             size="sm"
+                                            variant={hasRegistration && !canBid ? "outline" : "default"}
                                             onClick={handlePlaceBid}
                                         >
                                             <Gavel className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                                             <span className="text-xs sm:text-sm">
-                                                {isRegistered ? "Place Bid" : "Register"}
+                                                {!hasRegistration ? "Register" : canBid ? "Place Bid" : getBidButtonLabel(registrationStatus!)}
                                             </span>
                                         </Button>
                                     </>
@@ -345,10 +384,11 @@ const LotCard = ({
                                 )}
                                 <Button
                                     className="w-full gap-2"
+                                    variant={hasRegistration && !canBid ? "outline" : "default"}
                                     onClick={handlePlaceBid}
                                 >
                                     <Gavel className="h-4 w-4" />
-                                    {isRegistered ? "Place Bid" : "Register to Bid"}
+                                    {!hasRegistration ? "Register to Bid" : canBid ? "Place Bid" : getBidButtonLabel(registrationStatus!)}
                                 </Button>
                             </>
                         )}

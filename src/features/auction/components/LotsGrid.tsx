@@ -93,11 +93,12 @@ interface Lot {
   featured?: boolean;
   shippingAvailable: boolean;
   nextBid?: number;
+  isInWatchlist?: boolean;
 }
 
 interface LotsGridProps {
   lots: Lot[];
-  isRegistered?: boolean;
+  registrationStatus?: string | null;
   bidding?: {
     mode: string;
     allow_proxy: boolean;
@@ -105,6 +106,7 @@ interface LotsGridProps {
     default_amount_type: string;
   };
   buyerPremiumPercentage?: number | null;
+  auctionId?: number;
 }
 
 const sortOptions = [
@@ -119,7 +121,7 @@ const sortOptions = [
 
 const itemsPerPageOptions = [12, 24, 48, 96];
 
-const LotsGrid = ({ lots, isRegistered = false, bidding, buyerPremiumPercentage }: LotsGridProps) => {
+const LotsGrid = ({ lots, registrationStatus = null, bidding, buyerPremiumPercentage, auctionId }: LotsGridProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("lot-number");
   const [itemsPerPage, setItemsPerPage] = useState(12);
@@ -421,7 +423,7 @@ const LotsGrid = ({ lots, isRegistered = false, bidding, buyerPremiumPercentage 
         }
       >
         {paginatedLots.map((lot) => (
-          <LotCard key={lot.id} lot={lot} viewMode={viewMode} isRegistered={isRegistered} bidding={bidding} buyerPremiumPercentage={buyerPremiumPercentage} />
+          <LotCard key={lot.id} lot={lot} viewMode={viewMode} registrationStatus={registrationStatus} bidding={bidding} buyerPremiumPercentage={buyerPremiumPercentage} auctionId={auctionId} />
         ))}
       </div>
 

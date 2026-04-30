@@ -78,7 +78,7 @@ const Watchlist = () => {
     timeRemaining: item.lot.ends_at ? `${Math.floor((new Date(item.lot.ends_at).getTime() - Date.now()) / (1000 * 60 * 60))}h ${Math.floor(((new Date(item.lot.ends_at).getTime() - Date.now()) % (1000 * 60 * 60)) / (1000 * 60))}m` : "N/A",
     maxBid: item.lot.max_bid || 0,
     shippingAvailable: item.auction.shipping_availability === "available",
-    auctionId: String(item.auction.id),
+    auctionId: item.auction.id,
     auctionName: item.auction.name,
     registrationStatus: item.auction.registration_status || null,
     isInWatchlist: true,
@@ -259,7 +259,7 @@ const Watchlist = () => {
             key={item.id}
             lot={item}
             viewMode={viewMode}
-            isRegistered={item.registrationStatus === "approved"}
+            registrationStatus={item.registrationStatus ?? null}
             auctionId={item.auctionId}
           />
         ))}

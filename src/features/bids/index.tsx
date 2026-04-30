@@ -79,7 +79,7 @@ const Bids = () => {
         title: regAuction.auction.auction_name,
         coverImage: regAuction.auction.cover_image?.image_url || "",
         auctioneer: { name: regAuction.auction.auctioneer_company_name, avatar: "" },
-        totalLots: 0, // API doesn't provide total lots
+        totalLots: regAuction.auction.total_lots,
         startDate: regAuction.auction.auction_start_at,
         endDate: regAuction.auction.auction_end_at,
         description: regAuction.auction.description || "",
@@ -129,7 +129,7 @@ const Bids = () => {
             nextBid: lot.next_bid || undefined,
             isInWatchlist: lot.is_in_watchlist,
             shippingAvailable: group.auction.shipping_availability === "available",
-            auctionId: String(group.auction.auction_id),
+            auctionId: group.auction.auction_id,
             auctionName: group.auction.auction_name,
         })),
     })) || [];
@@ -150,9 +150,9 @@ const Bids = () => {
         nextBid: pick.next_bid || undefined,
         isInWatchlist: pick.is_in_watchlist,
         shippingAvailable: pick.auction.shipping_availability === "available",
-        auctionId: String(pick.auction.auction_id),
+        auctionId: pick.auction.auction_id,
         auctionName: pick.auction.auction_name,
-        isRegistered: !!(pick.auction as { registration_status?: string | null }).registration_status,
+        registrationStatus: (pick.auction as { registration_status?: string | null }).registration_status ?? null,
     })) || [];
 
     const activeFiltersCount =
@@ -313,7 +313,7 @@ const Bids = () => {
                                                                 key={lot.id}
                                                                 lot={lot}
                                                                 viewMode={viewMode}
-                                                                isRegistered={true}
+                                                                registrationStatus="approved"
                                                                 auctionId={lot.auctionId}
                                                                 buyerPremiumPercentage={null}
                                                             />
@@ -332,7 +332,7 @@ const Bids = () => {
                                                     key={lot.id}
                                                     lot={lot}
                                                     viewMode={viewMode}
-                                                    isRegistered={true}
+                                                    registrationStatus="approved"
                                                     auctionId={lot.auctionId}
                                                     buyerPremiumPercentage={null}
                                                 />
@@ -394,7 +394,7 @@ const Bids = () => {
                                         key={lot.id}
                                         lot={lot}
                                         viewMode={viewMode}
-                                        isRegistered={lot.isRegistered}
+                                        registrationStatus={lot.registrationStatus}
                                         auctionId={lot.auctionId}
                                         buyerPremiumPercentage={null}
                                     />
@@ -484,7 +484,7 @@ const Bids = () => {
                                 : "space-y-4 md:space-y-6"
                         }>
                             {filteredAuctions.map((auction) => (
-                                <AuctionCard key={auction.id} auction={auction} isRegistered={true} viewMode={auctionViewMode} />
+                                <AuctionCard key={auction.id} auction={auction} registrationStatus={auction.registrationStatus} viewMode={auctionViewMode} />
                             ))}
                         </div>
                     )}

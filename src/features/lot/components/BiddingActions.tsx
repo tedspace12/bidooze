@@ -16,11 +16,17 @@ interface BiddingActionsProps {
   bidIncrements: { range: string; increment: string }[];
   startTime: string;
   endTime: string;
+  /** Lot display number (lot_number) — shown in the UI */
   id: string;
+  /** Actual lot ID from the API — used for the bid endpoint */
+  lotId: string;
+  /** Auction ID — used for the bid endpoint */
+  auctionId: string;
   title: string;
   images: string[];
   buyersPremiumLabel?: string;
   currency?: string;
+  registrationStatus?: string | null;
 }
 
 
@@ -31,11 +37,15 @@ const BiddingActions = ({
   startTime,
   endTime,
   id,
+  lotId,
+  auctionId,
   title,
   images,
   buyersPremiumLabel,
   currency = "USD",
+  registrationStatus = null,
 }: BiddingActionsProps) => {
+  const canBid = registrationStatus === "approved";
   const [bidAmount, setBidAmount] = useState("");
   const [showIncrements, setShowIncrements] = useState(false);
   const [bidModalOpen, setBidModalOpen] = useState(false);
@@ -48,12 +58,12 @@ const BiddingActions = ({
       maximumFractionDigits: 2,
     }).format(amount);
 
-  // Mock data for bid confirmation modal
   const lotDataForModal = {
-    id: '1',
+    id: lotId,
     lotId: id,
-    title: title,
-    images: images,
+    auctionId,
+    title,
+    images,
     currentBid: currentBid ?? 0,
     minBidIncrement: minBid ?? 0,
     buyersPremium: buyersPremiumLabel ?? "—",
@@ -95,8 +105,12 @@ const BiddingActions = ({
               className="pl-10 text-sm md:text-lg h-12"
             />
           </div>
-          <Button onClick={() => setBidModalOpen(true)} className="w-full h-12 text-sm md:text-base font-semibold">
-            Place Bid
+          <Button
+            onClick={() => setBidModalOpen(true)}
+            className="w-full h-12 text-sm md:text-base font-semibold"
+            disabled={!canBid}
+          >
+            {registrationStatus == null ? "Register to Bid" : canBid ? "Place Bid" : "Pending Approval"}
           </Button>
         </div>
 

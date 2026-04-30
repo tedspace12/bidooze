@@ -91,6 +91,7 @@ export type BidsRegisteredAuction = {
     auction_end_at: string;
     shipping_availability: string;
     currency: string;
+    total_lots: number;
     description: string;
     cover_image: {
       image_url: string;
