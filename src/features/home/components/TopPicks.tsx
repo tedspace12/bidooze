@@ -33,7 +33,7 @@ const TopPicks = () => {
     const router = useRouter();
     const { useRecommendations } = useHome();
     const recQuery = useRecommendations();
-    const items = recQuery.data?.data ?? [];
+    const items = (recQuery.data?.data ?? []).filter(Boolean);
 
     return (
         <div className="container mx-auto px-4 py-12">
