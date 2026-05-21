@@ -47,8 +47,24 @@ const HeroCarousel = () => {
                     </div>
                 </div>
             ) : items.length === 0 ? (
-                <div className="h-[450px] sm:h-[500px] rounded-xl border border-border flex items-center justify-center">
-                    <p className="text-sm text-muted-foreground">No live hero auctions right now.</p>
+                <div className="h-[450px] sm:h-[500px] rounded-xl border border-border bg-card flex items-center justify-center">
+                    <div className="text-center space-y-4 px-6 max-w-md mx-auto">
+                        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-muted mx-auto">
+                            <Package className="h-7 w-7 text-muted-foreground" />
+                        </div>
+                        <div className="space-y-1.5">
+                            <h2 className="text-xl sm:text-2xl font-semibold text-foreground">No live auctions right now</h2>
+                            <p className="text-sm text-muted-foreground">Check back soon or explore upcoming lots and auctions below.</p>
+                        </div>
+                        <div className="flex flex-col sm:flex-row gap-3 justify-center pt-1">
+                            <Button onClick={() => router.push('/auctions')}>
+                                Browse Auctions
+                            </Button>
+                            <Button variant="outline" onClick={() => router.push('/lots')}>
+                                Explore Lots
+                            </Button>
+                        </div>
+                    </div>
                 </div>
             ) : (
             <Carousel

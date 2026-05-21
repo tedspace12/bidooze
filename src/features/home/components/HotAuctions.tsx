@@ -11,6 +11,7 @@ import {
   BUYER_AUCTION_LIFECYCLE_BADGES,
 } from "@/lib/auctionLifecycle";
 import ListingImage from "@/components/shared/listing-image";
+import EmptyState from "@/components/shared/EmptyState";
 
 /** Re-export for legacy demo sections that import `statusConfig` from this file. */
 export { BUYER_AUCTION_LIFECYCLE_BADGES as statusConfig };
@@ -63,9 +64,13 @@ const HotAuctions = () => {
                         </Button>
                     </div>
                 ) : items.length === 0 ? (
-                    <div className="col-span-full rounded-xl border border-border p-6">
-                        <p className="text-sm text-muted-foreground">No hot auctions right now.</p>
-                    </div>
+                    <EmptyState
+                        className="col-span-full"
+                        icon={<TrendingUp />}
+                        title="No Hot Auctions Right Now"
+                        description="There are no trending auctions at the moment. Browse all auctions to find something you love."
+                        actions={[{ label: "Browse Auctions", href: "/auctions" }]}
+                    />
                 ) : (
                     items.map((row) => {
                         const auction = row.auction;

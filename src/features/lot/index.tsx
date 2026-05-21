@@ -15,7 +15,8 @@ import { useSearchParams } from "next/navigation";
 import LotCard from "../auction/components/LotCard";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
-import { Grid3X3, List, RotateCw } from "lucide-react";
+import { Grid3X3, List, RotateCw, Tag } from "lucide-react";
+import EmptyState from "@/components/shared/EmptyState";
 import Link from "next/link";
 import FilterDrawer from "@/components/shared/FilterDrawer";
 import { useLots } from "./hooks/useLot";
@@ -223,13 +224,15 @@ const Lots = () => {
                             </Button>
                         </div>
                     ) : mappedLots.length === 0 ? (
-                        <div className="text-center py-12 md:py-16 bg-card border border-border rounded-xl">
-                            <p className="text-muted-foreground text-base md:text-lg">No lots match your filters.</p>
-                            <p className="text-sm text-muted-foreground mt-2">Try adjusting your search criteria.</p>
-                            <Button variant="outline" className="mt-4" onClick={clearFilters}>
-                                Clear Filters
-                            </Button>
-                        </div>
+                        <EmptyState
+                            icon={<Tag />}
+                            title="No Lots Found"
+                            description="No lots match your current filters. Try adjusting your search criteria or clearing the filters."
+                            actions={[
+                                { label: "Clear Filters", onClick: clearFilters, variant: "default" },
+                                { label: "Browse Auctions", href: "/auctions", variant: "outline" },
+                            ]}
+                        />
                     ) : (
                         <div className={
                             viewMode === "grid"

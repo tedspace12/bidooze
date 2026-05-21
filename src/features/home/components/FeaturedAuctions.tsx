@@ -1,5 +1,4 @@
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Clock, Eye } from "lucide-react";
 import Link from "next/link";
 import SectionHeader from "@/components/shared/SectionHeader";
@@ -26,7 +25,9 @@ const FeaturedAuctions = () => {
     const router = useRouter();
     const { useFeaturedAuctions } = useHome();
     const featuredQuery = useFeaturedAuctions();
-    const slots = (featuredQuery.data?.data ?? []).filter(Boolean);
+    const slots = (featuredQuery.data?.data ?? []).filter((s) => s != null && s.auction != null);
+
+    if (!featuredQuery.isLoading && !featuredQuery.isError && slots.length === 0) return null;
 
     return (
         <div className="container mx-auto px-4 py-8 sm:py-12">
@@ -49,15 +50,9 @@ const FeaturedAuctions = () => {
                             Retry
                         </Button>
                     </div>
-                ) : slots.length === 0 ? (
-                    <div className="col-span-full rounded-xl border border-border p-6">
-                        <p className="text-sm text-muted-foreground">No featured auctions available.</p>
-                    </div>
                 ) : (
                     slots.map((slot) => {
                         const auction = slot.auction;
-                        const bidCount = auction.stats?.bid_count ?? 0;
-                        const currentBid = auction.stats?.highest_bid;
                         return (
                             <Link key={slot.slot_id} href={`/auction/${auction.auction_id}`}>
                                 <Card className="overflow-hidden group cursor-pointer hover:shadow-xl transition-all">
