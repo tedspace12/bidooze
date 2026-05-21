@@ -8,7 +8,7 @@ export const fallbackAuctionCategories: Category[] = [
     slug: "antiques-collectibles",
     image_url: "/images/category-antiques.jpg",
     sort_order: 1,
-    published_auctions_count: 1240,
+    published_auctions_count: 0,
     subcategories: [],
   },
   {
@@ -18,7 +18,7 @@ export const fallbackAuctionCategories: Category[] = [
     slug: "art",
     image_url: "/images/category-art.jpg",
     sort_order: 2,
-    published_auctions_count: 856,
+    published_auctions_count: 0,
     subcategories: [],
   },
   {
@@ -28,7 +28,7 @@ export const fallbackAuctionCategories: Category[] = [
     slug: "cars-vehicles",
     image_url: "/images/category-cars.jpg",
     sort_order: 3,
-    published_auctions_count: 423,
+    published_auctions_count: 0,
     subcategories: [],
   },
   {
@@ -38,7 +38,7 @@ export const fallbackAuctionCategories: Category[] = [
     slug: "jewelry-watches",
     image_url: "/images/category-jewelry.jpg",
     sort_order: 4,
-    published_auctions_count: 1567,
+    published_auctions_count: 0,
     subcategories: [],
   },
   {
@@ -48,7 +48,7 @@ export const fallbackAuctionCategories: Category[] = [
     slug: "real-estate",
     image_url: "/images/category-realestate.jpg",
     sort_order: 5,
-    published_auctions_count: 234,
+    published_auctions_count: 0,
     subcategories: [],
   },
   {
@@ -58,7 +58,7 @@ export const fallbackAuctionCategories: Category[] = [
     slug: "fashion",
     image_url: "/images/category-fashion.jpg",
     sort_order: 6,
-    published_auctions_count: 789,
+    published_auctions_count: 0,
     subcategories: [],
   },
 ];
