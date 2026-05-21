@@ -47,8 +47,26 @@ const HeroCarousel = () => {
                     </div>
                 </div>
             ) : items.length === 0 ? (
-                <div className="h-[450px] sm:h-[500px] rounded-xl border border-border flex items-center justify-center">
-                    <p className="text-sm text-muted-foreground">No live hero auctions right now.</p>
+                <div className="relative h-[450px] sm:h-[500px] rounded-xl overflow-hidden flex items-center justify-center border border-primary/20 bg-[conic-gradient(at_top_left,hsl(var(--primary)/0.15),hsl(var(--background)),hsl(var(--primary)/0.08))] shadow-[inset_0_1px_0_hsl(var(--primary)/0.15)]">
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,hsl(var(--primary)/0.18),transparent)]" />
+                    <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+                    <div className="relative z-10 text-center space-y-4 px-6 max-w-md mx-auto">
+                        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-background/80 border border-border shadow-sm mx-auto">
+                            <Package className="h-7 w-7 text-primary" />
+                        </div>
+                        <div className="space-y-1.5">
+                            <h2 className="text-xl sm:text-2xl font-semibold text-foreground">No live auctions right now</h2>
+                            <p className="text-sm text-muted-foreground">Check back soon or explore upcoming lots and auctions below.</p>
+                        </div>
+                        <div className="flex flex-col sm:flex-row gap-3 justify-center pt-1">
+                            <Button onClick={() => router.push('/auctions')}>
+                                Browse Auctions
+                            </Button>
+                            <Button variant="outline" onClick={() => router.push('/lots')}>
+                                Explore Lots
+                            </Button>
+                        </div>
+                    </div>
                 </div>
             ) : (
             <Carousel

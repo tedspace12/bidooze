@@ -37,6 +37,8 @@ import {
   ensureListingImageSources,
   resolveListingImageSrc,
 } from "@/lib/listingImageFallbacks";
+import EmptyState from "@/components/shared/EmptyState";
+import { Gavel } from "lucide-react";
 
 const Auctions = () => {
   const searchParams = useSearchParams();
@@ -230,10 +232,15 @@ const Auctions = () => {
               </div>
 
               {(refactoredAuctions?.length ?? 0) === 0 && (
-                <div className="text-center py-12 md:py-16 bg-card border border-border rounded-xl">
-                  <p className="text-muted-foreground text-base md:text-lg">No auctions match your filters.</p>
-                  <p className="text-sm text-muted-foreground mt-2">Try adjusting your search criteria.</p>
-                </div>
+                <EmptyState
+                  icon={<Gavel />}
+                  title="No Auctions Found"
+                  description="No auctions match your current filters. Try adjusting your search criteria or clearing the filters."
+                  actions={[
+                    { label: "Clear Filters", onClick: clearFilters, variant: "default" },
+                    { label: "Browse All", href: "/auctions", variant: "outline" },
+                  ]}
+                />
               )}
 
               {/* Pagination — driven by API (last_page), not mock data */}

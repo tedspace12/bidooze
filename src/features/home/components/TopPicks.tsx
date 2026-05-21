@@ -7,13 +7,14 @@ import {
 } from "@/components/ui/carousel";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Eye } from "lucide-react";
+import { Eye, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import SectionHeader from "@/components/shared/SectionHeader";
 import { Button } from "@/components/ui/button";
 import { useHome } from "../hooks/useHome";
 import ListingImage from "@/components/shared/listing-image";
+import EmptyState from "@/components/shared/EmptyState";
 
 const formatTimeLeft = (iso: string) => {
     const end = new Date(iso).getTime();
@@ -58,9 +59,12 @@ const TopPicks = () => {
                     </Button>
                 </div>
             ) : items.length === 0 ? (
-                <div className="rounded-xl border border-border p-6">
-                    <p className="text-sm text-muted-foreground">No recommendations available.</p>
-                </div>
+                <EmptyState
+                    icon={<Sparkles />}
+                    title="No Recommendations Yet"
+                    description="We don't have personalized picks for you yet. Start bidding and watching lots to get tailored recommendations."
+                    actions={[{ label: "Browse Lots", href: "/lots" }]}
+                />
             ) : (
                 <Carousel className="w-full" opts={{ align: "start", loop: false }}>
                     <CarouselContent className="-ml-4">
