@@ -26,7 +26,7 @@ const FeaturedAuctions = () => {
     const router = useRouter();
     const { useFeaturedAuctions } = useHome();
     const featuredQuery = useFeaturedAuctions();
-    const slots = featuredQuery.data?.data ?? [];
+    const slots = (featuredQuery.data?.data ?? []).filter(Boolean);
 
     return (
         <div className="container mx-auto px-4 py-8 sm:py-12">
