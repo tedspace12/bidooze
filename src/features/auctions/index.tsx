@@ -20,6 +20,7 @@ import {
 import {
   Pagination,
   PaginationContent,
+  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -39,6 +40,19 @@ import {
 } from "@/lib/listingImageFallbacks";
 import EmptyState from "@/components/shared/EmptyState";
 import { Gavel } from "lucide-react";
+
+const getPageRange = (current: number, total: number): (number | "…")[] => {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const delta = 1;
+  const left = Math.max(2, current - delta);
+  const right = Math.min(total - 1, current + delta);
+  const pages: (number | "…")[] = [1];
+  if (left > 2) pages.push("…");
+  for (let i = left; i <= right; i++) pages.push(i);
+  if (right < total - 1) pages.push("…");
+  pages.push(total);
+  return pages;
+};
 
 const Auctions = () => {
   const searchParams = useSearchParams();
@@ -258,20 +272,26 @@ const Auctions = () => {
                       />
                     </PaginationItem>
 
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                      <PaginationItem key={page}>
-                        <PaginationLink
-                          href="#"
-                          isActive={page === currentPage}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setCurrentPage(page);
-                          }}
-                        >
-                          {page}
-                        </PaginationLink>
-                      </PaginationItem>
-                    ))}
+                    {getPageRange(currentPage, totalPages).map((page, i) =>
+                      page === "…" ? (
+                        <PaginationItem key={`ellipsis-${i}`}>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      ) : (
+                        <PaginationItem key={page}>
+                          <PaginationLink
+                            href="#"
+                            isActive={page === currentPage}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setCurrentPage(page);
+                            }}
+                          >
+                            {page}
+                          </PaginationLink>
+                        </PaginationItem>
+                      )
+                    )}
 
                     <PaginationItem>
                       <PaginationNext
